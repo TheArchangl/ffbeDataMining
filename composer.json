@@ -1,0 +1,23 @@
+{
+    "name": "aEnigmatic/ffbe",
+    "description": "description_text",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "author's name",
+            "email": "email@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Sol\\": "src/Sol",
+            "Solaris\\": "src/Solaris"
+        }
+    },
+    "require": {
+        "mdurrant/php-binary-reader": "^1.0",
+        "guzzlehttp/guzzle": "^6.2",
+        "pimple/pimple": "^3.2"
+    }
+}
