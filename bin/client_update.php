@@ -1,6 +1,8 @@
 <?php
 
 
+    use Solaris\FFBE\AES;
+
     require_once dirname(__DIR__) . "/bootstrap.php";
 
     $client_dir = CLIENT_DIR . "files\\{$region}";
@@ -35,7 +37,7 @@
             continue;
 
         $data = file_get_contents($path_in);
-        $data = \Sol\FFBE\AES::encodeGameFile($data, $file_entry->getKey());
+        $data = AES::encodeGameFile($data, $file_entry->getKey());
 
         file_put_contents($path_out, $data);
 

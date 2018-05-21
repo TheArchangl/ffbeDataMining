@@ -7,6 +7,8 @@
 
     namespace Sol\FFBE;
 
+    use Solaris\FFBE\AES;
+
     class GameFile {
         /** @var  GameFile[] */
         protected static $files;
