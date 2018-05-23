@@ -12,20 +12,14 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    GameFile::setRegion('jp');
+//    GameFile::setRegion('jp');
     // input
     $monsters = [
-//        // temp
-//        [
-//            'monster_id'  => 401061000,
-//            'skillset_id' => 401061000,
-//            'ai_id'       => 401061000,
-//        ],
-        // alex 3*
+        // temp
         [
-            'monster_id'  => 506041002 ,
-            'skillset_id' => 506041002 ,
-            'ai_id'       => 506041002 ,
+            'monster_id'  => 401061000,
+            'skillset_id' => 401061000,
+            'ai_id'       => 401061000,
         ],
         // 3* Levi?
 //        [

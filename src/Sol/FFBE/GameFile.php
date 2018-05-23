@@ -1036,7 +1036,7 @@
                 'NAME	CLASS	FILE	KEY	TYPE	NOTE',
             ];
 
-            uasort(static::$files, function (GameFile $a, GameFile$b) { return $a->getName() <=> $b->getName(); });
+            uasort(static::$files, function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
 
             foreach (static::$files as $entry)
                 $lines[] = implode("\t", [
@@ -1119,6 +1119,10 @@
                         DATA_DECODED_DIR . "{$region}/{$entry->name}.txt",
                         $entry->key
                     );
+
+                    if (filesize(DATA_DECODED_DIR . "{$region}/{$entry->name}.txt") == 0)
+                        throw new \Exception('Empty output');
+
                 } catch (\Exception $e) {
                     print "File {$entry->name}: {$entry->file}.{$region} could not be decoded: {$e->getMessage()}\n";
                 }
@@ -1169,7 +1173,7 @@
 
                 assert(is_numeric($file));
 
-                return (int)$file;
+                return (int) $file;
             }, $versions);
 
             natsort($versions);

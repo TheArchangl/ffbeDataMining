@@ -28,6 +28,7 @@
 
         /** @var bool */
         protected $isFake;
+
         protected $monster_ais              = [];
         protected $monster_parts            = [];
         protected $monster_skills           = [];
@@ -35,12 +36,13 @@
         protected $monster_passives         = [];
         protected $monster_passive_skillset = [];
         protected $monsters                 = [];
-        protected $related_skills           = [];
         protected $mission_info;
+        protected $related_skills;
 
         /**
          * @param string      $region
          * @param MetaMstList $skills
+         * @param bool        $isFake
          */
         public function __construct($region, MetaMstList $skills, $isFake = false) {
             $this->region         = $region;
@@ -51,6 +53,8 @@
             $mskills = new MonsterSkillMstList();
             $mskills->readFile();
             $skills->addList($mskills);
+
+            $this->related_skills = [];
         }
 
         /**
@@ -59,14 +63,6 @@
          * @throws \Exception
          */
         public function readResponse(array $data) {
-            static $skills;
-            if ($skills == null)
-                $skills = GameFile::loadMst('F_MONSTER_SKILL_MST');
-
-            static $ais;
-            if ($ais == null)
-                $ais = GameFile::loadMst('F_AI_MST');
-            // $this->related_skills = [];
 
             // mission info
             $this->readMissionInfo($data);
@@ -88,7 +84,7 @@
 
             // skills
             $skill_ids = array_reduce($this->monster_skillsets, "array_merge", []);
-            $this->readSkills($skills, $skill_ids);
+            $this->readSkills(GameFile::loadMst('F_MONSTER_SKILL_MST'), $skill_ids);
             $this->readSkills($data['MonsterSkillMst'] ?? [], $skill_ids);
 
             $skill_ids = array_reduce($this->monster_passive_skillset, "array_merge", []);
@@ -98,7 +94,7 @@
             $monster_ais = array_column($this->monster_parts, "ai_id");
             $monster_ais = array_reduce($monster_ais, "array_merge", []);
             $monster_ais = array_unique($monster_ais);
-            $this->readAi($ais, $monster_ais);
+            $this->readAi(GameFile::loadMst('F_AI_MST'), $monster_ais);
         }
 
         /**
@@ -134,16 +130,36 @@
             echo $output;
         }
 
-        public function printRelatedSkills() {
+        public function printRelatedSkills($row) {
             if (empty($this->related_skills))
                 return;
 
+            // get relevant stuff
+            $skillset      = $this->getMonsterSkills($row['monster_skill_set_id']) ?? [];
+            $monster_id    = $row['monster_unit_id'];
+            $related_ids   = $this->getMonsterPassives($row['monster_passive_skill_set_id']) ?? [];
+            $related_ids[] = $monster_id;
 
+            $related_skills = [];
+            foreach ($related_ids as $id) {
+                if (empty($this->related_skills[$id]))
+                    continue;
+
+
+                foreach ($this->related_skills[$id] as $skill_id)
+                    if (!in_array($skill_id, $skillset))
+                    $related_skills[] = $skill_id;
+            }
+
+            if (empty($related_skills))
+                return;
+
+            // output
             echo "###\n";
             echo "# Related Skills\n";
             echo "###\n";
 
-            foreach (array_unique($this->related_skills) as $skill_id) {
+            foreach ($related_skills as $skill_id) {
                 /** @var AbilitySkillMst $mst */
                 $mst = $this->skill_mst_list->getEntry($skill_id);
                 if ($mst == null)
@@ -162,6 +178,8 @@
 
                 $this->formatSkill($skill);
             }
+
+            echo "\n";
         }
 
         /**
@@ -171,7 +189,7 @@
         protected function readPassiveSkills(array $data, $ids) {
             foreach ($data as $row) {
                 $id = (int) $row['monster_passive_skill_id'];
-                if (!in_array($id, $ids) || isset($this->monster_passives[$id]))
+                if (!in_array($id, $ids))
                     continue;
 
                 $_row = [
@@ -199,19 +217,16 @@
                 ];
             }
 
-            foreach ($this->monster_passives as $passive)
+            foreach ($this->monster_passives as $id => $passive)
                 foreach ($passive['effects'] as $effect)
                     if (preg_match("~\((\d+)\)~", $effect, $match))
-                        $this->related_skills[] = $match[1];
+                        $this->related_skills[$id][] = $match[1];
         }
 
         /**
          * @param array $data
          */
         protected function readMissionInfo(array $data) {
-            if (!empty($this->mission_info))
-                return;
-
             ob_start();
 
             if (!empty($data['MissionPhaseMst'])) {
@@ -255,9 +270,11 @@
 
             foreach ($data as $row) {
                 $id = $row['monster_skill_id'];
-                if (!in_array($id, $ids) || isset($this->monster_skills[$id]))
+                if (!in_array($id, $ids))
                     continue;
 
+                if (isset($this->monster_skills[$id]))
+                    continue;
 
                 // skill effect
                 $_row = [
@@ -289,6 +306,7 @@
                     continue;
                 }
 
+                // $skill = SkillReader::parseFrames($row, $skill);
                 $this->monster_skills[$id] = $skill;
 
                 // find grant skills
@@ -296,7 +314,7 @@
                     switch ($effect->type) {
                         case 100:
                             //foreach ($this->getMonstersForSkill($mst->id) as $monster_id)
-                            $this->related_skills[$monster_id] = $effect->parameters[1];
+                            $this->related_skills[$id][] = $effect->parameters[1];
                             break;
                     }
             }
@@ -312,7 +330,7 @@
 
             foreach ($data as $row) {
                 $id = $row['monster_skill_set_id'];
-                if (!in_array($id, $ids) || isset($this->monster_skillsets[$id]))
+                if (!in_array($id, $ids))
                     continue;
 
                 $skill_ids = readIntArray($row['monster_skill_ids']);
@@ -328,11 +346,8 @@
         protected function readPassiveSkillSet(array $data) {
             foreach ($data as $row) {
                 $skillset_id = (int) $row['monster_passive_skill_set_id'];
-                if (isset($this->monster_passive_skillset[$skillset_id]))
-                    continue;
-
-                $skill_ids = readIntArray($row['monster_passive_skill_set_skill_ids']);
-                $skill_ids = array_filter($skill_ids);
+                $skill_ids   = readIntArray($row['monster_passive_skill_set_skill_ids']);
+                $skill_ids   = array_filter($skill_ids);
 
                 $this->monster_passive_skillset[$skillset_id] = $skill_ids;
             }
@@ -345,12 +360,10 @@
             foreach ($data as $row) {
                 $monster_id = $row['monster_unit_id'];
 
-                if (!empty($this->monsters[$monster_id]))
-                    continue;
+                if (!isset($this->monsters[$monster_id]))
+                    $this->monsters[$monster_id] = $row;
 
-                $this->monsters[$monster_id] = $row;
-
-                if (empty($this->monster_parts[$monster_id]))
+                if (!isset($this->monster_parts[$monster_id]))
                     $this->monster_parts[$monster_id] = [
                         'monster_id'          => $monster_id,
                         'name'                => $row['name'],
@@ -362,8 +375,10 @@
                 if (!empty($row['monster_skill_set_id']))
                     $this->monster_parts[$monster_id]['skillset_id'][] = $row['monster_skill_set_id'];
 
+
                 if (!empty($row['passive_skillset_id']))
                     $this->monster_parts[$monster_id]['passive_skillset_id'][] = $row['passive_skillset_id'];
+
 
                 if (!empty($row['ai_id']))
                     $this->monster_parts[$monster_id]['ai_id'][] = $row['ai_id'];
@@ -382,7 +397,9 @@
             $resistances = GameHelper::array_use_keys($keys, $vals);
 
             $resistances = array_map(
-                function ($key, $val) { return sprintf("#        %-13s %5d%%", $key, $val); },
+                function ($key, $val) {
+                    return sprintf("#        %-13s %5d%%", $key, $val);
+                },
                 array_keys($resistances),
                 $resistances
             );
@@ -400,7 +417,7 @@
         protected function readAi(array $data, array $ai_ids) {
             foreach ($data as $row) {
                 $id = (int) $row['ai_id'];
-                if (!in_array($id, $ai_ids) || isset($this->monster_ais[$id]))
+                if (!in_array($id, $ai_ids))
                     continue;
 
                 $priority = $row['priority'];
@@ -412,9 +429,13 @@
                 $conditions = array_combine(['states', 'flags'], $conditions);
 
                 $conditions['states'] = explode('@', $conditions['states']);
-                $conditions['states'] = array_filter($conditions['states'], function ($val) { return $val != "0:non:non:non"; });
+                $conditions['states'] = array_filter($conditions['states'], function ($val) {
+                    return $val != "0:non:non:non";
+                });
                 $conditions['flags']  = explode('@', $conditions['flags']);
-                $conditions['flags']  = array_filter($conditions['flags'], function ($val) { return $val != "non:0"; });
+                $conditions['flags']  = array_filter($conditions['flags'], function ($val) {
+                    return $val != "non:0";
+                });
 
                 $this->monster_ais[$id]['AI']['name']      = $name;
                 $this->monster_ais[$id]['AI']['actions'][] = [
@@ -480,42 +501,18 @@
             foreach ($this->monsters as $row) {
                 if ($showMonsterInfo)
                     $this->printMonsterInfo($row);
+
                 else
                     print "###\n# {$row['name']}\n";
 
+                $ai = $this->printAI($row);
+
                 $this->printMonsterPassives($row);
                 $this->printMonsterSkills($row);
-
-                // ai
-                $ai = $row['ai_id'] == 0
-                    ? []
-                    : ($this->monster_ais[$row['ai_id']] ?? null);
-
-                $skillset = $row['monster_skill_set_id'] == 0
-                    ? []
-                    : $this->monster_skillsets[$row['monster_skill_set_id']] ?? null;
-
-                if ($skillset === null) {
-                    echo "#\n";
-                    echo "# MISSING SKILLSET {$row['monster_skill_set_id']}\n";
-                    echo "##\n#\n";
-                }
-
-                echo "###\n";
-                echo "# AI\n";
-                echo "###\n";
-
-                if (empty($ai))
-                    if ($ai == null)
-                        echo "# Missing!\n##\n\n";
-                    else
-                        echo "# None!\n##\n\n";
-
-                else
-                    echo "\n" . AiParser::parseAI($row['ai_id'], $ai, $skillset, $this->monster_skills) . "\n";
+                $this->printRelatedSkills($row);
+                echo $ai;
             }
 
-            $this->printRelatedSkills();
 
             $output = ob_get_clean();
 
@@ -532,7 +529,9 @@
             $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
 
             $tribes = GameHelper::readIntArray($row['tribe_id']);
-            $tribes = array_map(function ($tribe_id) { return Strings::getString('MST_TRIBE_NAME', $tribe_id); }, $tribes);
+            $tribes = array_map(function ($tribe_id) {
+                return Strings::getString('MST_TRIBE_NAME', $tribe_id);
+            }, $tribes);
             $tribes = join(', ', $tribes);
 
             print "##\n# Monster Info\n##\n";
@@ -603,7 +602,7 @@
             print "###\n";
 
             $passive_skillset_id = $row['monster_passive_skill_set_id'];
-            $skillset            = $this->monster_passive_skillset[$passive_skillset_id] ?? null;
+            $skillset            = $this->getMonsterPassives($passive_skillset_id);
 
             if ($skillset == null)
                 echo "# Unknown passive skillset {$passive_skillset_id}!\n##";
@@ -619,9 +618,7 @@
          * @param array $row
          */
         private function printMonsterSkills($row): void {
-            $skillset = $row['monster_skill_set_id'] == 0
-                ? []
-                : $this->monster_skillsets[$row['monster_skill_set_id']] ?? null;
+            $skillset = $this->getMonsterSkills($row['monster_skill_set_id']);
 
             if ($skillset === null) {
                 echo "# MISSING SKILLSET {$row['monster_skill_set_id']}\n";
@@ -644,5 +641,57 @@
             }
 
             echo "\n";
+        }
+
+        /**
+         * @param $row
+         *
+         * @return string
+         */
+        private function printAI($row): string {
+            // ai
+            $ai = $row['ai_id'] == 0
+                ? []
+                : ($this->monster_ais[$row['ai_id']] ?? null);
+
+            $skillset = $this->getMonsterSkills($row['monster_skill_set_id']);
+
+            $head = "###\n";
+            $head .= "# AI\n";
+            $head .= "###\n";
+
+            if (empty($ai))
+                if ($ai == null)
+                    return $head . "# Missing\n##\n\n";
+                else
+                    return $head . "# None\n##\n\n";
+
+            else
+                return $head . AiParser::parseAI($ai, $skillset, $this->monster_skills);
+        }
+
+        /**
+         * @param int $passive_skillset_id
+         *
+         * @return array|null
+         */
+        private function getMonsterPassives($passive_skillset_id) {
+            if ($passive_skillset_id == 0)
+                return [];
+
+            return $this->monster_passive_skillset[$passive_skillset_id] ?? null;
+        }
+
+        /**
+         * @param int $skillset_id
+         *
+         * @return array|null
+         */
+        private function getMonsterSkills($skillset_id) {
+            $skillset = $skillset_id == 0
+                ? []
+                : $this->monster_skillsets[$skillset_id] ?? null;
+
+            return $skillset;
         }
     }
