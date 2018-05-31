@@ -26,6 +26,9 @@
 
             // global flags
             31 => 'otter', 'tiger', 'mouse', 'goose', 'horse',
+
+            // unk
+            36 => 'unk_1', 'unk_2', 'unk_3', 'unk_4', 'unk_5','unk_6', 'unk_7', 'unk_8', 'unk_9', 'unk_0',
         ];
 
         /** @var string[] */
