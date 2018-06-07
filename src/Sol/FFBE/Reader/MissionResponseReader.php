@@ -13,6 +13,7 @@
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Helper\Strings;
     use Solaris\FFBE\Mst\AbilitySkillMst;
+    use Solaris\FFBE\Mst\MonsterSkillMst;
     use Solaris\FFBE\Mst\MetaMstList;
     use Solaris\FFBE\Mst\MonsterSkillMstList;
     use Solaris\FFBE\Mst\SkillMstList;
@@ -50,9 +51,9 @@
             $this->isFake         = $isFake;
 
             // register monster skills
-            $mskills = new MonsterSkillMstList();
-            $mskills->readFile();
-            $skills->addList($mskills);
+            $this->monster_skill_list = new MonsterSkillMstList();
+            $this->monster_skill_list->readFile();
+            $skills->addList($this->monster_skill_list);
 
             $this->related_skills = [];
         }
@@ -160,7 +161,7 @@
             echo "###\n";
 
             foreach ($related_skills as $skill_id) {
-                /** @var AbilitySkillMst $mst */
+                /** @var MonsterSkillMst() $mst */
                 $mst = $this->skill_mst_list->getEntry($skill_id);
                 if ($mst == null)
                     continue;
@@ -169,7 +170,7 @@
                     'id'          => $skill_id,
                     'name'        => $mst->getName(),
                     //
-                    'effects'     => SkillFormatter::formatEffects($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $mst->attack_type,
@@ -209,7 +210,7 @@
                     'id'          => $id,
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
-                    'effects'     => SkillFormatter::formatEffects($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'] ?? 99,
@@ -218,8 +219,7 @@
             }
 
             foreach ($this->monster_passives as $id => $passive)
-                foreach ($passive['effects'] as $effect)
-                    if (preg_match("~\((\d+)\)~", $effect, $match))
+                    if (preg_match("~\((\d+)\)~", $passive['effects'], $match))
                         $this->related_skills[$id][] = $match[1];
         }
 
@@ -284,9 +284,10 @@
                     MstKey::EFFECT_PARAM => $row['effect_param'],
                 ];
 
-                $mst              = new AbilitySkillMst();
+                $mst              = new MonsterSkillMst();
                 $mst->id          = $id;
-                $mst->attack_type = $row['attack_type'];
+                $mst->attack_type = (int)$row['attack_type'];
+                $mst->execute_type = (int)$row['execute_type'];
                 $mst->elements    = GameHelper::readElement($row['element_inflict'], true);
                 $mst->effects     = SkillMstList::parseEffects($_row, true);
 
@@ -294,7 +295,7 @@
                     'id'          => $id,
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
-                    'effects'     => SkillFormatter::formatEffects($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'],
@@ -460,9 +461,8 @@
          */
         protected function formatSkill($skill) {
             $name        = $skill['name'];
-            $effects     = join("\n#  ", $skill['effects']);
-            $effects     = str_replace("\n ", "\n#", $effects);
-            $effects     = str_replace("\n\t", "\n#\t", $effects);
+            $effects     = $skill['effects'];
+            $effects     = str_replace("\n", "\n#  ", $effects);
             $attack_type = $skill['attack_type'] == 99
                 ? 'Passive'
                 : GameHelper::ATTACK_TYPE[$skill['attack_type']];

@@ -186,7 +186,7 @@
 
                                 else {
                                     $skill   = $skills[$skill_id];
-                                    $effects = implode(', ', $skill['effects']);
+                                    $effects = $skill['effects'];
                                     $effects = str_replace("\n", " ", $effects);
 
                                     $note = "# {$skill['name']} ({$skill_id}): {$effects}";
