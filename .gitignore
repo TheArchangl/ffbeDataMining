@@ -5,6 +5,7 @@ dat_raw/
 data/
 etc/
 src/Solaris/
+bin/json.json
 
 
 ### Windows

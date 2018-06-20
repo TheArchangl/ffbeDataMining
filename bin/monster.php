@@ -7,29 +7,22 @@
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\Mst\MonsterSkillMstList;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
+    require_once "../../ffbe-discord/tmp/init_strings.php";
 
-    $files = getFileList();
 
-    $rows = GameFile::loadMst('F_MONSTER_DICTIONARY_MST'); // compendium
-    $rows =  GameFile::loadMst('hc8Ham29'); // compendium
+    $mskills = new MonsterSkillMstList();
+    $mskills->readFile();
+
+    $meta = new \Solaris\FFBE\Mst\MetaMstList();
+    $meta->addList($skills);
+    $meta->addList($mskills);
 
     $entries = [];
-    foreach ($rows as $k => $row) {
-        $id = $row['monster_id'] ?? -1;
-        if ($id < 0)
-            continue;
+    foreach ($mskills->getEntries() as $skill)
+        $entries[] = sprintf("[%d] %40s: %s", $skill->id, $skill->getName(), \Solaris\Formatter\SkillFormatter::format($skill, $meta, "; "));
 
-        $row['name'] = Strings::getString('MST_MONSTERDICTIONARY_NAME', $id);
-
-//        $games     = readIntArray($row['game_id']); // title?
-//        $games     = array_map(function ($val) { return Sol\FFBE\Strings::getString('MST_GAME_TITLE_NAME', $val, 0); }, $games);
-//        $row['games?'] = $games;
-
-        $entries[] = $row;
-    }
-
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/analyze.json", toJSON(arrayGroupValues($entries), false));
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monsters.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monster_skills.txt", join("\n", $entries));
