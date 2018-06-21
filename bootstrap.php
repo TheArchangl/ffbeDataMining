@@ -46,9 +46,9 @@
     GameFile::setRegion($region);
 
     $container = new \Pimple\Container();
-
     $container['region'] = $region;
 
+    // fix Skills
     $container[SkillMstList::class] = function () use ($region) {
         $ability_mst    = new \Solaris\FFBE\Mst\AbilityMstList();
         $magic_mst      = new \Solaris\FFBE\Mst\MagicMstList();

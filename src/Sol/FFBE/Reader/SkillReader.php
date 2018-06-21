@@ -264,7 +264,7 @@
             $reqs = GameHelper::readParameters($string, '@');
             switch ($reqs[0]) {
                 case 1:
-                    return ['SEX', (int)$reqs[1]];
+                    return ['SEX', (int)($reqs[1] ?? 0)];
 
                 case 2:
                     return ['UNIT_ID', (int)$reqs[1]];
