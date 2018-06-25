@@ -9,6 +9,7 @@
     use Solaris\FFBE\Helper\Strings;
 
     require_once "../bootstrap.php";
+    require_once "../../ffbe-discord/tmp/init_strings.php";
 
     $se_id = '760';
     $region = 'gl';
@@ -88,7 +89,7 @@
                 foreach ($entries as $monster_parts)
                     foreach ($monster_parts as $monster_part_num => $loot) {
                         $name = Strings::getString('MST_MONSTER_NAME', $monster_id);
-                        echo "\n\t\t- {$monster_id}: {$name}";
+                        echo "\n\t\t- {$monster_id}.{$monster_part_num}: {$name}";
 
                         $loot = array_filter($loot);
                         if (empty($loot))
