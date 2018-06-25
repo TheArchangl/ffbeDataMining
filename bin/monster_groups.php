@@ -75,7 +75,8 @@
 
         // read loot
         foreach ($data['MonsterPartsMst'] as $entry) {
-            $id = $entry['monster_unit_id'];
+            $id   = $entry['monster_unit_id'];
+            $part = $entry['monster_parts_num'];
 
             $entry = [
                 'name'         => Strings::getString('MST_MONSTER_NAME', $id) ?? $entry['name'],
@@ -89,10 +90,12 @@
                 'drop_gil'     => $entry["gil"],
             ];
 
-            if (isset($monsters[$id]))
-                assert($monsters[$id] == $entry);
+            if (isset($monsters[$id][$part]) && $monsters[$id][$part] != $entry) {
+                var_dump(['old' => $monsters[$id][$part], 'new' => $entry]);
+                die();
+            }
 
-            $monsters[$id] = $entry;
+            $monsters[$id][$part] = $entry;
         }
 
         // wavebattle
@@ -109,7 +112,7 @@
             if (isset($waves[$wave_num]))
                 assert($waves[$wave_num] == $phase['weight']);
             else
-                $waves[$wave_num] = (int)$phase['weight'];
+                $waves[$wave_num] = (int) $phase['weight'];
         }
 
         // exploration
@@ -160,8 +163,8 @@
                 foreach ($battle_groups[$group_id] as $monster_id) {
                     // $loot         = $monsters[$monster_id] ?? [];
                     // $loot         = printTable($loot, true);
-
-                    print "            ($monster_id) {$monsters[$monster_id]['name']}\n";
+                    foreach ($monsters[$monster_id] as $part => $monster)
+                        print "            ($monster_id.{$part}) {$monster['name']}\n";
                 }
             }
 
@@ -171,45 +174,46 @@
     }
 
     print "# Monsters\n";
-    foreach ($monsters as $monster_id => $loot_tables) {
-        $monster_name = Strings::getString('MST_MONSTER_NAME', $monster_id);
-        print "    ({$monster_id}) {$monster_name}\n";
-        print printTable($loot_tables, false);
-        print "\n";
-    }
-
-    function parseTable($string) {
-        if (empty($string))
-            return [];
-
-        $entries = explode(',', $string);
-
-        $array = [];
-        foreach ($entries as $val) {
-            [$type, $id, $a, $b] = explode(':', $val);
-
-            $table = \Solaris\FFBE\GameHelper::TEXT_TYPE[$type];
-            $name  = \Solaris\FFBE\Helper\Strings::getString($table, $id)
-                ?? "{$type}:{$id}";
-            $val   = "{$name}-{$a}-{$b}";
-
-            $array[] = $val;
+    foreach ($monsters as $monster_id => $monster)
+        foreach ($monster as $part => $loot_tables) {
+            $monster_name = Strings::getString('MST_MONSTER_NAME', $monster_id);
+            print "    ({$monster_id}.{$part}) {$monster_name}\n";
+            print printTable($loot_tables, false);
+            print "\n";
         }
 
-        return $array;
-    }
+        function parseTable($string) {
+            if (empty($string))
+                return [];
 
-    function printTable($loot) {
-        $loot = array_filter($loot);
+            $entries = explode(',', $string);
 
-        $string = '';
-        foreach ($loot as $table => $items) {
-            $string .= vsprintf("        %12s   %s%s", [
-                $table,
-                is_array($items) ? implode(', ', $items) : $items,
-                "\n",
-            ]);
+            $array = [];
+            foreach ($entries as $val) {
+                [$type, $id, $a, $b] = explode(':', $val);
+
+                $table = \Solaris\FFBE\GameHelper::TEXT_TYPE[$type];
+                $name  = \Solaris\FFBE\Helper\Strings::getString($table, $id)
+                    ?? "{$type}:{$id}";
+                $val   = "{$name}-{$a}-{$b}";
+
+                $array[] = $val;
+            }
+
+            return $array;
         }
 
-        return $string;
-    }
+        function printTable($loot) {
+            $loot = array_filter($loot);
+
+            $string = '';
+            foreach ($loot as $table => $items) {
+                $string .= vsprintf("        %12s   %s%s", [
+                    $table,
+                    is_array($items) ? implode(', ', $items) : $items,
+                    "\n",
+                ]);
+            }
+
+            return $string;
+        }
