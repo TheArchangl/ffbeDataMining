@@ -17,7 +17,7 @@
     const DATA_ENCODED_DIR = __DIR__ . "/dat_enc/";
     const DATA_DECODED_DIR = __DIR__ . "/dat_raw/";
     const DATA_OUTPUT_DIR  = __DIR__ . "/data/";
-    const CLIENT_DIR       = 'C:\Arbeit\FFBE\client\\';
+    const CLIENT_DIR       = 'C:\Users\aEnigma\Desktop\client\\';
 
     require_once __DIR__ . "/vendor/autoload.php";
 

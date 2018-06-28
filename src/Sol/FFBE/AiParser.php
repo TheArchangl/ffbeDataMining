@@ -119,7 +119,9 @@
 
                         case 'flg2_on':
                         case 'flg2_off':
-                            $var_types[$cond_value] = 'global';
+                        $var_types[$cond_value] = ($cond_value > 10)
+                            ? 'volatile'
+                            : 'flag';
                             break;
                     }
             }
@@ -224,7 +226,7 @@
                                 else {
                                     $skill   = $skills[$skill_id];
                                     $effects = $skill['effects'];
-                                    $effects = str_replace("\n", " ", $effects);
+                                    $effects = str_replace("\n", ", ", $effects);
 
                                     $note = "# {$skill['name']} ({$skill_id}): {$effects}";
                                 }
@@ -329,13 +331,14 @@
                     return "uses() < {$value}";
 
                 case 'flg_on':
-                case 'flg2_on':
                     return "{$letters[$value]} == True";
-                    break;
+                case 'flg2_on':
+                    return "{$letters[$value]}* == True";
 
                 case 'flg_off':
-                case 'flg2_off':
                     return "{$letters[$value]} == False";
+                case 'flg2_off':
+                    return "{$letters[$value]}* == False";
 
                 case 'abnormal_state':
                     $state = $value == 0
