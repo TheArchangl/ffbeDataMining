@@ -5,10 +5,14 @@
      * Time: 12:00
      */
 
+    require_once dirname(__DIR__) . "/bootstrap.php";
+
     // "update" client files
     require_once "client_update.php";
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
+    // read strings
+    if ($region == 'gl')
+        require_once "generate_strings.php";
 
     // units and beasts
     require_once "units.php";

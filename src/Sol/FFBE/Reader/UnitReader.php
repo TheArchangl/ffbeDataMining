@@ -8,7 +8,6 @@
     namespace Sol\FFBE\Reader;
 
     use Sol\FFBE\GameFile;
-    use Sol\FFBE\MstList\SkillMstList;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
 
@@ -76,8 +75,8 @@
          * @param array $row
          */
         public function readUnitRow(array $row) {
-            $unit_id     = (int)$row['unit_id'];
-            $unit_evo_id = (int)$row['unit_evo_id'];
+            $unit_id     = (int) $row['unit_id'];
+            $unit_evo_id = (int) $row['unit_evo_id'];
 
             // add evo to mapping
             if (!array_key_exists($unit_id, $this->units))
@@ -88,7 +87,7 @@
                 // new evo
                 $unit = $this->units[$unit_id];
 
-            $unit['rarity_max']            = (int)$row['rarity'];
+            $unit['rarity_max']            = (int) $row['rarity'];
             $unit_evo                      = $this->readEvoEntry($row);
             $this->unit_map[$unit_evo_id]  = $unit_id;
             $unit['entries'][$unit_evo_id] = $unit_evo;
@@ -111,8 +110,8 @@
          * @return array
          */
         protected function readUnitEntry(array $row): array {
-            $unit_evo_id = (int)$row['unit_evo_id'];
-            $rarity      = (int)$row['rarity'];
+            $unit_evo_id = (int) $row['unit_evo_id'];
+            $rarity      = (int) $row['rarity'];
             $names       = $this->getLocalization($row['name'], 'MST_UNIT_NAME', $unit_evo_id);
 
             $arr = [
@@ -122,18 +121,18 @@
                 'name'  => $names[0] ?? $row['name'],
                 'names' => $names,
 
-                'game_id' => (int)$row['game_id'],
-                'game'    => Strings::getString('MST_GAME_TITLE_NAME', $row['game_id']),
+                'game_id' => (int) $row['game_id'],
+                'game'    => null,
 
-                'job_id' => (int)$row['job_id'],
-                'job'    => Strings::getString('MST_JOB_NAME', $row['job_id']),
+                'job_id' => (int) $row['job_id'],
+                'job'    => null,
 
-                'sex_id' => (int)$row['sex'],
+                'sex_id' => (int) $row['sex'],
                 'sex'    => GameHelper::UNIT_SEX[$row['sex']],
 
-                'tribe_id' => (int)$row['tribe_id'],
+                'tribe_id' => (int) $row['tribe_id'],
 
-                'is_summonable' => (bool)$row['is_summonable'],
+                'is_summonable' => (bool) $row['is_summonable'],
 
                 'TMR'  => readTM($row['trustmaster']),
                 'sTMR' => null,
@@ -156,6 +155,9 @@
 
                 $arr['sTMR'] = readTM($row['supertrust']);
             } else {
+                $arr['game'] = Strings::getString('MST_GAME_TITLE_NAME', $row['game_id']);
+                $arr['job']  = Strings::getString('MST_JOB_NAME', $row['job_id']);
+
                 unset($arr['sTMR']);
             }
 
@@ -168,30 +170,30 @@
          * @return array
          */
         protected function readEvoEntry($row) {
-            $unit_evo_id = (int)$row['unit_evo_id'];
-            $rarity      = (int)$row['rarity'];
+            $unit_evo_id = (int) $row['unit_evo_id'];
+            $rarity      = (int) $row['rarity'];
 
             // per evo
             $evo_entry = [
-                'compendium_id' => (int)$row['order_index'],
+                'compendium_id' => (int) $row['order_index'],
                 'rarity'        => $rarity,
 
-                'growth_pattern' => (int)$row['growth_pattern'], //$row['lb_cost'] / 5,
+                'growth_pattern' => (int) $row['growth_pattern'], //$row['lb_cost'] / 5,
                 'stats'          => formatStats($row),
-                'limitburst_id'  => ((int)$row['lb_id']) ?: null,
+                'limitburst_id'  => ((int) $row['lb_id']) ?: null,
 
                 'attack_count'  => 0,
                 'attack_damage' => [],
                 'attack_frames' => [],
                 'effect_frames' => [],
-                'max_lb_drop'   => (int)$row['lb_fillrate'],
-                'ability_slots' => (int)$row['ability_slots'],
+                'max_lb_drop'   => (int) $row['lb_fillrate'],
+                'ability_slots' => (int) $row['ability_slots'],
 
                 'magic_affinity'  => readIntArray($row['magic_affinity']),
                 'element_resist'  => readIntArray($row['element_resist']),
                 'status_resist'   => readIntArray($row['status_resist']),
-                'physical_resist' => (int)$row['physical_resist'],
-                'magical_resist'  => (int)$row['magical_resist'],
+                'physical_resist' => (int) $row['physical_resist'],
+                'magical_resist'  => (int) $row['magical_resist'],
                 //
                 'awakening'       => null,
                 //
@@ -223,11 +225,11 @@
          * @param $row
          */
         private function readUnitSkillRow($row) {
-            $unit_id = (int)$row['unit_id'];
+            $unit_id = (int) $row['unit_id'];
             $unit    = $this->units[$unit_id] ?? [];
 
-            $level  = (int)$row['level'];
-            $rarity = (int)max($row['rarity_min'] ?? 10, $unit['rarity_min'] ?? 10); // set rarity to min_rarity instead of 0
+            $level  = (int) $row['level'];
+            $rarity = (int) max($row['rarity_min'] ?? 10, $unit['rarity_min'] ?? 10); // set rarity to min_rarity instead of 0
 
             $spells    = array_filter(explode(',', $row['magic_ids']));
             $abilities = array_filter(explode(',', $row['ability_ids']));
@@ -237,10 +239,10 @@
                 $skills = [];
 
             foreach ($abilities as $skill_id)
-                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int)$skill_id];
+                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id];
 
             foreach ($spells as $skill_id)
-                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int)$skill_id];
+                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id];
         }
 
         /**
@@ -278,7 +280,7 @@
             }
 
             $unit_evo['awakening'] = [
-                'gil'       => (int)$row['gil'],
+                'gil'       => (int) $row['gil'],
                 'materials' => $mats,
             ];
         }

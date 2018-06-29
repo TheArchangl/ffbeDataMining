@@ -189,6 +189,7 @@
                                 else {
                                     $skill   = $skills[$skill_id];
                                     $effects = $skill['effects'];
+                                    $effects = str_replace("\n", ", ", $effects);
 
                                     $note = "# {$skill['name']} ({$skill_id}): {$effects}";
                                 }
@@ -244,38 +245,38 @@
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} == " . $value - 1;
+                    return "{$letters[$var_num]} == " . ($value - 1);
 
                 case 'flg_cntup_over':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} > " . $value - 1;
+                    return "{$letters[$var_num]} > " . ($value - 1);
 
                 case 'flg_cntup_under':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} < " . $value - 1;
+                    return "{$letters[$var_num]} < " . ($value - 1);
 
                 //
                 case 'flg_timer_act':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} == " . $value - 1;
+                    return "{$letters[$var_num]} == " . ($value - 1);
 
                 case 'flg_timer_over':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} > " . $value - 1;
+                    return "{$letters[$var_num]} > " . ($value - 1);
 
                 case 'flg_timer_under':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} < " . $value - 1;
+                    return "{$letters[$var_num]} < " . ($value - 1);
 
                 case 'actbetween':
                     return "isTurnMod($value)";

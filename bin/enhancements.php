@@ -13,19 +13,18 @@
 
     $entries = [];
     foreach (GameFile::loadMst('SublimationMstList') as $row) {
-        $enhancement_id = (int)$row['enhancement_id'];
+        $enhancement_id = (int) $row['enhancement_id'];
         // $names    = Strings::getStrings('MST_BEAST_NAME', $enhancement_id);
 
         if ($region == 'jp') {
             $names        = [$container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($row['skill_id_old'])->name];
             $descriptions = [$row['47s39AqP']];
         } else {
-            $names = Strings::getStrings('MST_MAGIC_NAME', $row['skill_id_old'])
-                ?? Strings::getStrings('MST_ABILITY_NAME', $row['skill_id_old'])
-                ?? [];
+            $names = Strings::hasStrings('MST_MAGIC_NAME', $row['skill_id_old'])
+                ? Strings::getStrings('MST_MAGIC_NAME', $row['skill_id_old'])
+                : Strings::getStrings('MST_ABILITY_NAME', $row['skill_id_old']);
 
-            $descriptions = Strings::getStrings('MST_SUBLIMATION_AFTER_EXPLAIN', $enhancement_id)
-                ?? [];
+            $descriptions = Strings::getStrings('MST_SUBLIMATION_AFTER_EXPLAIN', $enhancement_id);
         }
 
         $descriptions = array_map(
@@ -45,11 +44,11 @@
 
         $entries[$enhancement_id] = [
             'name'         => $names[0],
-            'skill_id_old' => (int)$row['skill_id_old'],
-            'skill_id_new' => (int)$row['skill_id_new'],
+            'skill_id_old' => (int) $row['skill_id_old'],
+            'skill_id_new' => (int) $row['skill_id_new'],
 
             "cost" => [
-                "gil"       => (int)$row['gil'],
+                "gil"       => (int) $row['gil'],
                 "materials" => $mats,
             ],
 

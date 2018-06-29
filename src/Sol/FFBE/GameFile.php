@@ -1245,7 +1245,12 @@
             if (!$input instanceof GameFile)
                 throw new \LogicException("Invalid file name or id '{$input}'.");
 
-            $file = DATA_DECODED_DIR . "/" . static::$region . "/{$input->getName()}.txt";
+            if (substr($input->getName(), 0, 6) == 'F_TEXT')
+                $region = 'gl';
+            else
+                $region = static::$region;
+
+            $file = DATA_DECODED_DIR . "/" . $region . "/{$input->getName()}.txt";
 
             if (!file_exists($file))
                 throw new \LogicException("File {$file} for {$input->name} missing!");

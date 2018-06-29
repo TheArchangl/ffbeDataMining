@@ -6,7 +6,6 @@
      */
 
     require_once "keys.php";
-    require_once "Strings.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
     $key  = 'CVERk9KN';

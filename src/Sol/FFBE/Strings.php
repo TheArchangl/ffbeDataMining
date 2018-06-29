@@ -2,222 +2,215 @@
 
     namespace Sol\FFBE;
 
-    use Exception;
-
     /**
      * User: aEnigma
      * Date: 24.01.2017
      * Time: 19:53
      */
-    class Strings {
-        const LANGUAGES    = 6;
-        const FILE_MAP     = [
-            'MST_ABILITY_LONGDESCRIPTION'               => 'uxMPAs4y',
-            'MST_ABILITY_NAME'                          => 'eSB5Ry3E',
-            'MST_ABILITY_PARAM_MSG'                     => '3oM745kA',
-            'MST_ABILITY_SHORTDESCRIPTION'              => '8GJBzdQV',
-            'MST_ARCHIVE_NAME_TOTAL_LOGIN'              => 'QR3zeiJr',
-            'MST_AREA_NAME'                             => '4qiOcmtJ',
-            'MST_AWARD_DESCRIPTION'                     => 'TlrlvFx5',
-            'MST_AWARD_NAME'                            => 'mGPBqPdv',
-            'MST_AWARD_TYPE'                            => 'soohaWOo',
-            'MST_BEASTSKILL_DESCRIPTION'                => 'Yjq14lAB',
-            'MST_BEASTSKILL_NAME'                       => 'k51drhZ6',
-            'MST_BEAST_NAME'                            => '148O76GI',
-            'MST_CAPTURE_INFO'                          => 'Ir2B1EBL',
-            'MST_CHALLENGE_NAME'                        => '4bQbA2FH',
-            'MST_CHARACTER_NAME'                        => 'JIqrNzje',
-            'MST_CLSM_GRADE_NAME'                       => 'Y2rngIF3',
-            'MST_CLSM_MONSTER_GROUP_NAME'               => 'q4z5D08C',
-            'MST_DAILY_QUEST_COMPLETE'                  => 'vxztyzHJ',
-            'MST_DAILY_QUEST_DES'                       => 'W4525rcx',
-            'MST_DAILY_QUEST_DETAIL'                    => 'gCfFcx75',
-            'MST_DAILY_QUEST_NAME'                      => 'FBBD8vv6',
-            'MST_DIAMOND_NAME'                          => 'mcQeT7mq',
-            'MST_DUNGEONS_NAME'                         => 'AyVqkz2B', // GPNXLUJP
-            'MST_EQUIP_ITEM_LONGDESCRIPTION'            => 'CD4giPVu',
-            'MST_EQUIP_ITEM_NAME'                       => 'E0NdslwL',
-            'MST_EQUIP_ITEM_SHORTDESCRIPTION'           => 'Nao9HYWk',
-            'MST_EXCHANGESHOP_ITEM_NAME'                => 'r1ZLxyyg',
-            'MST_GACHA_NAME'                            => 'ZJz5QwAy',
-            'MST_GAME_TITLE_NAME'                       => '3CzC5zn7',
-            'MST_IMPORTANT_ITEM_LONGDESCRIPTION'        => 'aJ4tvgSq',
-            'MST_IMPORTANT_ITEM_NAME'                   => 'TIKwbf3D',
-            'MST_IMPORTANT_ITEM_SHOP'                   => 'JO7UqqJ6',
-            'MST_IMPORTANT_ITEM_SHORTDESCRIPTION'       => 'YBqAUJt1',
-            'MST_ITEM_LONGDESCRIPTION'                  => '9NCIDltW',
-            'MST_ITEM_NAME'                             => 'VhkhtvDn',
-            'MST_ITEM_SHORTDESCRIPTION'                 => 'IAPS1jOu',
-            'MST_JOB_NAME'                              => 'yUkwbFyc',
-            'MST_LAND_NAME'                             => 'sKLZVYWQ',
-            'MST_LIMITBURST_DESCRIPTION'                => 'EUsG7rlQ',
-            'MST_LIMITBURST_NAME'                       => 'XBS8hLZD',
-            'MST_MAGIC_LONGDESCRIPTION'                 => 'Jcavjyxo',
-            'MST_MAGIC_NAME'                            => '1ZqISaBp',
-            'MST_MAGIC_SHORTDESCRIPTION'                => 'Hs9KVVnj',
-            'MST_MAP_OBJECT_NAME'                       => '15KaBQci',
-            'MST_MATERIA_LONGDESCRIPTION'               => 'QEbXmDTD',
-            'MST_MATERIA_NAME'                          => '2Eg5s20D',
-            'MST_MATERIA_SHORTDESCRIPTION'              => '8g18k8jD',
-            'MST_MISSION_NAME'                          => 'pa6vblsG',
-            'MST_MONSTERDICTIONARY_LONGDESCRIPTION'     => 'xe6RH45K',
-            'MST_MONSTERDICTIONARY_NAME'                => 'F1VQsGpG',
-            'MST_MONSTERDICTIONARY_SHORTDESCRIPTION'    => 'zf7USTwU',
-            'MST_MONSTERPARTDICTIONARY_NAME'            => 'P4c5fq2t',
-            'MST_MONSTER_NAME'                          => '0xkPiwVI',
-            'MST_MONSTER_SKILL_NAME'                    => 'F1z92dkt',
-            'MST_MONSTER_SKILL_SET_NAME'                => '76oKZdNU',
-            'MST_NPC_NAME'                              => 'A55coosK',
-            'MST_PICTURE_STORY_NAME'                    => 'j525zYCH',
-            'MST_QUESTSUB_GOAL_DETAIL'                  => 'vb5Nom5d',
-            'MST_QUESTSUB_NAME'                         => 'uuU68I2u',
-            'MST_QUESTSUB_STORY'                        => 'fULaqIeB',
-            'MST_QUESTSUB_TARGET_PARAM'                 => 'Cw3B65ql',
-            'MST_QUEST_NAME'                            => 'NMwfx1lf',
-            'MST_RB_ABILITY_GROUP_DES'                  => '3sxyv1w9',
-            'MST_RB_ABILITY_GROUP_NAME'                 => '69zUY4Zb',
-            'MST_RB_BONUS_RULE_DES'                     => '6YYynT87',
-            'MST_RB_BONUS_RULE_NAME'                    => '10Ew2Rth',
-            'MST_RB_FORBIDDEN_INFO_DES'                 => 'M6bRb5Eg',
-            'MST_RB_FORBIDDEN_INFO_NAME'                => 'DaNvFWp7',
-            'MST_RB_LS_NAME'                            => '12qZAZuh',
-            'MST_RB_LS_REWARD_DES'                      => 'SGAZ9JAc',
-            'MST_RB_LS_REWARD_TITLE'                    => 'x1vjjR7b',
-            'MST_RB_SS_BONUS_INFO_NAME'                 => '690B2rHu',
-            'MST_RB_SS_FORBIDDEN_INFO_NAME'             => '8Vi3mrDS',
-            'MST_RB_SS_NAME'                            => 'xt6O7WKT',
-            'MST_RB_SS_REWARD_DES'                      => 'vTrf5ALU',
-            'MST_RB_SS_REWARD_TITLE'                    => 'UXR63E61',
-            'MST_RECIPEBOOK_NAME'                       => 'tFnHkR8G',
-            'MST_RECIPE_EXPLAINLONG'                    => 'F_TEXT_RECIPE_EXPLAIN_LONG',
-            'MST_SCENARIOBATTLE_NAME'                   => 'TGxop4tW',
-            'MST_SEASON_EVENT_ABILITY_TYPE_DESCRIPTION' => 'q81b55dv',
-            'MST_SEASON_EVENT_ABILITY_TYPE_NAME'        => 'xT67VZAS',
-            'MST_SEASON_EVENT_DESCRIPTION'              => 'mKbhB8ai',
-            'MST_SEASON_EVENT_NAME'                     => 'FxaCYmHE',
-            'MST_SHOP_NAME'                             => 'NYz5Oxm4',
-            'MST_STORYSUB_NAME'                         => 'hiiVWxXJ',
-            'MST_STORY_NAME'                            => 'fKGHnuPm',
-            'MST_TELEPO_NAME'                           => 'ca5XNnWD',
-            'MST_TICKER'                                => 'RUPcXt7J',
-            'MST_TOWNSTORE_COMMENT'                     => 'SZXTrTgq',
-            'MST_TOWNSTORE_NAME'                        => 'h23JuUGF',
-            'MST_TOWN_DESCRIPTION'                      => 'KLoYS0Tj',
-            'MST_TOWN_NAME'                             => 'N12vEZpN',
-            'MST_TOWN_STORE_OWNER_NAME'                 => 'KFL34pbm',
-            'MST_TRIBE_NAME'                            => 'Z6OfsPv9',
-            'MST_TROPHY_EXPLAIN'                        => 'pNeHXqpJ',
-            'MST_TROPHY_METER_SERIF'                    => '7BfBBf9E',
-            'MST_UNIT_EXPLAIN_AFFINITY'                 => 'Zfw0jmyn',
-            'MST_UNIT_EXPLAIN_DESCRIPTION'              => 'w6U2ntyZ',
-            'MST_UNIT_EXPLAIN_EVOLUTION'                => '7tfppWVS',
-            'MST_UNIT_EXPLAIN_FUSION'                   => 'TpbDECdR',
-            'MST_UNIT_EXPLAIN_SHOP'                     => '3uEWl5CV',
-            'MST_UNIT_EXPLAIN_SUMMON'                   => 'hWE8dJMC',
-            'MST_UNIT_NAME'                             => 'sZE3Lhgj',
-            'MST_SUBLIMATION_AFTER_EXPLAIN'             => 'JF89DHPE',
-            'MST_EXPN_NAME'                             => 'N1FxjkHa',
-            'MST_EXPN_DESC'                             => 'N1FxjkHa',
-            'MST_RULE_COND'                             => 'a6kiwI22',
-        ];
-        const PLACEHOLDERS = ['NA', 'N/A', '<NA>', 'collab', 'collabo', '<temp>'];
-
-        /** @var bool[] */
-        protected static $loaded = [
-            'CURRENCY_NAME' => true,
-        ];
-
-        /** @var string[][] */
-        protected static $strings = [
-            'CURRENCY_NAME_30'   => ['Gil'],
-            'CURRENCY_NAME_50'   => ['Lapis'],
-            'CURRENCY_NAME_51'   => ['Friend Points'],
-            'CURRENCY_NAME_9990' => ['Energy'],
+    class Strings extends \Solaris\FFBE\Helper\Strings {
+        const LANGUAGES = 6;
+        const FILE_MAP  = [
+            'BAD_STATE_DESC'                            => ['F_TEXT_TEXT_EN'],
+            'BUFF_DESC'                                 => ['F_TEXT_TEXT_EN'],
+            'CASH_BUNDLE_PACK_DESC'                     => ['F_TEXT_TEXT_EN'],
+            'CASH_BUNDLE_PACK_TITLE'                    => ['F_TEXT_TEXT_EN'],
+            'CHALLENGE_COND'                            => ['F_TEXT_TEXT_EN'],
+            'EXPLAIN_REWARD'                            => ['F_TEXT_TEXT_EN'],
+            'LOGIN_BONUS_SPECIAL_MAIL_MSG'              => ['F_TEXT_TEXT_EN'],
+            'LOGIN_BONUS_SPECIAL_MAIL_TITLE'            => ['F_TEXT_TEXT_EN'],
+            'LPS_SUMALLY_COMPLETE_REWARD_MST_MESSAGE'   => ['F_TEXT_TEXT_EN'],
+            'LPS_SUMALLY_REWARD_MST_MESSAGE'            => ['F_TEXT_TEXT_EN'],
+            'LPS_SUMALLY_REWARD_MST_MESSAGE_BA'         => ['F_TEXT_TEXT_EN'],
+            'MST_ABILITY_LONGDESCRIPTION'               => ['F_TEXT_ABILITY_EXPLAIN_LONG'],
+            'MST_ABILITY_NAME'                          => ['F_TEXT_ABILITY_NAME'],
+            'MST_ABILITY_PARAM_MSG'                     => ['F_TEXT_ABILITY_PARAM_MSG'],
+            'MST_ABILITY_SHORTDESCRIPTION'              => ['F_TEXT_ABILITY_EXPLAIN_SHORT'],
+            'MST_AREA_NAME'                             => ['F_TEXT_AREA_NAME'],
+            'MST_AWARD_DESCRIPTION'                     => ['F_TEXT_AWARD_EXPLAIN'],
+            'MST_AWARD_NAME'                            => ['F_TEXT_AWARD_NAME'],
+            'MST_AWARD_TYPE'                            => ['F_TEXT_AWARD_TYPE'],
+            'MST_BEASTSKILL_DESCRIPTION'                => ['F_TEXT_BEAST_SKILL_DES'],
+            'MST_BEASTSKILL_NAME'                       => ['F_TEXT_BEAST_SKILL_NAME'],
+            'MST_BEAST_NAME'                            => ['F_TEXT_BEAST_NAME'],
+            'MST_BUNDLE_DESC'                           => ['F_TEXT_BUNDLE'],
+            'MST_BUNDLE_MESSAGE'                        => ['F_TEXT_BUNDLE'],
+            'MST_BUNDLE_NAME'                           => ['F_TEXT_BUNDLE'],
+            'MST_CAPTURE_INFO'                          => ['F_TEXT_CAPTURE_INFO'],
+            'MST_CHALLENGE_NAME'                        => ['F_TEXT_CHALLENGE_NAME'],
+            'MST_CHARACTER_NAME'                        => ['F_TEXT_CHARACTER_NAME'],
+            'MST_CLSM_MONSTER_GROUP_NAME'               => ['F_TEXT_COLOSSEUM_MONSTER_GROUP_NAME'],
+            'MST_DAILY_QUEST_DES'                       => ['F_TEXT_DAILY_QUEST_DES'],
+            'MST_DAILY_QUEST_DETAIL'                    => ['F_TEXT_DAILY_QUEST_DETAIL'],
+            'MST_DAILY_QUEST_NAME'                      => ['F_TEXT_DAILY_QUEST_NAME'],
+            'MST_DIAMOND_DESC'                          => ['F_TEXT_DIAMOND_NAME'],
+            'MST_DIAMOND_NAME'                          => ['F_TEXT_DIAMOND_NAME'],
+            'MST_DUNGEONS_NAME'                         => ['F_TEXT_DUNGEON_NAME'],
+            'MST_EQUIP_ITEM_LONGDESCRIPTION'            => ['F_TEXT_ITEM_EQUIP_LONG'],
+            'MST_EQUIP_ITEM_NAME'                       => ['F_TEXT_ITEM_EQUIP_NAME'],
+            'MST_EQUIP_ITEM_SHORTDESCRIPTION'           => ['F_TEXT_ITEM_EQUIP_SHORT'],
+            'MST_EXCHANGESHOP_ITEM_NAME'                => ['F_TEXT_EXCHANGE_SHOP_ITEM'],
+            'MST_EXPN_DESC'                             => ['F_TEXT_EXPN_STORY'],
+            'MST_EXPN_NAME'                             => ['F_TEXT_EXPN_STORY'],
+            'MST_GACHA_DETAIL_NAME'                     => ['F_TEXT_GACHA'],
+            'MST_GACHA_EXPLAIN_LONG'                    => ['F_TEXT_GACHA'],
+            'MST_GACHA_EXPLAIN_SHORT'                   => ['F_TEXT_GACHA'],
+            'MST_GACHA_NAME'                            => ['F_TEXT_GACHA'],
+            'MST_GAME_TITLE_NAME'                       => ['F_TEXT_GAME_TITLE_NAME'],
+            'MST_IMPORTANT_ITEM_LONGDESCRIPTION'        => ['F_TEXT_IMPORTANT_ITEM_EXPLAIN_LONG'],
+            'MST_IMPORTANT_ITEM_NAME'                   => ['F_TEXT_IMPORTANT_ITEM_NAME'],
+            'MST_IMPORTANT_ITEM_SHOP'                   => ['F_TEXT_IMPORTANT_ITEM_SHOP'],
+            'MST_IMPORTANT_ITEM_SHORTDESCRIPTION'       => ['F_TEXT_IMPORTANT_ITEM_EXPLAIN_SHORT'],
+            'MST_ITEM_LONGDESCRIPTION'                  => ['F_TEXT_ITEM_EXPLAIN_LONG'],
+            'MST_ITEM_NAME'                             => ['F_TEXT_ITEM_NAME'],
+            'MST_ITEM_SHORTDESCRIPTION'                 => ['F_TEXT_ITEM_EXPLAIN_SHORT'],
+            'MST_JOB_NAME'                              => ['F_TEXT_JOB_NAME'],
+            'MST_LAND_NAME'                             => ['F_TEXT_LAND_NAME'],
+            'MST_LIMITBURST_DESCRIPTION'                => ['F_TEXT_LIMIT_BURST_DES'],
+            'MST_LIMITBURST_NAME'                       => ['F_TEXT_LIMIT_BURST_NAME'],
+            'MST_MAGIC_LONGDESCRIPTION'                 => ['F_TEXT_MAGIC_EXPLAIN_LONG'],
+            'MST_MAGIC_NAME'                            => ['F_TEXT_MAGIC_NAME'],
+            'MST_MAGIC_SHORTDESCRIPTION'                => ['F_TEXT_MAGIC_EXPLAIN_SHORT'],
+            'MST_MATERIA_LONGDESCRIPTION'               => ['F_TEXT_MATERIA_EXPLAIN_LONG'],
+            'MST_MATERIA_NAME'                          => ['F_TEXT_MATERIA_NAME'],
+            'MST_MATERIA_SHORTDESCRIPTION'              => ['F_TEXT_MATERIA_EXPLAIN_SHORT'],
+            'MST_MEDAL_EXCHANGE_EXPLAIN'                => ['F_TEXT_TOWN_STORE'],
+            'MST_MISSION_NAME'                          => ['F_TEXT_MISSION'],
+            'MST_MONSTERDICTIONARY_LONGDESCRIPTION'     => ['F_TEXT_MONSTER_DIC_EXPLAIN_LONG'],
+            'MST_MONSTERDICTIONARY_NAME'                => ['F_TEXT_MONSTER_DICTIONARY_NAME', 'F_TEXT_MONSTER_PART_DIC_NAME'],
+            'MST_MONSTERDICTIONARY_SHORTDESCRIPTION'    => ['F_TEXT_MONSTER_DIC_EXPLAIN_SHORT'],
+            'MST_MONSTERPARTDICTIONARY_NAME'            => ['F_TEXT_MONSTER_PART_DIC_NAME'],
+            'MST_MONSTERSKILL_PARAM_MSG'                => ['F_TEXT_ABILITY_PARAM_MSG'],
+            'MST_MONSTER_NAME'                          => ['F_TEXT_MONSTER_NAME', 'F_TEXT_TEXT_EN'],
+            'MST_MONSTER_SKILL_NAME'                    => ['F_TEXT_MONSTER_SKILL_NAME'],
+            'MST_NPC_NAME'                              => ['F_TEXT_NPC_NAME'],
+            'MST_PICTURE_STORY_NAME'                    => ['F_TEXT_PICTURE_STORY_NAME'],
+            'MST_PLAYBACK_CHAPTER_NAME'                 => ['F_TEXT_PLAYBACK'],
+            'MST_PLAYBACK_EVENT_NAME'                   => ['F_TEXT_PLAYBACK'],
+            'MST_PLAYBACK_MAP_NAME'                     => ['F_TEXT_PLAYBACK'],
+            'MST_QUESTSUB_GOAL_DETAIL'                  => ['F_TEXT_QUEST_SUB_DETAIL'],
+            'MST_QUESTSUB_NAME'                         => ['F_TEXT_QUEST_SUB_NAME'],
+            'MST_QUESTSUB_STORY'                        => ['F_TEXT_QUEST_SUB_STORY'],
+            'MST_QUESTSUB_TARGET_PARAM'                 => ['F_TEXT_QUEST_SUB_TARGET_PARAM'],
+            'MST_QUEST_NAME'                            => ['F_TEXT_QUEST'],
+            'MST_RB_ABILITY_GROUP_DES'                  => ['F_TEXT_RB_ABILITY_GROUP_DESCRIPTION'],
+            'MST_RB_ABILITY_GROUP_NAME'                 => ['F_TEXT_RB_ABILITY_GROUP_NAME'],
+            'MST_RB_FORBIDDEN_INFO_DES'                 => ['F_TEXT_RB_FORBIDDEN_INFO_DESCRIPTION'],
+            'MST_RB_FORBIDDEN_INFO_NAME'                => ['F_TEXT_RB_FORBIDDEN_INFO_NAME'],
+            'MST_RECIPEBOOK_NAME'                       => ['F_TEXT_RECIPE_BOOK_NAME'],
+            'MST_RECIPE_EXPLAINLONG'                    => ['F_TEXT_RECIPE_EXPLAIN_LONG'],
+            'MST_RULE_COND'                             => ['F_TEXT_RULE_DESCRIPTION'],
+            'MST_RULE_DESC'                             => ['F_TEXT_RULE_DESCRIPTION'],
+            'MST_SCENARIOBATTLE_NAME'                   => ['F_TEXT_SCENARIO_BATTLE'],
+            'MST_SEASON_EVENT_ABILITY_TYPE_DESCRIPTION' => ['F_TEXT_SEASON_EVENT_ABILITY_NAME'],
+            'MST_SEASON_EVENT_ABILITY_TYPE_NAME'        => ['F_TEXT_SEASON_EVENT_ABILITY_TYPE_NAME'],
+            'MST_SHOP_NAME'                             => ['F_TEXT_SHOP'],
+            'MST_SPCHALLENGE_DES'                       => ['F_TEXT_SPCHALLENGE'],
+            'MST_SPCHALLENGE_NAME'                      => ['F_TEXT_SPCHALLENGE'],
+            'MST_SPCHALLENGE_SYS_DES'                   => ['F_TEXT_SPCHALLENGE'],
+            'MST_STORYSUB_NAME'                         => ['F_TEXT_STORY_SUB'],
+            'MST_STORY_NAME'                            => ['F_TEXT_STORY_NAME'],
+            'MST_SUBLIMATION_AFTER_EXPLAIN'             => ['F_TEXT_SUBLIMATION_EXPLAIN'],
+            'MST_SUBLIMATION_BEFORE_EXPLAIN'            => ['F_TEXT_SUBLIMATION_EXPLAIN'],
+            'MST_TELEPO_NAME'                           => ['F_TEXT_TELEPO_NAME'],
+            'MST_TICKERLOG_MSGFORMAT'                   => ['F_TEXT_TICKER'],
+            'MST_TOWNSTORE_COMMENT'                     => ['F_TEXT_TOWN_STORE_COMMENT'],
+            'MST_TOWNSTORE_NAME'                        => ['F_TEXT_TOWN_STORE'],
+            'MST_TOWN_DESCRIPTION'                      => ['F_TEXT_TOWN_EXPLAIN'],
+            'MST_TOWN_NAME'                             => ['F_TEXT_TOWN_NAME'],
+            'MST_TOWN_STORE_OWNER_NAME'                 => ['F_TEXT_TOWN_STORE_OWNER_NAME'],
+            'MST_TRIBE_NAME'                            => ['F_TEXT_TRIBE'],
+            'MST_TROPHY_EXPLAIN'                        => ['F_TEXT_TROPHY_EXPLAIN'],
+            'MST_TROPHY_METER_SERIF'                    => ['F_TEXT_TROPHY_METER_SERIF'],
+            'MST_UNIT_EXPLAIN_AFFINITY'                 => ['F_TEXT_UNIT_AFFINITY'],
+            'MST_UNIT_EXPLAIN_DESCRIPTION'              => ['F_TEXT_UNIT_DESCRIPTION'],
+            'MST_UNIT_EXPLAIN_EVOLUTION'                => ['F_TEXT_UNIT_EVO'],
+            'MST_UNIT_EXPLAIN_FUSION'                   => ['F_TEXT_UNIT_FUSION'],
+            'MST_UNIT_EXPLAIN_SHOP'                     => ['F_TEXT_UNIT_EXPLAIN_SHOP'],
+            'MST_UNIT_EXPLAIN_SUMMON'                   => ['F_TEXT_UNIT_SUMMON'],
+            'MST_UNIT_NAME'                             => ['F_TEXT_UNITS_NAME'],
+            'SERVER_MSG'                                => ['F_TEXT_TEXT_EN'],
         ];
 
-        public static function getString($type, $id, $key = 0) {
-            return self::getStrings($type, $id)[$key] ?? null;
-        }
-
-        public static function getStrings($type, $id) {
-            // if (GameFile::getRegion() == 'jp')
-            //     return null;
-
-            if (static::hasBeenLoaded($type) !== true)
-                static::loadStrings($type);
-
-            $arr = static::$strings["{$type}_{$id}"] ?? null;
-            if ($arr == null)
-                return null;
-
-            $arr = array_map("trim", $arr);
-            $arr = array_filter($arr, 'strlen');
-            $arr = $arr + array_fill(0, self::LANGUAGES, null);
-            ksort($arr);
-
-            return $arr;
-        }
+        protected static $loaded = [];
 
         /**
          * Read all files in the file map
-         *
-         * @throws Exception
          */
         public static function readAll() {
-            foreach (static::FILE_MAP as $filename)
-                static::readFile($filename);
+            foreach (static::FILE_MAP as $files)
+                foreach ($files as $filename)
+                    static::readFile(GameFile::getFilePath($filename));
         }
 
         /**
-         * @param string $filename
+         * @param string $type
          *
-         * @throws Exception
+         * @return bool
          */
-        public static function readFile($filename) {
-            // $region = GameFile::getRegion();
-            $entry = GameFile::getEntry($filename);
-            if ($entry == null)
-                throw new \LogicException("{$filename} could not be resolved");
-
-            $filename = $entry->getName();
-            $file     = DATA_DECODED_DIR . "gl/{$filename}.txt";
-
-            if (!file_exists($file))
-                throw new \Exception($filename);
-
-            $data = file_get_contents($file);
-            $data = explode("\n", $data);
-
-            foreach ($data as $line) {
-                $line   = trim($line);
-                $line   = mb_convert_encoding($line, 'UTF-8', 'UTF-8');
-                $line   = explode("^", $line);
-                $id     = array_shift($line);
-                $values = array_values($line);
-
-                foreach ($values as $k => $value)
-                    if (!empty($value) && !in_array($value, self::PLACEHOLDERS))
-                        static::$strings[$id][$k] = $value;
-            }
-        }
-
-        private static function hasBeenLoaded($type) {
+        public static function hasBeenLoaded($type) {
             return static::$loaded[$type] ?? false;
         }
 
-        private static function loadStrings($type) {
-            $file = static::FILE_MAP[$type];
-            if ($file == null)
-                throw new Exception($type);
 
-            static::readFile($file);
-            static::$loaded[$type] = true;
+        /**
+         * @param string $type
+         * @param int    $id
+         *
+         * @return string[]
+         */
+        public static function getStrings($type, $id) {
+            if (static::hasBeenLoaded($type) !== true)
+                static::readTable($type);
+
+            return parent::getStrings($type, $id);
         }
 
-        public function getEntries($type = null) {
-            if ($type === null)
-                return static::$strings[$type] ?? null;
+        /**
+         * @param string $type
+         * @param int    $id
+         *
+         * @return bool
+         */
+        public static function hasStrings($type, $id) {
+            if (static::hasBeenLoaded($type) !== true)
+                static::readTable($type);
 
-            return static::$strings;
+            return parent::hasStrings($type, $id);
+        }
+
+        public static function readFile($file) {
+            static::$loaded[basename($file, '.txt')] = true;
+
+            parent::readFile($file);
+        }
+
+
+        /**
+         * @param string $type
+         *
+         * @return bool
+         */
+        public static function readTable($type) {
+            $files = static::FILE_MAP[$type] ?? [str_replace('MST_', 'F_TEXT_', $type)];
+
+            static::$loaded[$type] = true;
+
+            foreach ($files as $file) {
+                if (isset(static::$loaded[$file]))
+                    // file already loaded
+                    continue;
+
+                $path = GameFile::getFilePath($file);
+
+                static::readFile($path);
+                static::$loaded[$type] = true;
+            }
+
+            return true;
+            //            } catch (\LogicException $e) {
+            //                echo "{$e}\n\n";
+            //
+            //                return false;
+            //            }
         }
     }

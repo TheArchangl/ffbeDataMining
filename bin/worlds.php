@@ -12,9 +12,6 @@
     require_once dirname(__DIR__) . "/helpers.php";
 
     /** @noinspection PhpUnhandledExceptionInspection */
-    Strings::readFile("F_TEXT_WORLD_NAME");
-    Strings::readFile("F_TEXT_LAND_NAME");
-    Strings::readFile("F_TEXT_AREA_NAME");
 
     $entries = [];
     // WORLD
