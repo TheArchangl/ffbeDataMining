@@ -13,61 +13,22 @@
         /** @var string[] */
         const VAR_NAMES = [
             // persistant flags
-            1  => 'honey',
-            'ramen',
-            'sushi',
-            'bacon',
-            'steak',
-            'salad',
-            'fries',
-            'sugar',
-            'pizza',
-            'pasta',
+            1  => 'honey', 'ramen', 'sushi', 'bacon', 'steak', 'salad', 'fries', 'sugar', 'pizza', 'pasta',
 
             // volatile flags
-            11 => 'apple',
-            'berry',
-            'peach',
-            'olive',
-            'mango',
-            'lemon',
-            'grape',
-            'melon',
-            'guava',
-            'gourd',
+            11 => 'apple', 'berry', 'peach', 'olive', 'mango', 'lemon', 'grape', 'melon', 'guava', 'gourd',
 
             // timers
-            21 => 'manta',
-            'whale',
-            'squid',
-            'shark',
-            'guppy',
+            21 => 'manta', 'whale', 'squid', 'shark', 'guppy',
 
             // counters
-            26 => 'green',
-            'white',
-            'black',
-            'mauve',
-            'azure',
+            26 => 'green', 'white', 'black', 'mauve', 'azure',
 
             // global flags
-            31 => 'otter',
-            'tiger',
-            'mouse',
-            'goose',
-            'horse',
+            31 => 'otter', 'tiger', 'mouse', 'goose', 'horse',
 
             // unk
-            36 => 'unk_1',
-            'unk_2',
-            'unk_3',
-            'unk_4',
-            'unk_5',
-            'unk_6',
-            'unk_7',
-            'unk_8',
-            'unk_9',
-            'unk_0',
+            36 => 'unk_1', 'unk_2', 'unk_3', 'unk_4', 'unk_5','unk_6', 'unk_7', 'unk_8', 'unk_9', 'unk_0',
         ];
 
         /** @var string[] */
@@ -192,7 +153,8 @@
                         : "else:\n";
 
                     $break = true;
-                } else {
+                }
+                else {
                     $conditions = implode(' and ', $conditions);
                     $code       .= $first ? "if   {$conditions}:\n"
                         : "elif {$conditions}:\n";
@@ -216,7 +178,8 @@
                         case 'skill':
                             if ($skill_num == 0) {
                                 $action = "useRandomSkill('{$target}')";
-                            } else {
+                            }
+                            else {
                                 $action = "useSkill({$skill_num}, '{$target}')";
 
                                 $skill_id = $skillset[$skill_num - 1] ?? null;
@@ -226,7 +189,6 @@
                                 else {
                                     $skill   = $skills[$skill_id];
                                     $effects = $skill['effects'];
-                                    $effects = str_replace("\n", ", ", $effects);
 
                                     $note = "# {$skill['name']} ({$skill_id}): {$effects}";
                                 }
@@ -282,38 +244,38 @@
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} == $value";
+                    return "{$letters[$var_num]} == " . $value - 1;
 
                 case 'flg_cntup_over':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} > $value";
+                    return "{$letters[$var_num]} > " . $value - 1;
 
                 case 'flg_cntup_under':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 25;
 
-                    return "{$letters[$var_num]} < $value";
+                    return "{$letters[$var_num]} < " . $value - 1;
 
                 //
                 case 'flg_timer_act':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} == $value";
+                    return "{$letters[$var_num]} == " . $value - 1;
 
                 case 'flg_timer_over':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} > $value";
+                    return "{$letters[$var_num]} > " . $value - 1;
 
                 case 'flg_timer_under':
                     list($var_num, $value) = explode(',', $value);
                     $var_num += 20;
 
-                    return "{$letters[$var_num]} < $value";
+                    return "{$letters[$var_num]} < " . $value - 1;
 
                 case 'actbetween':
                     return "isTurnMod($value)";
@@ -349,17 +311,14 @@
 
                 case 'stdown_buff':
                     $state = $value == 0 ? 'any' : GameHelper::DEBUFF_TYPE[$value - 3] ?? $value;
-
                     return "{$unit}hasDebuff('{$state}')";
 
                 case 'stup_buff':
                     $state = $value == 0 ? 'any' : GameHelper::DEBUFF_TYPE[$value - 3] ?? $value;
-
                     return "{$unit}hasBuff('{$state}')";
 
                 case 'alive':
                     $state = $value == 0 ? 'Dead' : 'Alive';
-
                     return "{$unit}is{$state}()";
 
                 case "before_turn_guard":
@@ -392,42 +351,34 @@
 
                 case "before_turn_item_attack":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHitBy('item')";
 
                 case "before_turn_beast_attack":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHitBy('esper')";
 
                 case "before_turn_hit_attack":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHitBy('attack')";
 
                 case "before_turn_magic_attack":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHitBy('spell')";
 
                 case "before_turn_special_attack":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHitBy('ability')";
 
                 case "before_turn_item_heal":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHealedBy('item')";
 
                 case "before_turn_magic_heal":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHealedBy('spell')";
 
                 case "before_turn_special_heal":
                     assert($value == 1);
-
                     return "{$unit}lastTurnHealedBy('ability')";
 
                 case "special_user_id":
