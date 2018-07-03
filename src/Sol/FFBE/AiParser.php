@@ -28,16 +28,16 @@
             31 => 'otter', 'tiger', 'mouse', 'goose', 'horse',
 
             // unk
-            36 => 'unk_1', 'unk_2', 'unk_3', 'unk_4', 'unk_5','unk_6', 'unk_7', 'unk_8', 'unk_9', 'unk_0',
+            36 => 'unk_1', 'unk_2', 'unk_3', 'unk_4', 'unk_5', 'unk_6', 'unk_7', 'unk_8', 'unk_9', 'unk_0',
         ];
 
         /** @var string[] */
         const CONDITION_TARGET = [
-            1 => 'player',// Intangir2
-            2 => 'party', // Robo
-            3 => 'party', // Moon
-            4 => 'party', // Orthros & Typhon
-            5 => 'player', // Azure Knight (any)
+            1 => '1:player?',// Intangir2
+            2 => '2:party?', // Robo
+            3 => '3:party?', // Moon
+            4 => '4:party?', // Orthros & Typhon
+            5 => '5:player?', // Azure Knight (any)
         ];
 
         public static function readVarTypes($ai) {
@@ -80,9 +80,9 @@
 
                         case 'flg2_on':
                         case 'flg2_off':
-                        $var_types[$cond_value] = ($cond_value > 10)
-                            ? 'volatile'
-                            : 'flag';
+                            $var_types[$cond_value] = ($cond_value > 10)
+                                ? 'volatile'
+                                : 'flag';
                             break;
                     }
             }
