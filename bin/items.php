@@ -34,7 +34,12 @@
 
             /** @var \Solaris\FFBE\Mst\SkillMst $skill */
             $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($skill_id);
-            $type  = $skill->isActive() == false
+            if ($skill == null) {
+                $effects[] = "Unknown skill ({$skill_id})";
+                continue;
+            }
+
+            $type = $skill->isActive() == false
                 ? 'passive'
                 : ($skill instanceof \Solaris\FFBE\Mst\MagicSkillMst
                     ? 'magic'
@@ -54,7 +59,7 @@
     echo "Reading Equipment\n";
     $entries = [];
     foreach (GameFile::loadMst('EquipItemMstList') as $row) {
-        $id = (int)$row['equip_id'];
+        $id = (int) $row['equip_id'];
         assert($row['is_unique'] == 0);
 
         if ($region == 'jp')
@@ -64,33 +69,33 @@
 
         $entry = [
             'name'             => $names[0] ?? $row['name'],
-            'compendium_id'    => (int)$row['not_dex_no'],
+            'compendium_id'    => (int) $row['not_dex_no'],
             // 'compendium_id2' => (int)$row['order_index'],
-            'compendium_shown' => (bool)$row['DispDict'],
+            'compendium_shown' => (bool) $row['DispDict'],
             //
-            'rarity'           => (int)$row['rarity'],
-            'type_id'          => (int)$row['equip_type'],
+            'rarity'           => (int) $row['rarity'],
+            'type_id'          => (int) $row['equip_type'],
             'type'             => \Solaris\FFBE\GameHelper::EQUIPMENT_TYPE[$row['equip_type']],
-            'slot_id'          => (int)$row['equip_slot_type'],
+            'slot_id'          => (int) $row['equip_slot_type'],
             'slot'             => \Solaris\FFBE\GameHelper::EQUIPMENT_SLOT_ID[$row['equip_slot_type']],
             // 'unique'        => $row['is_unique'] == 1, // none
 
             // weapon
             'is_twohanded'     => $row['is_two_handed'] == 1,
             'dmg_variance'     => null,
-            'accuracy'         => (int)($row['accuracy'] ?? 0),
+            'accuracy'         => (int) ($row['accuracy'] ?? 0),
 
             'requirements' => null,
             'skills'       => null,
             'effects'      => null,
 
             'stats' => [
-                'HP'  => (int)$row['bonus_hp'],
-                'MP'  => (int)$row['bonus_mp'],
-                'ATK' => (int)$row['bonus_atk'],
-                'DEF' => (int)$row['bonus_def'],
-                'MAG' => (int)$row['bonus_mag'],
-                'SPR' => (int)$row['bonus_spr'],
+                'HP'  => (int) $row['bonus_hp'],
+                'MP'  => (int) $row['bonus_mp'],
+                'ATK' => (int) $row['bonus_atk'],
+                'DEF' => (int) $row['bonus_def'],
+                'MAG' => (int) $row['bonus_mag'],
+                'SPR' => (int) $row['bonus_spr'],
 
                 'element_resist'  => \Solaris\FFBE\GameHelper::readElement($row['element_resist'], false) ?: null,
                 'element_inflict' => \Solaris\FFBE\GameHelper::readElement($row['element_inflict']) ?: null,
@@ -99,8 +104,8 @@
                 'status_inflict' => \Solaris\FFBE\GameHelper::readStatus($row['status_inflict']) ?: null,
             ],
 
-            'price_buy'  => (int)$row['price_buy'],
-            'price_sell' => (int)$row['price_sell'],
+            'price_buy'  => (int) $row['price_buy'],
+            'price_sell' => (int) $row['price_sell'],
 
             'icon'    => IconMstList::getFilename($row['icon_id']),
             'strings' => [
@@ -142,7 +147,7 @@
                 throw new \LogicException("no type");
 
             $reqs[0] = $req_types[$reqs[0]];
-            $reqs[1] = (int)$reqs[1];
+            $reqs[1] = (int) $reqs[1];
 
             $entry['requirements'] = $reqs;
         }
@@ -175,9 +180,9 @@
 
         $entry = [
             'name'             => $names[0] ?? $row['name'],
-            'compendium_id'    => (int)$row['not_dex_no'],
+            'compendium_id'    => (int) $row['not_dex_no'],
             // 'compendium_id2'   => (int)$row['order_index'],
-            'compendium_shown' => (bool)$row['DispDict'],
+            'compendium_shown' => (bool) $row['DispDict'],
             // 'item_id'       => (int)$row['inventory_id'],
 
 
@@ -188,8 +193,8 @@
             'unique'     => false,
 
             //
-            'price_buy'  => (int)$row['price_buy'],
-            'price_sell' => (int)$row['price_sell'],
+            'price_buy'  => (int) $row['price_buy'],
+            'price_sell' => (int) $row['price_sell'],
 
             'icon'    => IconMstList::getFilename($row['icon_id']),
             //
@@ -244,7 +249,7 @@
 
     $entries = [];
     foreach (GameFile::loadMst('ItemMstList') as $k => $row) {
-        $id = (int)$row['item_id'];
+        $id = (int) $row['item_id'];
 
         // var_dump($row);
 
@@ -258,8 +263,8 @@
         $entry = [
             'name'                  => $names[0] ?? $row['name'],
             'type'                  => ['Unknown', 'Consumable', 'Item', 'Awakening'][$row['category']] ?? $row['category'],
-            'compendium_id'         => (int)$row['not_dex_no'],
-            'compendium_shown'      => (bool)$row['DispDict'],
+            'compendium_id'         => (int) $row['not_dex_no'],
+            'compendium_shown'      => (bool) $row['DispDict'],
 
             //
             'usable_in_combat'      => false,
@@ -267,10 +272,10 @@
             'flags'                 => array_map('boolval', readIntArray($row['flags'])),
 
             //
-            'carry_limit'           => (int)$row['carry_limit'],
-            'stack_size'            => (int)$row['stack_size'],
-            'price_buy'             => (int)$row['price_buy'],
-            'price_sell'            => (int)$row['price_sell'],
+            'carry_limit'           => (int) $row['carry_limit'],
+            'stack_size'            => (int) $row['stack_size'],
+            'price_buy'             => (int) $row['price_buy'],
+            'price_sell'            => (int) $row['price_sell'],
 
             //
             'effects'               => null,
@@ -289,8 +294,8 @@
         $use_case = readIntArray($row['use_case']);
         $flags    = readIntArray($row['flags']);
 
-        $entry['usable_in_combat']      = (bool)$use_case[0];
-        $entry['usable_in_exploration'] = (bool)$use_case[1];
+        $entry['usable_in_combat']      = (bool) $use_case[0];
+        $entry['usable_in_exploration'] = (bool) $use_case[1];
 
         // $entry['flags'][] = (bool)($flags[0]); // 'battle'
         // $entry['flags'][] = (bool)($flags[1]); // 'field'
