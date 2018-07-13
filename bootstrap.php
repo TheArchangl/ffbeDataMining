@@ -7,6 +7,7 @@
 
     ini_set('serialize_precision', -1);
     ini_set('zend.assertions', false);
+    ini_set('memory_limit', '2G');
 
     use Sol\FFBE\GameFile;
     use Solaris\FFBE\Client\ClientGL;
@@ -17,7 +18,7 @@
     const DATA_ENCODED_DIR = __DIR__ . "/dat_enc/";
     const DATA_DECODED_DIR = __DIR__ . "/dat_raw/";
     const DATA_OUTPUT_DIR  = __DIR__ . "/data/";
-    const CLIENT_DIR       = 'C:\Users\aEnigma\Desktop\client\\';
+    const CLIENT_DIR       = 'C:\Projects\ffbe\client\\';
 
     require_once __DIR__ . "/vendor/autoload.php";
 
