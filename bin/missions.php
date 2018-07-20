@@ -42,7 +42,7 @@
             'type'       => ['UNKNOWN', 'BATTLE', 'EXPLORATION'][$row['mission_type']],
             'wave_count' => (int)$row['num_waves'],
             //
-            'cost_type'  => ['NRG', 'STA'][$row['CostType']] ?? $row['CostType'],
+            'cost_type'  => ['NRG', 'Raid', 'Upgrade'][$row['CostType']] ?? $row['CostType'],
             'cost'       => (int)$row['cost'],
             //
             'flags'      => [
