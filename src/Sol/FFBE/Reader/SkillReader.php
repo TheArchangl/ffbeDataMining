@@ -70,6 +70,12 @@
             return $frames;
         }
 
+        /**
+         * @param SkillMst $skill
+         * @param MstList  $list
+         *
+         * @return array
+         */
         public static function parseEffects(SkillMst $skill, MstList $list) {
             $effect_str = SkillFormatter::formatEffects($skill, $list);
 
@@ -185,6 +191,9 @@
             $this->entries[$id] = $entry;
         }
 
+        /**
+         * @param $row
+         */
         protected function parseAbilityRow($row) {
             $id = (int)$row['ability_id'];
             if (isset($entries[$id]))
@@ -245,6 +254,12 @@
             $this->entries[$id] = $entry;
         }
 
+        /**
+         * @param       $id
+         * @param array $entry
+         *
+         * @return array
+         */
         protected function parseSkillEffects($id, array $entry) {
             $skill = $this->skill_mst->getEntry($id);
             if ($skill == null)
@@ -257,6 +272,11 @@
             return $entry;
         }
 
+        /**
+         * @param $string
+         *
+         * @return array|null
+         */
         protected function readRequirements($string) {
             if (empty($string))
                 return null;

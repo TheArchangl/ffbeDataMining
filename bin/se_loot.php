@@ -25,6 +25,9 @@
 
         $data = $data['body']['data'];
 
+        if (empty($data['MissionPhaseMst']))
+            continue;
+
         $mission_id = $data['MissionStartRequest'][0]['mission_id'] ?? null;
         if ($mission_id == null)
             continue;
@@ -49,8 +52,8 @@
                 'steal_normal' => parseTable($entry["steal_table"]),
                 'steal_unique' => parseTable($entry["steal_table_unique"]),
                 'steal_rare  ' => parseTable($entry["steal_table_rare"]),
-                'steal_gil   ' => $entry["steal_gil"],
-                ' drop_gil   ' => $entry["gil"],
+                                'steal_gil   ' => $entry["steal_gil"],
+                                ' drop_gil   ' => $entry["gil"],
             ];
         }
 
@@ -92,6 +95,9 @@
                         echo "\n\t\t- {$monster_id}.{$monster_part_num}: {$name}";
 
                         $loot = array_filter($loot);
+//                        if (empty($loot))
+//                            continue;
+
                         if (empty($loot))
                             echo "-";
 

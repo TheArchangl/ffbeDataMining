@@ -28,6 +28,9 @@
     if (empty($files))
         die ("No file found");
 
+    // newest first
+    natsort($files);
+    rsort($files);
 
     $entries = array_map("file_get_contents", $files);
     $entries = array_map(function ($entry) { return json_decode($entry, true); }, $entries);

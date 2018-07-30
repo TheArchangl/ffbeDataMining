@@ -1245,6 +1245,7 @@
             if (!$input instanceof GameFile)
                 throw new \LogicException("Invalid file name or id '{$input}'.");
 
+            // override region for localization data
             if (substr($input->getName(), 0, 6) == 'F_TEXT')
                 $region = 'gl';
             else

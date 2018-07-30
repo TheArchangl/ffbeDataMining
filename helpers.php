@@ -47,7 +47,14 @@
         return toInt($values);
     }
 
-    function arrayGroupValues(array $array, $array_fields = []) {
+    /**
+     * @param array $array
+     * @param array $array_fields
+     * @param bool  $use_names
+     *
+     * @return array
+     */
+    function arrayGroupValues(array $array, $array_fields = [], $use_names = true) {
         $vals = [];
 
         $addVal = function ($path, $name, $val) use (&$vals, &$addVal, $array_fields) {
@@ -60,7 +67,9 @@
         };
 
         foreach ($array as $entry) {
-            $name = $entry['names'][0] ?? $entry['name'] ?? current($entry);
+            $name = $use_names
+                ? $entry['names'][0] ?? $entry['name'] ?? current($entry)
+                : current($entry);
 
             foreach ($entry as $k => $v)
                 $addVal($k, $name, $v);
@@ -86,7 +95,7 @@
 
         foreach ($array as $k => $v) {
             if (is_scalar($v))
-                $vals[(string)$v][] = $k;
+                $vals[(string) $v][] = $k;
         }
 
         return $vals;
@@ -189,7 +198,7 @@
         //            foreach (Sol\FFBE\Strings::readStrings("{$str_db}_{$str_type}", $id) as $j => $str)
         //                $strings[$j][$k] = $str;
 
-        return [$type, (int)$id];
+        return [$type, (int) $id];
         //
         //        return [
         //            'type' => $type,
@@ -267,7 +276,7 @@
             $array = [];
 
             foreach ($effect as $hit)
-                $array[] = (int)$hit[0];
+                $array[] = (int) $hit[0];
 
             $frames[] = $array;
         }
@@ -354,6 +363,13 @@
         return $aReturn;
     }
 
+    /**
+     * @param array $entries
+     * @param bool  $trimStringArrays
+     * @param bool  $sort
+     *
+     * @return string
+     */
     function toJSON(array $entries, $trimStringArrays = true, $sort = true) {
         if ($sort)
             ksort($entries);
