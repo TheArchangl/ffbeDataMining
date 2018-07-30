@@ -66,16 +66,21 @@
 
             $output = [];
             foreach ($strings as $k => $strs) {
-                $arr = $strs;
+                if (count($strs) < 3) {
+                    var_dump($k);
+                    continue;
+                }
+
+                $strs = array_pad($strs, 6, null);
 
                 if (preg_match('~^(.+?)_(\d+[_]?)+$~', $k, $match)) {
                     [$_, $table, $id] = $match;
-                    $output[$table][$id] = $arr;
+                    $output[$table][$id] = $strs;
                 } else {
                     if (empty($k) || ctype_digit($k))
                         continue;
 
-                    $output['misc'][$k] = $arr;
+                    $output['misc'][$k] = $strs;
                 }
             }
 
