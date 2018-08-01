@@ -96,3 +96,20 @@
 
 
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/missions.json", toJSON($entries, true));
+
+    // debug
+    if (true)
+    return;
+
+    $entries = GameFile::loadMst('MissionMstList');
+    $entries = array_combine(array_map("current", $entries), $entries);
+//    $entries = [
+//        $entries["7850100"],
+//        $entries["7850101"],
+//        $entries["7850102"],
+//        $entries["7850200"],
+//        $entries["7850201"],
+//        $entries["7850202"],
+//    ];
+
+    file_put_contents(DATA_OUTPUT_DIR . "/analyze.json", toJSON(arrayGroupValues($entries, [], false)));

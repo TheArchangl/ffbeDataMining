@@ -38,9 +38,10 @@
     //     'F_TEXT_EXPN_STORY' => [4],
     // ];
 
-    if ($result != [])
-        \Sol\FFBE\GameFile::decodeAll($region);
-    exit;
+    // if ($result != [])
+    //    \Sol\FFBE\GameFile::decodeAll($region);
+    // exit;
+
     // decode
     chdir(DATA_DECODED_DIR . "/{$region}");
     foreach ($result as $name => $versions) {

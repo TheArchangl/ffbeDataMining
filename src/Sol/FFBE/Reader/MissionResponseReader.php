@@ -1,6 +1,6 @@
 <?php
     /**
-     * User: Guido Kubach
+     * User: aEnigma
      * Date: 28.12.2017
      * Time: 16:49
      */
