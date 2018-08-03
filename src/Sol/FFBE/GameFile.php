@@ -140,7 +140,9 @@
             'DjNRx0d6' => 'lb_fillrate', // dropcheck
             'ENwn42DV' => 'lb_cost',
 
-            '0W7g6YXS' => 'growth_pattern',
+            //
+            '0W7g6YXS' => 'exp_pattern',
+            'uk6Wh8mw' => 'stat_pattern',
 
             //            //
             'u18nfD7p' => 'sell_price',

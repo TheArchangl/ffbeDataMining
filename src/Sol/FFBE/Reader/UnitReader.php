@@ -173,9 +173,11 @@
                 'compendium_id' => (int) $row['order_index'],
                 'rarity'        => $rarity,
 
-                'growth_pattern' => (int) $row['growth_pattern'], //$row['lb_cost'] / 5,
-                'stats'          => formatStats($row),
-                'limitburst_id'  => ((int) $row['lb_id']) ?: null,
+                'exp_pattern'  => (int) $row['exp_pattern'],
+                'stat_pattern' => (int) $row['stat_pattern'],
+
+                'stats'         => formatStats($row),
+                'limitburst_id' => ((int) $row['lb_id']) ?: null,
 
                 'attack_count'  => 0,
                 'attack_damage' => [],

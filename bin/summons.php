@@ -15,9 +15,9 @@
 
     $entries = [];
     foreach (GameFile::loadMst('BeastMstList') as $row) {
-        $beast_id = (int)$row['beast_id'];
+        $beast_id = (int) $row['beast_id'];
 
-        $names  = $region == 'gl'
+        $names = $region == 'gl'
             ? Strings::getStrings('MST_BEAST_NAME', $beast_id)
             : [$row['name']];
 
@@ -33,12 +33,13 @@
 
     // stats
     foreach (GameFile::loadMst('F_BEAST_STATUS_MST') as $row) {
-        $beast_id                                          = (int)$row['beast_id'];
+        $beast_id                                          = (int) $row['beast_id'];
         $entry                                             = [
             'stats'          => formatStats($row),
             'element_resist' => readIntArray($row['element_resist']),
             'status_resist'  => readIntArray($row['status_resist']),
-            'growth_pattern' => (int)$row['growth_pattern'],
+            'exp_pattern'    => (int) $row['exp_pattern'],
+            'stat_pattern'   => (int) $row['stat_pattern'],
         ];
         $entries[$beast_id]['entries'][$row['rarity'] - 1] = $entry;
 
@@ -48,14 +49,14 @@
     }
     // Skill
     foreach (GameFile::loadMst('BeastSkillMstList') as $row) {
-        $skill_id = (int)$row['beast_skill_id'];
-        $beast_id = (int)substr($skill_id, 1, 2);
+        $skill_id = (int) $row['beast_skill_id'];
+        $beast_id = (int) substr($skill_id, 1, 2);
 
-        $name  = $region == 'gl'
+        $name = $region == 'gl'
             ? Strings::getStrings('MST_BEASTSKILL_NAME', $skill_id)
             : $row['name'];
 
-        $desc  = $region == 'gl'
+        $desc = $region == 'gl'
             ? Strings::getStrings('MST_BEASTSKILL_DESCRIPTION', $skill_id)
             : $row['desc'];
 
@@ -146,7 +147,7 @@
     // build parent map
     $parent_map = [];
     foreach (GameFile::loadMst('BeastBoardPieceMstList') as $row) {
-        $node_id = (int)$row['beast_board_piece_id'];
+        $node_id = (int) $row['beast_board_piece_id'];
 
         $child_nodes = readIntArray($row['beast_board_piece_childnodes']);
         foreach ($child_nodes as $child_node_id)
@@ -155,8 +156,8 @@
 
     // fill data
     foreach (GameFile::loadMst('BeastBoardPieceMstList') as $row) {
-        $node_id  = (int)$row['beast_board_piece_id'];
-        $beast_id = (int)$row['beast_id'];
+        $node_id  = (int) $row['beast_board_piece_id'];
+        $beast_id = (int) $row['beast_id'];
 
         if (!isset($entries[$beast_id]))
             continue;
@@ -165,14 +166,14 @@
         if ($row['reward_type'] != 0)
             $reward = [
                 REWARD_TYPE[$row['reward_type']],// ?? "Unknown {$row['reward_type']}",
-                (int)$row['reward_param'],
+                (int) $row['reward_param'],
             ];
 
         $entry = [
             'parent_node_id' => $parent_map[$node_id] ?? null,
             'reward'         => $reward,
             'position'       => readIntArray(str_replace(':', ',', $row['board_piece_pos'])),
-            'cost'           => (int)$row['point'],
+            'cost'           => (int) $row['point'],
         ];
 
         $boards[$beast_id][$node_id] = $entry;
