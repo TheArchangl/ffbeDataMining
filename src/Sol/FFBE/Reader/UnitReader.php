@@ -135,7 +135,7 @@
                 'is_summonable' => (bool) $row['is_summonable'],
 
                 'TMR'  => readTM($row['trustmaster']),
-                'sTMR' => null,
+                'sTMR' => readTM($row['supertrust']),
                 /*2
                 'move_type'  => (int)$row['MoveType'],
                 'move_speed' => (int)$row['MoveSpeed'],
@@ -151,14 +151,9 @@
                 unset($arr['job']);
                 unset($arr['game']);
                 unset($arr['names']);
-
-
-                $arr['sTMR'] = readTM($row['supertrust']);
             } else {
                 $arr['game'] = Strings::getString('MST_GAME_TITLE_NAME', $row['game_id']);
                 $arr['job']  = Strings::getString('MST_JOB_NAME', $row['job_id']);
-
-                unset($arr['sTMR']);
             }
 
             return $arr;

@@ -5,6 +5,7 @@
 
     require_once dirname(__DIR__) . "/bootstrap.php";
 
+    const OVERWRITE = false;
     $client_dir = CLIENT_DIR . "files\\{$region}";
 
     //
