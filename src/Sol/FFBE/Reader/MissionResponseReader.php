@@ -63,7 +63,6 @@
          * @throws \Exception
          */
         public function readResponse(array $data) {
-
             // mission info
             $this->readMissionInfo($data);
             $this->readMonsterParts($data['MonsterPartsMst']);
