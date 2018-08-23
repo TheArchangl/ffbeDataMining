@@ -424,15 +424,15 @@
                         $action = "{$letter}  = $value";
                         break;
 
-                    case 'count':
-                        if ($value == 0)
-                            $action = "{$letter}  = $value";
-
-                        elseif ($value == 1)
+                    case 'counter':
+                        if ($value == 1)
                             $action = "{$letter} += 1";
 
                         elseif ($value == -1)
                             $action = "{$letter} -= 1";
+
+                        else
+                            $action = "{$letter}  = $value";
 
                         break;
 
