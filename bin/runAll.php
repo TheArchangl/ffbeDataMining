@@ -21,6 +21,7 @@
     // skills
     require_once "skills.php";
     require_once "enhancements.php";
+    require_once "skillsets.php";
 
     // items
     require_once "items.php";
