@@ -106,10 +106,13 @@
             $data = $this->monster_skills;
             $data = array_map(function ($row) {
                 /** @var MonsterSkillMst $mst */
-                $mst = $row['mst'];
+                $mst  = $row['mst'];
+                $name = GameFile::getRegion() == 'gl'
+                    ? $mst->getName()
+                    : $mst->name;
 
                 return [
-                    'name'         => Strings::getString('MST_MONSTER_SKILL_NAME', $mst->id) ?? $row['name'],
+                    'name'         => $name,
                     'flags'        => array_map("boolval", $row['flags']),
                     'attack_type'  => GameHelper::ATTACK_TYPE[$mst->attack_type],
                     'execute_type' => GameHelper::SKILL_EXECUTE_TYPE[$mst->execute_type],
@@ -120,15 +123,22 @@
                     ]
                 ];
             }, $data);
-            $data = toJSON($data, false);
 
+            // remove GL local for jp
+            if (GameFile::getRegion() == 'jp')
+                foreach ($data as $k => $e)
+                    unset($data[$k]['strings']);
+
+            // json encode
+            $data = toJSON($data, false);
             foreach (['effect_frames', 'attack_frames', 'effects_raw', 'flags'] as $x)
-                $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:}]+)(,\s+"[^"]+":)/sm', function ($match) {
+                $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:}]+?)((?:\s*})?,\s+"[^"]+":)/sm', function ($match) {
                     $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
                     $trimmed = str_replace(',', ', ', $trimmed);
 
-                    return $match[1] . $trimmed . $match[3];
+                    return "{$match[1]}{$trimmed}{$match[3]}";
                 }, $data);
+
             file_put_contents($file, $data);
         }
 
@@ -304,6 +314,7 @@
                 ];
 
                 $mst               = new MonsterSkillMst();
+                $mst->name         = $row['name'];
                 $mst->id           = $id;
                 $mst->attack_type  = (int) $row['attack_type'];
                 $mst->execute_type = (int) $row['execute_type'];
