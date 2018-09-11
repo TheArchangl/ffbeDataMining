@@ -161,7 +161,7 @@
 
             // get relevant stuff
             $skillset      = $this->getMonsterSkills($row['monster_skill_set_id']) ?? [];
-            $monster_id    = $row['monster_unit_id'];
+            $monster_id    = "{$row['monster_unit_id']}.{$row['monster_parts_num']}";
             $related_ids   = $this->getMonsterPassives($row['monster_passive_skill_set_id']) ?? [];
             $related_ids[] = $monster_id;
 
@@ -390,7 +390,7 @@
          */
         protected function readMonsterParts(array $data) {
             foreach ($data as $row) {
-                $monster_id = $row['monster_unit_id'];
+                $monster_id = "{$row['monster_unit_id']}.{$row['monster_parts_num']}";
 
                 if (!isset($this->monsters[$monster_id]))
                     $this->monsters[$monster_id] = $row;
@@ -555,6 +555,9 @@
         private function printMonsterInfo($row): void {
             $id   = (int) $row['monster_unit_id'];
             $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
+
+            if ($row['monster_parts_num'] > 0)
+                $name .= " " . range('A', 'Z')[$row['monster_parts_num'] - 1];
 
             $tribes = GameHelper::readIntArray($row['tribe_id']);
             $tribes = array_map(function ($tribe_id) {
