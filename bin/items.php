@@ -142,13 +142,12 @@
         if (!empty($reqs)) {
             static $req_types = [1 => 'SEX', 3 => 'UNIT_ID'];
 
-            $reqs = explode('@', $reqs);
+            $reqs = \Solaris\FFBE\GameHelper::readParameters($reqs, '@');
+
             if (!isset($req_types[$reqs[0]]))
                 throw new \LogicException("no type");
 
             $reqs[0] = $req_types[$reqs[0]];
-            $reqs[1] = (int) $reqs[1];
-
             $entry['requirements'] = $reqs;
         }
 
