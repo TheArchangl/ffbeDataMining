@@ -556,7 +556,7 @@
             $id   = (int) $row['monster_unit_id'];
             $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
 
-            if ($row['monster_parts_num'] > 0)
+            if (isset($this->monster_parts["{$row['monster_unit_id']}.2"]))
                 $name .= " " . range('A', 'Z')[$row['monster_parts_num'] - 1];
 
             $tribes = GameHelper::readIntArray($row['tribe_id']);
