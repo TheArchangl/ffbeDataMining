@@ -180,7 +180,7 @@
                     if ($value == 1)
                         return "once()";
 
-                    return "uses() < {$value}";
+                    return "currentAction.timesExectuted() < {$value}";
 
                 case 'flg_on':
                     return "{$letters[$value]} == True";
