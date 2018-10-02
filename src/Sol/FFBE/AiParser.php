@@ -13,29 +13,68 @@
         /** @var string[] */
         const VAR_NAMES = [
             // persistant flags
-            1  => 'honey', 'ramen', 'sushi', 'bacon', 'steak', 'salad', 'fries', 'sugar', 'pizza', 'pasta',
+            1  => 'honey',
+            'ramen',
+            'sushi',
+            'bacon',
+            'steak',
+            'salad',
+            'fries',
+            'sugar',
+            'pizza',
+            'pasta',
 
             // volatile flags
-            11 => 'apple', 'berry', 'peach', 'olive', 'mango', 'lemon', 'grape', 'melon', 'guava', 'gourd',
+            11 => 'apple',
+            'berry',
+            'peach',
+            'olive',
+            'mango',
+            'lemon',
+            'grape',
+            'melon',
+            'guava',
+            'gourd',
 
             // timers
-            21 => 'manta', 'whale', 'squid', 'shark', 'guppy',
+            21 => 'manta',
+            'whale',
+            'squid',
+            'shark',
+            'guppy',
 
             // counters
-            26 => 'green', 'white', 'black', 'mauve', 'azure',
+            26 => 'green',
+            'white',
+            'black',
+            'mauve',
+            'azure',
 
             // global flags
-            31 => 'otter', 'tiger', 'mouse', 'goose', 'horse',
+            31 => 'otter',
+            'tiger',
+            'mouse',
+            'goose',
+            'horse',
 
             // unk
-            36 => 'unk_1', 'unk_2', 'unk_3', 'unk_4', 'unk_5', 'unk_6', 'unk_7', 'unk_8', 'unk_9', 'unk_0',
+            36 => 'unk_1',
+            'unk_2',
+            'unk_3',
+            'unk_4',
+            'unk_5',
+            'unk_6',
+            'unk_7',
+            'unk_8',
+            'unk_9',
+            'unk_0',
         ];
 
         /** @var string[] */
         const CONDITION_TARGET = [
             1 => '1:player?', // Intangir2
             2 => '2:party?',  // Robo
-            3 => '3:party?',  // Moon
+            3 => '3:party',  // Moon
             4 => '4:party?',  // Orthros & Typhon
             5 => '5:player?', // Azure Knight (any)
         ];
@@ -110,6 +149,149 @@
         }
 
         /**
+         * @param int $var_num
+         *
+         * @return string
+         */
+        protected static function getVarName(int $var_num) {
+            return static::VAR_NAMES[$var_num] ?? "var_{$var_num}";
+        }
+
+        /**
+         * @param string $action
+         * @param string $target
+         * @param int    $skill_num
+         *
+         * @return array
+         */
+        protected static function parseAction($action, $target, $skill_num): array {
+            switch ($action) {
+                case 'turn_end':
+                    return ['endTurn()', ''];
+
+                case 'skill':
+                    if ($skill_num == 0)
+                        return ["useRandomSkill('{$target}')", ''];
+
+                    $action = "useSkill({$skill_num}, '{$target}')";
+
+                    // get skill id from num
+                    $skill_id = static::$skillset[$skill_num - 1] ?? null;
+                    if ($skill_id == null)
+                        return [$action, "# Unknown skill - wrong skillset?"];
+
+                    // get skill from id
+                    $skill   = static::$skills[$skill_id];
+                    $effects = $skill['effects'];
+                    $effects = str_replace("\n", ", ", $effects);
+
+                    return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
+
+                case "attack":
+                    return ["{$action}('{$target}')", ""];
+
+                case "wait":
+                    $target = $target == 'random'
+                        ? ''
+                        : "'{$target}'";
+
+                    return ["wait({$target})", "# No action"];
+
+                default:
+                    return ["{$action}('{$target}')", "# Unknown action"];
+            }
+        }
+
+        /**
+         * @param string $string
+         *
+         * @return array
+         */
+        protected static function parseSetFlags($string) {
+            $temp = GameHelper::readParameters($string, '@,');
+
+            $arr = [];
+            $off = [0, 30];
+            foreach ($temp as $k => $flags) {
+                array_pop($flags); // empty last
+                $flags = array_chunk($flags, 2);
+
+                foreach ($flags as [$flag, $val])
+                    if ($flag != -1)
+                        $arr[] = [$flag + $off[$k], $val];
+            }
+
+            return $arr;
+        }
+
+        /**
+         * @param array[] $flags
+         *
+         * @return string
+         */
+        protected static function formatFlags(array $flags) {
+            // sort by var num
+            uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
+
+            // format
+            $code = '';
+            foreach ($flags as list($var_num, $value)) {
+                $note   = '';
+                $action = '';
+                $letter = static::getVarName($var_num);
+                $type   = static::getVarType($var_num);
+
+                switch ($type) {
+                    default:
+                        $action = "{$letter}  = $value";
+                        break;
+
+                    case 'counter':
+                        if ($value == 1)
+                            $action = "{$letter} += 1";
+
+                        elseif ($value == -1)
+                            $action = "{$letter} -= 1";
+
+                        else
+                            $action = "{$letter}  = $value";
+
+                        break;
+
+                    case 'volatile':
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        $note   = "# reset next turn";
+                        break;
+
+                    case 'global':
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        $note   = "# global";
+                        break;
+
+                    case 'flag':
+                        $note   = "# persistent";
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        break;
+
+                    case 'timer':
+                        if ($value) {
+                            $note   = "# timer";
+                            $action = "{$letter}  = Timer.create()";
+                        } else {
+                            $note   = "# timer";
+                            $action = "{$letter}.reset()";
+                        }
+
+                        break;
+                }
+
+                $code .= sprintf("\t%-30s %s\n", $action, $note);
+            }
+
+            return $code;
+        }
+
+        /**
          * @param string $target
          * @param string $type
          * @param string $value
@@ -117,10 +299,11 @@
          * @return string
          */
         protected static function parseCondition($target, $type, $value) {
-            $letters = static::VAR_NAMES;
-            $unit    = ($target == 'self')
+            $target = static::formatTarget($target);
+            $unit   = ($target == 'self')
                 ? 'self.'
                 : "unit('{$target}').";
+
 
             switch ($type) {
                 // hp
@@ -133,40 +316,34 @@
                 // counters
                 case 'flg_cntup_act':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 25;
 
-                    return "{$letters[$var_num]} == {$value}";
+                    return static::getVarName($var_num + 25) . " == {$value}";
 
                 case 'flg_cntup_over':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 25;
 
-                    return "{$letters[$var_num]} >= {$value}";
+                    return static::getVarName($var_num + 25) . " >= {$value}";
 
                 case 'flg_cntup_under':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 25;
 
-                    return "{$letters[$var_num]} <= {$value}";
+                    return static::getVarName($var_num + 25) . " <= {$value}";
 
                 // timers
                 case 'flg_timer_act':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 20;
 
-                    return "{$letters[$var_num]} == {$value}";
+                    return static::getVarName($var_num + 20) . " == {$value}";
 
                 case 'flg_timer_over':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 20;
 
-                    return "{$letters[$var_num]} >= {$value}";
+                    return static::getVarName($var_num + 20) . " >= {$value}";
 
                 case 'flg_timer_under':
                     list($var_num, $value) = explode(',', $value);
-                    $var_num += 20;
 
-                    return "{$letters[$var_num]} <= {$value}";
+                    return static::getVarName($var_num + 20) . " <= {$value}";
 
                 // turn conds
                 case 'actbetween':
@@ -183,14 +360,14 @@
                     return "currentAction.timesExectuted() < {$value}";
 
                 case 'flg_on':
-                    return "{$letters[$value]} == True";
+                    return static::getVarName($value) . " == True";
                 case 'flg2_on':
-                    return "{$letters[$value]}* == True";
+                    return static::getVarName($value + 30) . " == True";
 
                 case 'flg_off':
-                    return "{$letters[$value]} == False";
+                    return static::getVarName($value) . " == False";
                 case 'flg2_off':
-                    return "{$letters[$value]}* == False";
+                    return static::getVarName($value + 30) . " == False";
 
                 // states
                 case 'abnormal_state':
@@ -290,6 +467,9 @@
 
                     return "{$unit}lastTurnUsedAbility($value, '{$name}')";
 
+                case "rifrect_mode":
+                    return ($value == 1 ? '' : 'not ') . "{$unit}hasReflect()";
+
                 default:
                     if (preg_match('~^physics_(.+)$~', $type, $match))
                         return ($value == 1 ? 'not ' : '') . "{$unit}sufferedDamageLastTurn('{$match[1]}', 'phys')";
@@ -299,60 +479,6 @@
 
                     return "{$unit}is('{$type}:{$value}')";
             }
-        }
-
-        /**
-         * @param string $action
-         * @param string $target
-         * @param int    $skill_num
-         *
-         * @return array
-         */
-        protected static function parseAction($action, $target, $skill_num): array {
-            switch ($action) {
-                case 'turn_end':
-                    return ['endTurn()', ''];
-
-                case 'skill':
-                    if ($skill_num == 0)
-                        return ["useRandomSkill('{$target}')", ''];
-
-                    $action = "useSkill({$skill_num}, '{$target}')";
-
-                    // get skill id from num
-                    $skill_id = static::$skillset[$skill_num - 1] ?? null;
-                    if ($skill_id == null)
-                        return [$action, "# Unknown skill - wrong skillset?"];
-
-                    // get skill from id
-                    $skill   = static::$skills[$skill_id];
-                    $effects = $skill['effects'];
-                    $effects = str_replace("\n", ", ", $effects);
-
-                    return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
-
-                case "attack":
-                    return ["{$action}('{$target}')", ""];
-
-                default:
-                    return ["{$action}('{$target}')", "# Unknown action"];
-            }
-        }
-
-
-        /**
-         * @param string $flags
-         *
-         * @return array
-         */
-        protected static function parseSetFlags($flags) {
-            $flags = str_replace('@', '', $flags); // merge both flag types
-            $flags = rtrim($flags, ',');
-            $flags = explode(',', $flags);
-            $flags = array_chunk($flags, 2);
-            $flags = array_filter($flags, function ($flag) { return $flag[0] != -1; });
-
-            return $flags;
         }
 
         /**
@@ -403,73 +529,6 @@
         }
 
         /**
-         * @param array[] $flags
-         *
-         * @return string
-         */
-        protected static function formatFlags(array $flags) {
-            // sort by var num
-            uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
-
-            // format
-            $code = '';
-            foreach ($flags as list($var_num, $value)) {
-                $note   = '';
-                $action = '';
-                $letter = static::VAR_NAMES[$var_num];
-                $type   = static::getVarType($var_num);
-
-                switch ($type) {
-                    default:
-                        $action = "{$letter}  = $value";
-                        break;
-
-                    case 'counter':
-                        if ($value == 1)
-                            $action = "{$letter} += 1";
-
-                        elseif ($value == -1)
-                            $action = "{$letter} -= 1";
-
-                        else
-                            $action = "{$letter}  = $value";
-
-                        break;
-
-                    case 'volatile':
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        $note   = "# reset next turn";
-                        break;
-
-                    case 'global':
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        $note   = "# global";
-                        break;
-
-                    case 'flag':
-                        $note   = "# persistent";
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        break;
-
-                    case 'timer':
-                        if ($value) {
-                            $note   = "# timer";
-                            $action = "{$letter}  = Timer.create()";
-                        } else {
-                            $note   = "# timer";
-                            $action = "{$letter}.reset()";
-                        }
-
-                        break;
-                }
-
-                $code .= sprintf("\t%-30s %s\n", $action, $note);
-            }
-
-            return $code;
-        }
-
-        /**
          * @param string $str
          *
          * @return string
@@ -501,5 +560,24 @@
                 return 'counter';
 
             return 'unknown';
+        }
+
+        private static function formatTarget(string $target) {
+            switch (strtolower($target)) {
+                case "mind_max":
+                    return "highest SPR";
+
+                case "int_max":
+                    return "highest MAG";
+
+                case "hp_max":
+                    return "highest HP";
+
+                case "mp_max":
+                    return "highest MP";
+
+                default:
+                    return $target;
+            }
         }
     }
