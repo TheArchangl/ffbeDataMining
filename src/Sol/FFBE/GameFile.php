@@ -70,6 +70,7 @@
             '52KBR9qV' => 'rarity',
             '6X0fxsdw' => 'magic_type',
             '8cY9hejo' => 'mp_cost',
+            'Q9uV5zqc' => 'skill_cost',
             'Ha9G5sCS' => 'effect_param', // ProcessParam
             '2kq0BpnD' => 'effect_type',  // ProcessType
             'PI18xnkD' => 'ProcessFrame',

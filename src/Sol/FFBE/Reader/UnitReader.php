@@ -104,6 +104,10 @@
             $this->units[$unit_id] = $unit;
         }
 
+        public function getUnit(int $id) {
+            return $this->units[$id] ?? null;
+        }
+
         /**
          * @param array $row
          *
