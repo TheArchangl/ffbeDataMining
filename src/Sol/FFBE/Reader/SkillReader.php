@@ -12,7 +12,6 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Helper\Environment;
-    use Solaris\FFBE\Mst\AbilitySkillMst;
     use Solaris\FFBE\Mst\MstList;
     use Solaris\FFBE\Mst\SkillMst;
     use Solaris\FFBE\Mst\SkillMstList;
@@ -62,7 +61,7 @@
 
                 foreach ($effect as $hit)
                     if (isset($hit[$index]) && $hit[$index] != '')
-                        $array[] = (int)$hit[$index];
+                        $array[] = (int) $hit[$index];
 
                 $frames[] = $array;
             }
@@ -122,7 +121,7 @@
          *
          */
         protected function parseMagicRow($row) {
-            $id = (int)$row['magic_id'];
+            $id = (int) $row['magic_id'];
             if (isset($entries[$id]))
                 print "WARNING: {$id} already exists\n";
 
@@ -132,20 +131,22 @@
             $flags = readIntArray($row['flags']);
             $entry = [
                 'name'          => $row['name'] ?? null,
-                'compendium_id' => (int)$row['order_index'],
+                'compendium_id' => (int) $row['order_index'],
 
                 'type'   => 'MAGIC',
                 'active' => true,
 
                 'usable_in_exploration' => $use_case[1] == 1,
 
-                'rarity'          => (int)$row['rarity'],
+                'rarity'          => (int) $row['rarity'],
                 'magic_type'      => GameHelper::MAGIC_TYPE[$row['magic_type'] ?? 0],
-                'mp_cost'         => (int)$row['mp_cost'],
+                //
+                //                'mp_cost'         => (int) $row['mp_cost'],
+                'cost'            => (object) [],
 
                 // flags
-                'is_sealable'     => (bool)$flags[0],
-                'is_reflectable'  => (bool)$flags[1],
+                'is_sealable'     => (bool) $flags[0],
+                'is_reflectable'  => (bool) $flags[1],
 
                 // effect
                 'attack_count'    => 0,
@@ -153,7 +154,7 @@
                 'attack_frames'   => [],
                 'effect_frames'   => [],
                 //
-                'move_type'       => (int)$row['move_type'],
+                'move_type'       => (int) $row['move_type'],
                 // 'wait'   => $row['wait'],
                 //
                 'effect_type'     => GameHelper::SKILL_EXECUTE_TYPE[$row['execute_type']],
@@ -186,6 +187,7 @@
             }
 
             $entry = static::parseFrames($row, $entry);
+            $entry = $this->parseSkillCosts($row, $entry);
             $entry = $this->parseSkillEffects($id, $entry);
 
             $this->entries[$id] = $entry;
@@ -195,22 +197,23 @@
          * @param $row
          */
         protected function parseAbilityRow($row) {
-            $id = (int)$row['ability_id'];
+            $id = (int) $row['ability_id'];
             if (isset($entries[$id]))
                 print "WARNING: $id already exists\n";
 
-            $mst = $this->skill_mst->getEntry($id);
+            $mst      = $this->skill_mst->getEntry($id);
             $isActive = $mst->isActive();
-            $entry = [
+            $entry    = [
                 'name'          => $row['name'] ?? null,
-                'compendium_id' => (int)$row['order_index'],
+                'compendium_id' => (int) $row['order_index'],
 
                 'type'   => 'ABILITY',
                 'active' => $isActive,
                 'unique' => ($row['PermitLap'] == 0),
 
-                'rarity'           => (int)$row['rarity'],
-                'mp_cost'          => (int)$row['mp_cost'],
+                'rarity'           => (int) $row['rarity'],
+                //                'mp_cost'          => (int) $row['mp_cost'],
+                'cost'             => (object) [],
 
                 // effect
                 'attack_count'     => 0,
@@ -218,8 +221,8 @@
                 'attack_frames'    => [],
                 'effect_frames'    => [],
                 //
-                'move_type'        => (int)$row['move_type'],
-                'motion_type'      => (int)$row['MotioinType'],
+                'move_type'        => (int) $row['move_type'],
+                'motion_type'      => (int) $row['MotioinType'],
                 // 'wait'   => $row['wait'],
                 //
                 'effect_type'      => GameHelper::SKILL_EXECUTE_TYPE[$row['execute_type']],
@@ -249,6 +252,7 @@
             }
 
             $entry = static::parseFrames($row, $entry);
+            $entry = static::parseSkillCosts($row, $entry);
             $entry = $this->parseSkillEffects($id, $entry);
 
             $this->entries[$id] = $entry;
@@ -284,15 +288,44 @@
             $reqs = GameHelper::readParameters($string, '@');
             switch ($reqs[0]) {
                 case 1:
-                    return ['SEX', (int)($reqs[1] ?? 0)];
+                    return ['SEX', (int) ($reqs[1] ?? 0)];
 
                 case 2:
-                    return ['UNIT_ID', (int)$reqs[1]];
+                    return ['UNIT_ID', (int) $reqs[1]];
 
                 case 6:
-                    return ['EQUIP', (int)$reqs[1][1]];
+                    return ['EQUIP', (int) $reqs[1][1]];
             }
 
             throw new \LogicException("no type");
+        }
+
+        /**
+         * @param array $row
+         * @param array $entry
+         *
+         * @return array
+         */
+        private function parseSkillCosts(array $row, array $entry) {
+            $costs = $entry['cost'];
+
+            if ($row['mp_cost'] > 0)
+                $costs->MP = (int) $row['mp_cost'];
+
+            if ($row['skill_cost'] != '') {
+                [$type, $cost] = explode(':', $row['skill_cost']);
+
+                switch ($type) {
+                    case 1:
+                        $costs->EP = (int) $cost;
+                        break;
+
+                    case 2:
+                        $costs->LB = $cost / 100;
+                        break;
+                }
+            }
+
+            return $entry;
         }
     }
