@@ -72,7 +72,7 @@
 
         /** @var string[] */
         const CONDITION_TARGET = [
-            1 => '1:player?', // Intangir2
+            1 => '1:unit?', // Intangir2
             2 => '2:party?',  // Robo
             3 => '3:party',  // Moon
             4 => '4:party?',  // Orthros & Typhon
@@ -165,6 +165,8 @@
          * @return array
          */
         protected static function parseAction($action, $target, $skill_num): array {
+            $target = static::formatTarget($target);
+
             switch ($action) {
                 case 'turn_end':
                     return ['endTurn()', ''];
@@ -308,10 +310,10 @@
             switch ($type) {
                 // hp
                 case 'hp_pr_under':
-                    return "{$unit}HP < " . ($value / 100);
+                    return "{$unit}.HP < " . ($value / 100);
 
                 case 'hp_pr_over':
-                    return "{$unit}HP > " . ($value / 100);
+                    return "{$unit}.HP > " . ($value / 100);
 
                 // counters
                 case 'flg_cntup_act':
@@ -375,109 +377,109 @@
                         ? 'any'
                         : GameHelper::STATUS_TYPE[$value - 1] ?? $value;
 
-                    return "{$unit}hasStatus('{$state}')";
+                    return "{$unit}.hasStatus('{$state}')";
 
                 case 'stdown_buff':
                     $state = $value == 0 ? 'any' : GameHelper::DEBUFF_TYPE[$value - 3] ?? $value;
 
-                    return "{$unit}hasDebuff('{$state}')";
+                    return "{$unit}.hasDebuff('{$state}')";
 
                 case 'stup_buff':
                     $state = $value == 0 ? 'any' : GameHelper::DEBUFF_TYPE[$value - 3] ?? $value;
 
-                    return "{$unit}hasBuff('{$state}')";
+                    return "{$unit}.hasBuff('{$state}')";
 
                 case 'alive':
                     $state = $value == 0 ? 'Dead' : 'Alive';
 
-                    return "{$unit}is{$state}()";
+                    return "{$unit}.is{$state}()";
 
                 // actions
                 case "before_turn_guard":
                     assert($value == 1);
 
-                    return "{$unit}usedGuardLastTurn()";
+                    return "{$unit}.usedGuardLastTurn()";
 
                 case "before_turn_attack":
                     assert($value == 1);
 
-                    return "{$unit}usedNormalAttack()";
+                    return "{$unit}.usedNormalAttack()";
 
                 case "before_turn_lb":
                     assert($value == 1);
 
-                    return "{$unit}usedLbLastTurn()";
+                    return "{$unit}.usedLbLastTurn()";
 
                 case "before_turn_sm":
                     assert($value == 1);
 
-                    return "{$unit}usedSummonLastTurn()";
+                    return "{$unit}.usedSummonLastTurn()";
 
                 case "before_turn_mg":
                     assert($value == 1);
 
-                    return "{$unit}usedMagicLastTurn()";
+                    return "{$unit}.usedMagicLastTurn()";
 
                 case "total_damage_over":
-                    return "{$unit}totalDamage() > {$value}";
+                    return "{$unit}.totalDamage() > {$value}";
 
                 case "before_turn_item_attack":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHitBy('item')";
+                    return "{$unit}.lastTurnHitBy('item')";
 
                 case "before_turn_beast_attack":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHitBy('esper')";
+                    return "{$unit}.lastTurnHitBy('esper')";
 
                 case "before_turn_hit_attack":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHitBy('attack')";
+                    return "{$unit}.lastTurnHitBy('attack')";
 
                 case "before_turn_magic_attack":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHitBy('spell')";
+                    return "{$unit}.lastTurnHitBy('spell')";
 
                 case "before_turn_special_attack":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHitBy('ability')";
+                    return "{$unit}.lastTurnHitBy('ability')";
 
                 case "before_turn_item_heal":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHealedBy('item')";
+                    return "{$unit}.lastTurnHealedBy('item')";
 
                 case "before_turn_magic_heal":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHealedBy('spell')";
+                    return "{$unit}.lastTurnHealedBy('spell')";
 
                 case "before_turn_special_heal":
                     assert($value == 1);
 
-                    return "{$unit}lastTurnHealedBy('ability')";
+                    return "{$unit}.lastTurnHealedBy('ability')";
 
                 case "special_user_id":
                     // king mog
                     $name = Strings::getString('MST_ABILITY_NAME', $value);
 
-                    return "{$unit}lastTurnUsedAbility($value, '{$name}')";
+                    return "{$unit}.lastTurnUsedAbility($value, '{$name}')";
 
                 case "rifrect_mode":
-                    return ($value == 1 ? '' : 'not ') . "{$unit}hasReflect()";
+                    return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
                 default:
                     if (preg_match('~^physics_(.+)$~', $type, $match))
-                        return ($value == 1 ? 'not ' : '') . "{$unit}sufferedDamageLastTurn('{$match[1]}', 'phys')";
+                        return ($value == 1 ? 'not ' : '') . "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'physical')";
 
                     elseif (preg_match('~^magic_(.+?)$~', $type, $match))
-                        return ($value == 1 ? 'not ' : '') . "{$unit}sufferedDamageLastTurn('{$match[1]}', 'mag')";
+                        return ($value == 1 ? 'not ' : '') . "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'magical')";
 
-                    return "{$unit}is('{$type}:{$value}')";
+                    return "{$unit}.is('{$type}:{$value}')";
             }
         }
 
@@ -562,8 +564,17 @@
             return 'unknown';
         }
 
+        /**
+         * @param string $target
+         *
+         * @return string
+         */
         private static function formatTarget(string $target) {
             switch (strtolower($target)) {
+                case "self":
+                    return "self";
+
+
                 case "mind_max":
                     return "highest SPR";
 
@@ -576,6 +587,7 @@
                 case "mp_max":
                     return "highest MP";
 
+                case "random":
                 default:
                     return $target;
             }

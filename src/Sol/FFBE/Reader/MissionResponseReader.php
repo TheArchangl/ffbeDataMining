@@ -149,10 +149,11 @@
          * @throws \Exception
          */
         public function saveOutput($file, $showMonsterInfo = true) {
-            $output = $this->printOutput($showMonsterInfo);
-            file_put_contents($file, $output);
+            ob_start();
+            $this->printOutput($showMonsterInfo);
+            $output = ob_get_clean();
 
-            echo $output;
+            file_put_contents($file, $output);
         }
 
         public function printRelatedSkills($row) {
@@ -519,12 +520,8 @@
          * @param bool $showMonsterInfo
          *
          * @throws \Exception
-         *
-         * @return string
          */
         private function printOutput($showMonsterInfo = true) {
-            ob_start();
-
             echo $this->mission_info;
 
             foreach ($this->monsters as $row) {
@@ -541,10 +538,6 @@
                 $this->printRelatedSkills($row);
                 echo $ai;
             }
-
-            $output = ob_get_clean();
-
-            return $output;
         }
 
         /**

@@ -37,7 +37,7 @@
                 }, $data);
 
             // un-indent objects
-            $data = preg_replace_callback('/("cost":\s*{\s*)([^}]+)(},)/sm', function ($match) {
+            $data = preg_replace_callback('/("cost":\s*{)([^}]+)(},)/sm', function ($match) {
                 $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
                 $trimmed = str_replace(',', ', ', $trimmed);
 
