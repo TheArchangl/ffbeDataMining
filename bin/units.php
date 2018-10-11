@@ -40,7 +40,9 @@
         ];
     }
 
-    uasort($entries, function (array $a, array $b) { return $a['date'] <=> $b['date']; });
+    uksort($entries, function ($a, $b) use ($entries) {
+      return $entries[$a]['date'] <=> $entries[$b]['date'] ?: $a <=> $b;
+    });
 
     $file = join('/', [DATA_OUTPUT_DIR, $region, 'unit_selection.json']);
     file_put_contents($file, json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
