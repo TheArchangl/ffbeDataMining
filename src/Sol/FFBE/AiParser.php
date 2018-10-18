@@ -359,17 +359,17 @@
                     if ($value == 1)
                         return "once()";
 
-                    return "currentAction.timesExectuted() < {$value}";
+                    return "currentAction.timesExecuted() < {$value}";
 
                 case 'flg_on':
                     return static::getVarName($value) . " == True";
                 case 'flg2_on':
-                    return static::getVarName($value + 30) . " == True";
+                    return static::getVarName((int) $value + 30) . " == True";
 
                 case 'flg_off':
                     return static::getVarName($value) . " == False";
                 case 'flg2_off':
-                    return static::getVarName($value + 30) . " == False";
+                    return static::getVarName((int) $value + 30) . " == False";
 
                 // states
                 case 'abnormal_state':
