@@ -1,9 +1,4 @@
 <?php
-    /**
-     * User: gkubach
-     * Date: 03.09.2018
-     * Time: 18:13
-     */
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;

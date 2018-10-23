@@ -1,9 +1,4 @@
 <?php
-    /**
-     * User: gkubach
-     * Date: 22.06.2018
-     * Time: 15:24
-     */
 
     use Sol\FFBE\Strings;
 
@@ -73,12 +68,14 @@
 
                 $strs = array_pad($strs, 6, null);
 
-                if (preg_match('~^(.+?)_(\d+[_]?)+$~', $k, $match)) {
+                if (preg_match('~^(.*?)_(\d+[_]?)+$~', $k, $match)) {
                     [$_, $table, $id] = $match;
                     $output[$table][$id] = $strs;
                 } else {
                     if (empty($k) || ctype_digit($k))
                         continue;
+
+                    $k = utf8_encode($k);
 
                     $output['misc'][$k] = $strs;
                 }
@@ -103,10 +100,13 @@
             foreach ($output as $file => $strings) {
                 ksort($strings);
 
-                file_put_contents(
-                    "{$dir}/{$file}.json",
-                    json_encode((object) $strings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)
-                );
+
+                $data = json_encode((object) $strings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                if (!$data) {
+                    print_r($strings);
+                    throw new Exception(json_last_error() . ": " . json_last_error_msg());
+                }
+                    file_put_contents("{$dir}/{$file}.json", $data);
             }
             break;
 
