@@ -240,10 +240,12 @@
                 $skills = [];
 
             foreach ($abilities as $skill_id)
-                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id];
+                if (!isset($skills[$skill_id]))
+                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id];
 
             foreach ($spells as $skill_id)
-                $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id];
+                if (!isset($skills[$skill_id]))
+                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id];
         }
 
         /**

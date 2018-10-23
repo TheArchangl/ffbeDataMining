@@ -303,8 +303,8 @@
         protected static function parseCondition($target, $type, $value) {
             $target = static::formatTarget($target);
             $unit   = ($target == 'self')
-                ? 'self.'
-                : "unit('{$target}').";
+                ? 'self'
+                : "unit('{$target}')";
 
 
             switch ($type) {
