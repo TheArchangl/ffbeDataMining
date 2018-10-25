@@ -30,6 +30,7 @@
         protected $isFake;
 
         protected $monster_ais              = [];
+        protected $monster_groups           = [];
         protected $monster_parts            = [];
         protected $monster_skills           = [];
         protected $monster_skillsets        = [];
@@ -65,8 +66,11 @@
          */
         public function readResponse(array $data) {
             // mission info
-            $this->readMissionInfo($data);
+            $this->readMonsterGroups($data);
             $this->readMonsterParts($data['MonsterPartsMst']);
+
+            // summary
+            $this->readMissionInfo($data);
 
             // skillsets
             $skillsets = array_column($this->monster_parts, "skillset_id");
@@ -94,6 +98,7 @@
             $monster_ais = array_reduce($monster_ais, "array_merge", []);
             $monster_ais = array_unique($monster_ais);
             $this->readAi(GameFile::loadMst('F_AI_MST'), $monster_ais);
+
         }
 
         /**
@@ -163,7 +168,7 @@
             // get relevant stuff
             $skillset      = $this->getMonsterSkills($row['monster_skill_set_id']) ?? [];
             $monster_id    = "{$row['monster_unit_id']}.{$row['monster_parts_num']}";
-            $related_ids   = $this->getMonsterPassives($row['monster_passive_skill_set_id']) ?? [];
+            $related_ids   = $this->getMonsterPassives($row['monster_passive_skill_set_id'] ?? -1) ?? [];
             $related_ids[] = $monster_id;
 
             $related_skills = [];
@@ -276,7 +281,6 @@
                 // if ($row['RerunPermit'] == "0")
                 //     printf("# No continue?\n");
 
-                print "##\n\n";
             } elseif (!empty($data['MissionStartRequest'])) {
                 print "##\n";
                 $row  = $data['MissionStartRequest'][0];
@@ -284,8 +288,40 @@
                 $name = Strings::getString('MST_MISSION_NAME', $id) ?? $row['name'];
 
                 printf("# Mission '%s' (%d)\n", $name, $id);
-                print "##\n\n";
             }
+
+            if (!empty($this->monster_groups)) {
+                print "#\n# Battles\n";
+
+                foreach ($this->monster_groups as $group) {
+                    $starting = [];
+                    $summoned = [];
+
+                    foreach ($group as $monster) {
+                        $id   = $monster['monster_id'];
+                        $row  = $this->monster_parts["{$monster['monster_id']}.1"]['name'];
+                        $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
+
+                        if ($monster['summon_limit'] > 1)
+                            $name .= " (max {$monster['summon_limit']})";
+
+                        if ($monster['initial'])
+                            $starting[] = $name;
+
+                        else
+                            $summoned[] = $name;
+                    }
+
+                    print "#  * " . join(', ', $starting);
+
+                    if (!empty($summoned))
+                        print " [+ ". join(", ", $summoned) . "]";
+
+                    print "\n";
+                }
+            }
+
+            print "##\n\n";
 
             $this->mission_info = ob_get_clean();
         }
@@ -517,6 +553,29 @@
         }
 
         /**
+         * @param array $data
+         */
+        private function readMonsterGroups(array $data) {
+            $groups = [];
+
+            foreach ($data['BattleGroupMst'] ?? [] as $entry) {
+                $group_id     = $entry['battle_group_id'];
+                $monster_id   = $entry['monster_unit_id'];
+                $initial      = $entry['initial_display'] == '1';
+                $summon_limit = (int) $entry['call_max'];
+                $index        = (int) $entry['order_index'];
+
+                $groups[$group_id][$index - 1] = [
+                    'monster_id'   => $monster_id,
+                    'initial'      => $initial,
+                    'summon_limit' => $summon_limit,
+                ];
+            }
+
+            $this->monster_groups = $groups;
+        }
+
+        /**
          * @param bool $showMonsterInfo
          *
          * @throws \Exception
@@ -564,6 +623,9 @@
             printf("# Race     %s\n", $tribes);
             printf("# Level    %s\n", $row['level']);
             printf("# Actions  %s\n", str_replace(',', '-', $row['num_actions']));
+
+            $group_info = $this->getMonsterGroup($id);
+
             vprintf("#\n#\n# Stats\n#        HP  %15d\n#        MP  %15d\n#        ATK %15d\n#        DEF %15d\n#        MAG %15d\n#        SPR %15d\n#", [
                 $row['bonus_hp'],
                 $row['bonus_mp'],
@@ -691,7 +753,7 @@
                     return $head . "# None\n##\n\n";
 
             else
-                return $head . AiParser::parseAI($ai, $skillset, $this->monster_skills);
+                return $head . AiParser::parseAI($ai, $skillset, $this->monster_skills, $this->monster_parts, $this->isFake);
         }
 
         /**
@@ -717,5 +779,19 @@
                 : $this->monster_skillsets[$skillset_id] ?? null;
 
             return $skillset;
+        }
+
+        /**
+         * @param int $id
+         *
+         * @return mixed
+         */
+        private function getMonsterGroup(int $id) {
+            foreach ($this->monster_groups as $group)
+                foreach ($group as $entry)
+                    if ($entry['monster_id'] == $id)
+                        return $group;
+
+            return null;
         }
     }

@@ -72,26 +72,35 @@
 
         /** @var string[] */
         const CONDITION_TARGET = [
-            1 => '1:unit?', // Intangir2
-            2 => '2:party?',  // Robo
-            3 => '3:party',  // Moon
-            4 => '4:party?',  // Orthros & Typhon
-            5 => '5:player?', // Azure Knight (any)
+            1 => '1:ally',  // Intangir2
+            2 => '2:ally',  // Robo
+            3 => '3:ally',  // Moon
+            4 => '4:ally',  // Orthros & Typhon, Echidna
+            5 => '5:enemy', // Azure Knight (any)
+            6 => '6:enemy',
+            7 => '7:enemy',
+            8 => '8:ally', // Monster part
         ];
 
         private static $skillset;
         private static $skills;
+        private static $monsters;
+        private static $isFake;
 
         /**
          * @param array $ai
          * @param int[] $skillset
          * @param array $skills
+         * @param array $monsters
+         * @param bool  $isFake
          *
          * @return string
          */
-        public static function parseAI(array $ai, array $skillset, array $skills) {
+        public static function parseAI(array $ai, array $skillset, array $skills, array $monsters, $isFake = false) {
             static::$skillset = $skillset;
             static::$skills   = $skills;
+            static::$monsters = $monsters;
+            static::$isFake   = $isFake;
 
             // for each step / check
             $steps = [];
@@ -113,6 +122,60 @@
         }
 
         /**
+         * @param int $range
+         * @param int $num
+         *
+         * @return string
+         */
+        static function formatTarget($range, $num) {
+            $str = static::CONDITION_TARGET[$range] ?? "unknown";
+
+            switch ($range) {
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 1: // ally  (any)
+                    if (!static::$isFake && count(static::$monsters) == 1)
+                        return "self";
+
+                case 4: // enemy (any)
+                case 5: // enemy (???)
+                    if ($num == 0)
+                        $num = "any";
+
+                    return "{$str}:{$num}";
+
+
+                case 2: //  ally by id
+                case 6: // enemy by id
+                    $name = Strings::getString($num == 2 ? 'MST_MONSTER_NAME' : 'MST_UNIT_NAME', $num);
+
+                    return $name == null
+                        ? "{$str}:{$num}"
+                        : "{$str}:{$num}:{$name}";
+
+                case 3: //  ally by index
+                case 7: // enemy by index
+                    $monster = static::getMonsterByIndex($num - 1);
+
+                    return $monster == null
+                        ? "{$str}:{$num}"
+                        : "{$str}:{$num}:{$monster['name']}";
+
+                case 8: // enemy monster part by ID
+                    [$num, $part] = explode('&', $num);
+                    $name = Strings::getString('MST_MONSTER_NAME', $num);
+
+                    $part = range("A", "Z")[$part];
+
+                    return $name == null
+                        ? "{$str}:{$num}:{$part}"
+                        : "{$str}:{$name} {$part}";
+
+                default:
+                    return "{$str}:{$num}";
+            }
+        }
+
+        /**
          * @param array $step
          *
          * @return array
@@ -127,10 +190,9 @@
             // states
             foreach ($step['conditions']['states'] as $val) {
                 list($target_range, $num, $type, $value) = explode(':', $val);
-                $target_type  = $num ?: 'any';
-                $target_range = static::CONDITION_TARGET[$target_range] ?? $target_range;
+                $target = static::formatTarget($target_range, $num);
 
-                $conditions[] = self::parseCondition("{$target_range}_{$target_type}", $type, $value);
+                $conditions[] = self::parseCondition($target, $type, $value);
             }
 
             // flags
@@ -165,7 +227,7 @@
          * @return array
          */
         protected static function parseAction($action, $target, $skill_num): array {
-            $target = static::formatTarget($target);
+            $target = static::formatTargetPriority($target);
 
             switch ($action) {
                 case 'turn_end':
@@ -301,7 +363,7 @@
          * @return string
          */
         protected static function parseCondition($target, $type, $value) {
-            $target = static::formatTarget($target);
+            $target = static::formatTargetPriority($target);
             $unit   = ($target == 'self')
                 ? 'self'
                 : "unit('{$target}')";
@@ -463,11 +525,21 @@
 
                     return "{$unit}.lastTurnHealedBy('ability')";
 
+                case "before_turn_magic_support":
+                    assert($value == 1);
+
+                    return "{$unit}.usedSupportMagicLastTurn()";
+
+                case "before_turn_special_support":
+                    assert($value == 1);
+
+                    return "{$unit}.usedSupportSkillLastTurn()";
+
                 case "special_user_id":
                     // king mog
                     $name = Strings::getString('MST_ABILITY_NAME', $value);
 
-                    return "{$unit}.lastTurnUsedAbility($value, '{$name}')";
+                    return "{$unit}.lastTurnHitBy($value, '{$name}')";
 
                 case "rifrect_mode":
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
@@ -513,6 +585,15 @@
 
                 $first = false;
             }
+
+            // replace relative summs if possible
+            $code = preg_replace_callback("~Summon ally #(\d+)~", function ($match) {
+                $monster = static::getMonsterByIndex($match[1] - 1);
+                if ($monster == null)
+                    return $match[0];
+
+                return "Summon {$monster['name']} ({$monster['id']})";
+            }, $code);
 
             return $code;
         }
@@ -569,11 +650,16 @@
          *
          * @return string
          */
-        private static function formatTarget(string $target) {
+        private static function formatTargetPriority(string $target) {
             switch (strtolower($target)) {
                 case "self":
                     return "self";
 
+                case "atk_max":
+                    return "highest ATK";
+
+                case "def_max":
+                    return "highest DEF";
 
                 case "mind_max":
                     return "highest SPR";
@@ -591,5 +677,33 @@
                 default:
                     return $target;
             }
+        }
+
+        /**
+         * @param int $i
+         *
+         * @return array|null
+         */
+        private static function getMonsterByIndex($i) {
+            if ($i >= count(static::$monsters))
+                return null;
+
+            $key = array_keys(static::$monsters)[$i];
+
+            [$monster_id, $part_num] = explode('.', $key);
+
+            $entry = static::$monsters[$key];
+
+            $name = Strings::getString('MST_MONSTER_NAME', $monster_id) ?? $entry['name'];
+
+            if (isset(static::$monsters["{$monster_id}.2"]))
+                $name .= " " . range("A", "Z")[$part_num - 1];
+
+            return [
+                'id'    => $monster_id,
+                'part'  => $part_num,
+                'name'  => $name,
+                'entry' => $entry
+            ];
         }
     }
