@@ -406,6 +406,7 @@
                         ?? Strings::getString('MST_MONSTER_NAME', $arr['monster_id'])
                         ?? 'Unknown Monster',
                     'monster_unit_id'      => $arr['monster_id'],
+                    'monster_parts_num'    => 0,
                     'monster_skill_set_id' => $arr['skillset_id'],
                     'ai_id'                => $arr['ai_id'],
                 ];
