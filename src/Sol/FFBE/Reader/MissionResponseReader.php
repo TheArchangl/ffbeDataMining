@@ -300,7 +300,7 @@
 
                     foreach ($group as $monster) {
                         $id   = $monster['monster_id'];
-                        $row  = $this->monster_parts["{$monster['monster_id']}.1"]['name'];
+                        $row  = $this->monster_parts["{$monster['monster_id']}.1"];
                         $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
 
                         if ($monster['summon_limit'] > 1)
