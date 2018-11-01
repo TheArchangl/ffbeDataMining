@@ -322,9 +322,11 @@
                 }
             }
 
-            print "##\n\n";
 
             $this->mission_info = ob_get_clean();
+
+            if (!empty($this->mission_info))
+                $this->mission_info .= "##\n\n";
         }
 
         /**
@@ -535,7 +537,7 @@
             $name    = $skill['name'];
             $effects = $skill['effects'];
             $effects = array_map(function ($str) { return str_replace("\n", "\n#  ", $str); }, $effects);
-            $effects = join($effects, "#  ");
+            $effects = join($effects, "\n#  ");
 
             $attack_type = $skill['attack_type'] == 99
                 ? 'Passive'
