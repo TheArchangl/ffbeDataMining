@@ -422,7 +422,7 @@
                     if ($value == 1)
                         return "once()";
 
-                    return "currentAction.timesExecuted() < {$value}";
+                    return "timesExecuted() < {$value}";
 
                 case 'flg_on':
                     return static::getVarName($value) . " == True";
@@ -453,9 +453,9 @@
                     return "{$unit}.hasBuff('{$state}')";
 
                 case 'alive':
-                    $state = $value == 0 ? 'Dead' : 'Alive';
+                    $state = $value == 0 ? 'dead' : 'alive';
 
-                    return "{$unit}.is{$state}()";
+                    return "{$unit}.is('{$state}')";
 
                 // actions
                 case "before_turn_guard":
