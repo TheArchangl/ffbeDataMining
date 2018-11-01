@@ -247,7 +247,8 @@
                     // get skill from id
                     $skill   = static::$skills[$skill_id];
                     $effects = $skill['effects'];
-                    $effects = str_replace("\n", ", ", $effects);
+                    $effects = join(", ", $effects);
+                    $effects = str_replace("\n", " ", $effects);
 
                     return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
 

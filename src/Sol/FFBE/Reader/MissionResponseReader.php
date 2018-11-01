@@ -200,7 +200,7 @@
                     'name'        => $mst->getName(),
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $mst->attack_type,
@@ -245,7 +245,7 @@
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'] ?? 99,
@@ -254,8 +254,9 @@
             }
 
             foreach ($this->monster_passives as $id => $passive)
-                if (preg_match("~\((\d+)\)~", $passive['effects'], $match))
-                    $this->related_skills[$id][] = $match[1];
+                foreach ($passive['effects'] as $k => $effect)
+                    if (preg_match("~\((\d+)\)~", $effect, $match))
+                        $this->related_skills[$id][] = $match[1];
         }
 
         /**
@@ -315,7 +316,7 @@
                     print "#  * " . join(', ', $starting);
 
                     if (!empty($summoned))
-                        print " [+ ". join(", ", $summoned) . "]";
+                        print " [+ " . join(", ", $summoned) . "]";
 
                     print "\n";
                 }
@@ -363,7 +364,7 @@
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::format($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'],
@@ -393,7 +394,7 @@
          * @param array $data
          * @param int[] $ids
          */
-        protected function readSkillSet(array $data = [], array $ids) {
+        protected function readSkillSet(array $data, array $ids) {
             if (empty($data))
                 return;
 
@@ -411,12 +412,16 @@
 
         /**
          * @param array $data
+         * @param array $ids
          */
-        protected function readPassiveSkillSet(array $data) {
+        protected function readPassiveSkillSet(array $data, array $ids = []) {
             foreach ($data as $row) {
-                $skillset_id = (int) $row['monster_passive_skill_set_id'];
-                $skill_ids   = readIntArray($row['monster_passive_skill_set_skill_ids']);
-                $skill_ids   = array_filter($skill_ids);
+                $skillset_id = (int) $row['monster_skill_set_id'];
+                if (!in_array($skillset_id, $ids))
+                    continue;
+
+                $skill_ids = readIntArray($row['monster_passive_skill_set_skill_ids']);
+                $skill_ids = array_filter($skill_ids);
 
                 $this->monster_passive_skillset[$skillset_id] = $skill_ids;
             }
@@ -527,8 +532,11 @@
          * @param array $skill
          */
         protected function formatSkill($id, $skill) {
-            $name        = $skill['name'];
-            $effects     = SkillFormatter::format($skill['mst'], $this->skill_mst_list, "\n#  ", true);
+            $name    = $skill['name'];
+            $effects = $skill['effects'];
+            $effects = array_map(function ($str) { return str_replace("\n", "\n#  ", $str); }, $effects);
+            $effects = join($effects, "#  ");
+
             $attack_type = $skill['attack_type'] == 99
                 ? 'Passive'
                 : GameHelper::ATTACK_TYPE[$skill['attack_type']];
@@ -623,8 +631,6 @@
             printf("# Race     %s\n", $tribes);
             printf("# Level    %s\n", $row['level']);
             printf("# Actions  %s\n", str_replace(',', '-', $row['num_actions']));
-
-            $group_info = $this->getMonsterGroup($id);
 
             vprintf("#\n#\n# Stats\n#        HP  %15d\n#        MP  %15d\n#        ATK %15d\n#        DEF %15d\n#        MAG %15d\n#        SPR %15d\n#", [
                 $row['bonus_hp'],
