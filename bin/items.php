@@ -212,8 +212,8 @@
         if ($firstSkill != null) {
             /** @var \Solaris\FFBE\Mst\SkillMst $skill */
             $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($firstSkill);
-            if (!empty($skill->restrictions))
-                $entry['unit_restriction'] = \Solaris\FFBE\GameHelper::readIntArray($skill->restrictions);
+            if (!empty($skill->requirements['unit']))
+                $entry['unit_restriction'] = \Solaris\FFBE\GameHelper::readIntArray($skill->requirements['unit']);
         }
 
         // local

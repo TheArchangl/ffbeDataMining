@@ -3,14 +3,14 @@
     use Solaris\FFBE\GameHelper;
 
     require "../bootstrap.php";
-    require "../../ffbe-data/vendor/autoload.php";
-    require "../tmp/init_strings.php";
+    //require "../../ffbe-data/vendor/autoload.php";
+    require "../../ffbe-discord/tmp/init_strings.php";
 
     ini_set('memory_limit', '2G');
 
     // import all requests
     //    $files = glob(__DIR__ . "/requests/gacha/raid_nier/*_GachaExeResponse.json");
-    $files = glob(CLIENT_DIR . "gacha\\900002\\Tomb Raider Raid 100\\*.json");
+    $files = glob(CLIENT_DIR . "gacha\\*\\*レイド召喚（ヴァルキリープロファイル）_最大*\\*.json");
 
     $sum     = 0;
     $rewards = [];
