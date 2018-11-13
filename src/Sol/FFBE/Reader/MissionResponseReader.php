@@ -418,7 +418,7 @@
          */
         protected function readPassiveSkillSet(array $data, array $ids = []) {
             foreach ($data as $row) {
-                $skillset_id = (int) $row['monster_skill_set_id'];
+                $skillset_id = (int) $row['monster_passive_skill_set_id'];
                 if (!in_array($skillset_id, $ids))
                     continue;
 
