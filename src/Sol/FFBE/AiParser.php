@@ -146,7 +146,7 @@
 
                 case 2: //  ally by id
                 case 6: // enemy by id
-                    $name = Strings::getString($num == 2 ? 'MST_MONSTER_NAME' : 'MST_UNIT_NAME', $num);
+                    $name = Strings::getString($range == 2 ? 'MST_MONSTER_NAME' : 'MST_UNIT_NAME', $num);
 
                     return $name == null
                         ? "{$str}:{$num}"
@@ -458,94 +458,49 @@
                     return "{$unit}.is('{$state}')";
 
                 // actions
-                case "before_turn_guard":
-                    assert($value == 1);
-
-                    return "{$unit}.usedGuardLastTurn()";
-
-                case "before_turn_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.usedNormalAttack()";
-
-                case "before_turn_lb":
-                    assert($value == 1);
-
-                    return "{$unit}.usedLbLastTurn()";
-
-                case "before_turn_sm":
-                    assert($value == 1);
-
-                    return "{$unit}.usedSummonLastTurn()";
-
-                case "before_turn_mg":
-                    assert($value == 1);
-
-                    return "{$unit}.usedMagicLastTurn()";
-
                 case "total_damage_over":
                     return "{$unit}.totalDamage() > {$value}";
-
-                case "before_turn_item_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHitBy('item')";
-
-                case "before_turn_beast_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHitBy('esper')";
-
-                case "before_turn_hit_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHitBy('attack')";
-
-                case "before_turn_magic_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHitBy('spell')";
-
-                case "before_turn_special_attack":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHitBy('ability')";
-
-                case "before_turn_item_heal":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHealedBy('item')";
-
-                case "before_turn_magic_heal":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHealedBy('spell')";
-
-                case "before_turn_special_heal":
-                    assert($value == 1);
-
-                    return "{$unit}.lastTurnHealedBy('ability')";
-
-                case "before_turn_magic_support":
-                    assert($value == 1);
-
-                    return "{$unit}.usedSupportMagicLastTurn()";
-
-                case "before_turn_special_support":
-                    assert($value == 1);
-
-                    return "{$unit}.usedSupportSkillLastTurn()";
 
                 case "special_user_id":
                     // king mog
                     $name = Strings::getString('MST_ABILITY_NAME', $value);
 
-                    return "{$unit}.lastTurnHitBy($value, '{$name}')";
+                    return "{$unit}.hitByLastTurn($value, '{$name}')";
 
                 case "rifrect_mode":
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
                 default:
+                    // enemy actions
+                    if (preg_match('~^before_turn_(.+)$~', $type, $match)) {
+                        $strings = [
+                            'ab'      => 'ability',
+                            'sm'      => 'esper',
+                            'mg'      => 'magic',
+                            'lb'      => 'limitburst',
+                            'special' => 'ability',
+                            'hit'     => 'attack',
+                            'beast'   => 'esper',
+                        ];
+
+                        if (strpos($match[1], '_') === false)
+                            return "{$unit}.usedLastTurn('" . ($strings[$match[1]] ?? $match[1]) . "')";
+
+
+                        [$p, $action] = explode('_', $match[1]);
+                        $p = $strings[$p] ?? $p;
+
+                        switch ($action) {
+                            case 'attack':
+                                return "{$unit}.hitByLastTurn('{$p}')";
+                            case 'heal':
+                                return "{$unit}.healedByLastTurn('{$p}')";
+                            case 'support':
+                                return "{$unit}.supportedWithLastTurn('{$p}')";
+                        }
+                    }
+
+                    // damage types and elements
                     if (preg_match('~^physics_(.+)$~', $type, $match))
                         return ($value == 1 ? 'not ' : '') . "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'physical')";
 

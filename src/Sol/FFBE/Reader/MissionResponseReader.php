@@ -419,7 +419,8 @@
         protected function readPassiveSkillSet(array $data, array $ids = []) {
             foreach ($data as $row) {
                 $skillset_id = (int) $row['monster_passive_skill_set_id'];
-                if (!in_array($skillset_id, $ids))
+
+                if (!empty($ids) && !in_array($skillset_id, $ids))
                     continue;
 
                 $skill_ids = readIntArray($row['monster_passive_skill_set_skill_ids']);
@@ -451,8 +452,8 @@
                 if (!empty($row['monster_skill_set_id']))
                     $this->monster_parts[$monster_id]['skillset_id'][] = $row['monster_skill_set_id'];
 
-                if (!empty($row['passive_skillset_id']))
-                    $this->monster_parts[$monster_id]['passive_skillset_id'][] = $row['passive_skillset_id'];
+                if (!empty($row['monster_passive_skill_set_id']))
+                    $this->monster_parts[$monster_id]['passive_skillset_id'][] = $row['monster_passive_skill_set_id'];
 
                 if (!empty($row['ai_id']))
                     $this->monster_parts[$monster_id]['ai_id'][] = $row['ai_id'];
