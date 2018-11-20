@@ -164,7 +164,7 @@
                 'effects'      => [],
                 'effects_raw'  => "",
                 //
-                'requirements' => $this->readRequirements($row['equip_requirements']),
+                'requirements' => SkillMstList::readRequirements($row['equip_requirements']),
                 'icon'         => IconMstList::getFilename($row['icon_id']),
                 //
                 'strings'      => [],
@@ -232,7 +232,7 @@
                 'effects'          => [],
                 'effects_raw'      => "",
                 //
-                'requirements'     => $this->readRequirements($row['equip_requirements']),
+                'requirements'     => SkillMstList::readRequirements($row['equip_requirements']),
                 'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
                 'icon'             => IconMstList::getFilename($row['icon_id']),
                 //
@@ -274,30 +274,6 @@
             $entry['effects_raw'] = array_map('array_values', $effects[1]);
 
             return $entry;
-        }
-
-        /**
-         * @param $string
-         *
-         * @return array|null
-         */
-        protected function readRequirements($string) {
-            if (empty($string))
-                return null;
-
-            $reqs = GameHelper::readParameters($string, '@');
-            switch ($reqs[0]) {
-                case 1:
-                    return ['SEX', (int) ($reqs[1] ?? 0)];
-
-                case 2:
-                    return ['UNIT_ID', (int) $reqs[1]];
-
-                case 6:
-                    return ['EQUIP', (int) $reqs[1][1]];
-            }
-
-            throw new \LogicException("no type");
         }
 
         /**
