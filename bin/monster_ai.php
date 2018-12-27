@@ -17,9 +17,9 @@
     $monsters = [
         // temp
         [
-            'monster_id'  => 900010543,
-            'skillset_id' => 900010543,
-            'ai_id'       => 900010543,
+            'monster_id'  => 401061000,
+            'skillset_id' => 401061000,
+            'ai_id'       => 401061000,
         ],
         // 3* Levi?
 //        [
