@@ -32,7 +32,9 @@
         }
 
         $max = max(\Sol\FFBE\GameFile::getFileVersions($file_entry) ?: [0]);
-        assert($ver >= $max) or var_dump([$name, $ver, $max]);
+
+        if ($ver > $max)
+            echo "WARNING {$ver} > {$max} for {$name}\n";
 
         if (file_exists($path_out))
             continue;

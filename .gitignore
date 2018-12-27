@@ -42,3 +42,6 @@ $RECYCLE.BIN/
 
 ### JetBrains
 .idea
+monsters.json
+Would skip repository strings/
+temp.json

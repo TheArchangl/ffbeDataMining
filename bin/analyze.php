@@ -10,8 +10,8 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    $entries = \Sol\FFBE\GameFile::loadMst(UnitMstList::getName());
-    $entries = array_map(getLocalizedName('MST_UNIT_NAME', 'unit_id'), $entries);
+    $entries = \Sol\FFBE\GameFile::loadMst('F_DUNGEON_MST');
+    $entries = array_map(getLocalizedName('MST_DUNGEON_NAME', 'dungeon_id'), $entries);
     $entries = arrayGroupValues($entries);
     $entries = toJSON($entries);
 

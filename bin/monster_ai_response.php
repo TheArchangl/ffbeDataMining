@@ -16,8 +16,8 @@
 
     // setup
     $max_num    = 50;
-    $region     = 'gl';
-    $mission_id = (8991106);
+    $region     = 'jp';
+    $mission_id = "9091102";
 
     require_once __DIR__ . "/client_update.php";
 
@@ -33,14 +33,14 @@
     natsort($files);
     rsort($files);
 
-    $entries = array_map("file_get_contents", $files);
 
     // limit to 100 files
-    if (count($entries) > $max_num) {
-        shuffle($entries);
-        $entries = array_slice($entries, 0, $max_num);
+    if (count($files) > $max_num) {
+        shuffle($files);
+        $files = array_slice($files, 0, $max_num);
     }
 
+    $entries = array_map("file_get_contents", $files);
     $entries = array_map(function ($entry) { return json_decode($entry, true); }, $entries);
     $entries = GameFile::replaceKeysRecursive($entries);
 

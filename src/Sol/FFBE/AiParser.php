@@ -10,6 +10,8 @@
     use Solaris\FFBE\GameHelper;
 
     class AiParser {
+        const NUM_VARS         = 30;
+
         /** @var string[] */
         const VAR_NAMES = [
             // persistant flags
@@ -49,25 +51,25 @@
             'black',
             'mauve',
             'azure',
-
-            // global flags
-            31 => 'otter',
-            'tiger',
-            'mouse',
-            'goose',
-            'horse',
-
+//
+//            // global flags
+//            31 => 'otter',
+//            'tiger',
+//            'mouse',
+//            'goose',
+//            'horse',
+//
             // unk
-            36 => 'unk_1',
-            'unk_2',
-            'unk_3',
-            'unk_4',
-            'unk_5',
-            'unk_6',
-            'unk_7',
-            'unk_8',
-            'unk_9',
-            'unk_0',
+            31 => 'var_1',
+            'var_2',
+            'var_3',
+            'var_4',
+            'var_5',
+            'var_6',
+            'var_7',
+            'var_8',
+            'var_9',
+            'var_0',
         ];
 
         /** @var string[] */
@@ -211,12 +213,12 @@
         }
 
         /**
-         * @param int $var_num
+         * @param int $num
          *
          * @return string
          */
-        protected static function getVarName(int $var_num) {
-            return static::VAR_NAMES[$var_num] ?? "var_{$var_num}";
+        protected static function getVarName(int $num) {
+            return static::VAR_NAMES[$num] ?? "unk_{$num}";
         }
 
         /**
@@ -276,7 +278,7 @@
             $temp = GameHelper::readParameters($string, '@,');
 
             $arr = [];
-            $off = [0, 30];
+            $off = [0, static::NUM_VARS];
             foreach ($temp as $k => $flags) {
                 array_pop($flags); // empty last
                 $flags = array_chunk($flags, 2);
@@ -327,6 +329,12 @@
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         $note   = "# reset next turn";
                         break;
+
+                    case 'unknown':
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        $note   = "# unknown";
+                        break;
+
 
                     case 'global':
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
@@ -427,12 +435,12 @@
                 case 'flg_on':
                     return static::getVarName($value) . " == True";
                 case 'flg2_on':
-                    return static::getVarName((int) $value + 30) . " == True";
+                    return static::getVarName((int) $value + static::NUM_VARS) . " == True";
 
                 case 'flg_off':
                     return static::getVarName($value) . " == False";
                 case 'flg2_off':
-                    return static::getVarName((int) $value + 30) . " == False";
+                    return static::getVarName((int) $value + static::NUM_VARS) . " == False";
 
                 // states
                 case 'abnormal_state':
@@ -607,7 +615,9 @@
          * @return string
          */
         private static function formatTargetPriority(string $target) {
-            switch (strtolower($target)) {
+            [$type, $val] = explode(':', strtolower($target)) + [null, 0];
+
+            switch ($type) {
                 case "self":
                     return "self";
 
@@ -628,6 +638,10 @@
 
                 case "mp_max":
                     return "highest MP";
+
+                case "disp_order":
+                    $val++;
+                    return "slot #{$val}";
 
                 case "random":
                 default:
