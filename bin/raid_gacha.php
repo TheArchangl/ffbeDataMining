@@ -10,7 +10,7 @@
 
     // import all requests
     //    $files = glob(__DIR__ . "/requests/gacha/raid_nier/*_GachaExeResponse.json");
-    $files = glob(CLIENT_DIR . "gacha\\*\\*レイド召喚（ヴァルキリープロファイル）_最大*\\*.json");
+    $files = glob(CLIENT_DIR . "gacha\\*\\*レイド召喚（キングダム ハーツ）*\\*.json");
 
     $sum     = 0;
     $rewards = [];

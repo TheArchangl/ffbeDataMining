@@ -17,7 +17,7 @@
     // setup
     $max_num    = 50;
     $region     = 'gl';
-    $mission_id = (8991106);
+    $mission_id = "8530104";
 
     require_once __DIR__ . "/client_update.php";
 

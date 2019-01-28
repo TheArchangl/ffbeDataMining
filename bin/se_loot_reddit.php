@@ -8,6 +8,7 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
 
     $data = `php se_loot.php`;
+
     echo(SELootParser::parse($data));
 
     class Dump {
@@ -290,17 +291,18 @@
 
         public static function parse(string $data) {
             $stages = explode('# Stage ', $data);
-            unset($stages[0]);
+//            unset($stages[0]);
 
             return join('', array_map([static::class, 'parseStage'], $stages));
         }
 
         public static function parseStage(string $data) {
-            if (empty($data))
+            if (empty(trim($data)) || $data == "# Stage ")
                 return "";
 
             $stage = trim(substr($data, 0, 3));
             $loot  = static::readLoot($data);
+
             if ($loot == null)
                 return "";
 
