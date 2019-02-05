@@ -38,11 +38,18 @@
         public function parseData() {
             $this->entries = [];
             $this->lb_map  = [];
+
             foreach (GameFile::loadMst('F_LIMITBURST_MST') as $row)
                 $this->readLimitburstRow($row);
 
             foreach (GameFile::loadMst('F_LIMITBURST_LV_MST') as $row)
                 $this->readLimitburstLevelRow($row);
+
+            foreach ($this->entries as $id => $entry) {
+                assert(max(array_keys($entry['levels'])) == count($entry['levels']));
+                ksort($entry['levels']);
+                $this->entries[$id]['levels'] = array_values($entry['levels']);
+            }
 
             return $this->entries;
         }
@@ -51,7 +58,7 @@
          * @param array $row
          */
         public function readLimitburstRow(array $row) {
-            $lb_id = (int)$row['lb_id'];
+            $lb_id = (int) $row['lb_id'];
             $names = GameFile::getRegion() == 'jp'
                 ? []
                 : Strings::getStrings('MST_LIMITBURST_NAME', $lb_id);
@@ -67,14 +74,14 @@
                 'effect_frames'   => [],
 
                 //
-                'move_type'       => (int)$row['move_type'],
+                'move_type'       => (int) $row['move_type'],
                 //
                 'damage_type'     => GameHelper::ATTACK_TYPE[$row['attack_type']],
                 'element_inflict' => GameHelper::readElement($row['element_inflict']) ?: null,
                 //
-                'levels'          => 0,
                 'min_level'       => [],
                 'max_level'       => [],
+                'levels'          => [],
 
                 //
                 'strings'         => [
@@ -99,20 +106,14 @@
             // if ($row['level'] != 1 && $row['level'] != 15 && $row['level'] != 20 && $row['level'] != 25)
             //     continue;
 
-            $lb_id  = (int)$row['lb_id'];
+            $lb_id  = (int) $row['lb_id'];
             $lb_row = $this->lb_map[$lb_id] ?? null;
             if ($lb_row == null)
                 return;
 
             $entry =& $this->entries[$lb_id];
-            $level = (int)$row['level'];
+            $level = (int) $row['level'];
             $cost  = $row['cost'] / 100;
-
-            $lvl_entry = [
-                'cost'        => $cost,
-                'effects'     => null,
-                'effects_raw' => null,
-            ];
 
             $combined_row = [
                 MstKey::TARGET_RANGE => $lb_row['target_range'],
@@ -127,15 +128,14 @@
             $skill->elements    = GameHelper::readElement($lb_row['element_inflict'], true);
             $skill->effects     = SkillMstList::parseEffects($combined_row, true);
 
-            $lvl_entry['effects']     = SkillFormatter::formatEffects($skill, $this->skill_mst);
-            $lvl_entry['effects_raw'] = SkillFormatter::formatEffectsRaw($skill);
+            $entry['levels'][$level] = [$cost, SkillFormatter::formatEffectsRaw($skill)];
+
 
             if (empty($entry['min_level']))
-                $entry['min_level'] = $lvl_entry;
+                $entry['min_level'] = SkillFormatter::formatEffects($skill, $this->skill_mst);
 
-            else {
-                $entry['max_level'] = $lvl_entry;
-                $entry['levels']    = $level;
-            }
+            else
+                $entry['max_level'] = SkillFormatter::formatEffects($skill, $this->skill_mst);
+
         }
     }
