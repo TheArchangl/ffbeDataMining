@@ -17,6 +17,7 @@
     use Solaris\FFBE\Mst\MonsterSkillMstList;
     use Solaris\FFBE\Mst\SkillMstList;
     use Solaris\FFBE\MstKey;
+    use Solaris\Formatter\SkillEffectFormatter;
     use Solaris\Formatter\SkillFormatter;
 
     class MissionResponseReader {
@@ -536,9 +537,7 @@
          */
         protected function formatSkill($id, $skill) {
             $name    = $skill['name'];
-            $effects = $skill['effects'];
-            $effects = array_map(function ($str) { return str_replace("\n", "\n#  ", $str); }, $effects);
-            $effects = join($effects, "\n#  ");
+            $effects = SkillFormatter::format($skill['mst'], $this->skill_mst_list, "\n#  ", true);
 
             $attack_type = $skill['attack_type'] == 99
                 ? 'Passive'

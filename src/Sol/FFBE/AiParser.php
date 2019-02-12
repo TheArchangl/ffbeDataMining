@@ -9,6 +9,9 @@
 
     use Solaris\FFBE\GameHelper;
 
+    ini_set('zend.assertions', true);
+    ini_set('assert.active', true);
+
     class AiParser {
         /** @var string[] */
         const VAR_NAMES = [
@@ -50,19 +53,12 @@
             'mauve',
             'azure',
 
-            // global flags
+            // unk
             31 => 'otter',
             'tiger',
             'mouse',
             'goose',
             'horse',
-
-            // unk
-            36 => 'unk_1',
-            'unk_2',
-            'unk_3',
-            'unk_4',
-            'unk_5',
             'unk_6',
             'unk_7',
             'unk_8',
@@ -302,14 +298,17 @@
             $code = '';
             foreach ($flags as list($var_num, $value)) {
                 $note   = '';
-                $action = '';
                 $letter = static::getVarName($var_num);
                 $type   = static::getVarType($var_num);
 
                 switch ($type) {
                     default:
-                        $action = "{$letter}  = $value";
+                    case 'unknown':
+                        assert(in_array($value, [0, 1]));
+                        $note   = "# unknown flag type";
+                        $action = "{$letter} = " . ($value ? 'True' : 'False');
                         break;
+
 
                     case 'counter':
                         if ($value == 1)
@@ -324,13 +323,8 @@
                         break;
 
                     case 'volatile':
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         $note   = "# reset next turn";
-                        break;
-
-                    case 'global':
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        $note   = "# global";
                         break;
 
                     case 'flag':
@@ -597,6 +591,9 @@
 
             if ($num < 31)
                 return 'counter';
+
+            if ($num < 36)
+                return 'volatile';
 
             return 'unknown';
         }
