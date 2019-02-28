@@ -334,6 +334,11 @@
 
                     return "Use {$names}";
 
+                case '8':
+                    $names = self::getSkillNames($vals);
+
+                    return "Don't use {$names}";
+
                 case '21':
                     $names = self::getSkillNames($vals);
 
@@ -353,7 +358,7 @@
 
                 case '30':
                     $name = Strings::getString('MST_BEAST_NAME', $vals[0])
-                    ?? "Esper #{$vals[0]}";
+                        ?? "Esper #{$vals[0]}";
 
                     return "Evoke {$name}";
 
@@ -552,7 +557,18 @@
                             return 'Defeat the boss';
 
                         default:
-                            return "Unknown rule {$vals[0]}: " . Strings::getString('MST_RULE_COND', $vals[0]);
+                            $desc = Strings::getString('MST_RULE_COND', $vals[0]);
+
+                            /*if ($desc == null) {
+                                $entries = GameFile::loadMst('F_RULE_MST');
+                                $entries = array_combine(array_map("current", $entries), $entries);
+
+                                $desc = $entries[$vals[0]]['desc'];
+                                $desc = utf8_decode($desc);
+                            }
+                             */
+
+                            return "Unknown rule {$vals[0]}: {$desc}";
                     }
 
                 // GE timed dungeons
