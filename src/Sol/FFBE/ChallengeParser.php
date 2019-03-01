@@ -305,7 +305,10 @@
 
                 case '13':
                     assert(count($vals) == 1);
-                    $type = (GameHelper::MAGIC_TYPE[$vals[0]]);
+                    if (count($vals) == 0)
+                        return "Use any[?] magic";
+
+                    $type = GameHelper::MAGIC_TYPE[$vals[0]];
 
                     return "Use {$type} magic";
 
