@@ -1120,7 +1120,8 @@
                     self::decodeFile(
                         DATA_ENCODED_DIR . "{$region}/{$entry->name}_v{$version}.txt",
                         DATA_DECODED_DIR . "{$region}/{$entry->name}.txt",
-                        $entry->key
+                        $entry->key,
+                        $region
                     );
 
                     if (filesize(DATA_DECODED_DIR . "{$region}/{$entry->name}.txt") == 0)
@@ -1132,7 +1133,7 @@
             }
         }
 
-        public static function decodeFile($in_path, $out_path, $key) {
+        public static function decodeFile($in_path, $out_path, $key, $region = null) {
             if (!file_exists($in_path))
                 throw new \LogicException("File does not exist: {$in_path}");
 
@@ -1140,7 +1141,11 @@
                 throw new \LogicException("Invalid key: {$key}");
 
             $data = file_get_contents($in_path);
-            $data = AES::decode($data, $key);
+
+            if ($region ?? GameFile::getRegion() == 'jp')
+                $data = AES::decodeV2($data, $key);
+            else
+                $data = AES::decode($data, $key);
 
             file_put_contents($out_path, $data);
         }
