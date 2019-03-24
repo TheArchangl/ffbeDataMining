@@ -151,15 +151,14 @@
         /**
          * @param string $file
          * @param bool   $showMonsterInfo
-         *
-         * @throws \Exception
+         * @param bool   $append
          */
-        public function saveOutput($file, $showMonsterInfo = true) {
+        public function saveOutput($file, $showMonsterInfo = true, $append = false) {
             ob_start();
             $this->printOutput($showMonsterInfo);
             $output = ob_get_clean();
 
-            file_put_contents($file, $output);
+            file_put_contents($file, $output, $append ? FILE_APPEND : 0);
         }
 
         public function printRelatedSkills($row) {

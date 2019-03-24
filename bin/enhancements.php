@@ -11,13 +11,16 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
+    $skills  = $container[\Solaris\FFBE\Mst\SkillMstList::class];
     $entries = [];
     foreach (GameFile::loadMst('SublimationMstList') as $row) {
         $enhancement_id = (int) $row['enhancement_id'];
         // $names    = Strings::getStrings('MST_BEAST_NAME', $enhancement_id);
 
         if ($region == 'jp') {
-            $names        = [$container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($row['skill_id_old'])->name];
+            $skill_id     = $row['skill_id_old']; //str_pad(, 6, '0', STR_PAD_RIGHT);
+            $entry        = $skills->getEntry($skill_id);
+            $names        = [($entry == null) ? 'UNKNOWN' : $entry->name];
             $descriptions = [$row['47s39AqP']];
         } else {
             $names = Strings::hasStrings('MST_MAGIC_NAME', $row['skill_id_old'])

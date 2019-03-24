@@ -17,7 +17,7 @@
     // setup
     $max_num    = 50;
     $region     = 'gl';
-    $mission_id = "8530104";
+    $mission_id = "8993501";
 
     require_once __DIR__ . "/client_update.php";
 
@@ -25,7 +25,6 @@
     GameFile::setRegion($region);
 
     $files = glob(CLIENT_DIR . "missions\\{$region}\\*\\{$mission_id}\\*");
-
     if (empty($files))
         die ("No file found");
 
@@ -33,16 +32,26 @@
     natsort($files);
     rsort($files);
 
-    $entries = array_map("file_get_contents", $files);
-
     // limit to 100 files
-    if (count($entries) > $max_num) {
-        shuffle($entries);
-        $entries = array_slice($entries, 0, $max_num);
+    shuffle($files);
+    if (count($files) > $max_num) {
+        $files = array_slice($files, 0, $max_num);
     }
 
-    $entries = array_map(function ($entry) { return json_decode($entry, true); }, $entries);
-    $entries = GameFile::replaceKeysRecursive($entries);
+    $missions = [];
+    foreach ($files as $file) {
+        $data = file_get_contents($file);
+        $data = json_decode($data, true);
+        $data = GameFile::replaceKeysRecursive($data);
+        $data = $data['body']['data'] ?? null;
+        if ($data == null)
+            continue;
+
+        $row = $data['MissionStartRequest'][0];
+        $id  = (int) $row['mission_id'];
+
+        $missions[$id][] = $data;
+    }
 
     // update ai etc
     require_once __DIR__ . "/client_update.php";
@@ -56,11 +65,19 @@
     }
 
     // output
-    $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
-    foreach ($entries as $entry)
-        if (isset($entry['body']['data']))
-            $reader->readResponse($entry['body']['data']);
+    $reader = null;
+    $outfile = DATA_OUTPUT_DIR . "/monster_ai_response_result.txt";
+    unlink($outfile);
+
+    foreach ($missions as $mission_id => $entries) {
+        $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
+        foreach ($entries as $data)
+            $reader->readResponse($data);
+
+        $reader->saveOutput($outfile, true, true);
+    }
+
+    if ($reader instanceof MissionResponseReader)
+        $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');
 
 
-    $reader->saveOutput(DATA_OUTPUT_DIR . "/monster_ai_response_result.txt", true);
-    $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');

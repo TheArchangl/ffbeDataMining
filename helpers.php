@@ -109,7 +109,7 @@
     function parseReward($string) {
         $rest = explode(':', $string);
         $type = array_shift($rest);
-        $id   = array_shift($rest);
+        $id   = trim(array_shift($rest));
         $num  = array_shift($rest);
 
         switch ($type) {
@@ -174,6 +174,7 @@
 
         if (!isset($name))
             $name = Strings::getString($str_db, $id, 0);
+
 
         if ($name == null) {
             $items = GameFile::loadMst('F_' . substr($mst_name, 4) . '_MST');

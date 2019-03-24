@@ -38,9 +38,11 @@
             continue;
 
         $data = file_get_contents($path_in);
-        $data = AES::encodeGameFile($data, $file_entry->getKey());
+        $data = AES::encodeGameFile($data, $file_entry->getKey(), $region);
 
         file_put_contents($path_out, $data);
+
+        touch($path_out, filemtime($path_in));
 
         $updated[] = $name;
     }
@@ -53,7 +55,7 @@
 
         echo "\t{$entry->getName()} -> v{$ver}\n";
 
-        \Sol\FFBE\GameFile::decodeFile(DATA_ENCODED_DIR . "/{$region}/{$filename}_v{$ver}.txt",  DATA_DECODED_DIR. "/{$region}/{$filename}.txt", $entry->getKey());
+        \Sol\FFBE\GameFile::decodeFile(DATA_ENCODED_DIR . "/{$region}/{$filename}_v{$ver}.txt", DATA_DECODED_DIR . "/{$region}/{$filename}.txt", $entry->getKey());
     }
 
     echo "\n";

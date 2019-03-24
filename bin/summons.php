@@ -124,26 +124,6 @@
 
     // Board
     $boards = [];
-    const REWARD_TYPE = [
-        10 => 'HP',
-        11 => 'MP',
-        12 => 'ATK',
-        13 => 'DEF',
-        14 => 'MAG',
-        15 => 'SPR',
-
-        20 => 'MAGIC',
-        21 => 'ABILITY',
-
-        100 => 'FireRes',
-        'IceRes',
-        'LightningRes',
-        'WaterRes',
-        'WindRes',
-        'EarthRes',
-        'LightRes',
-        'DarkRes',
-    ];
     // build parent map
     $parent_map = [];
     foreach (GameFile::loadMst('BeastBoardPieceMstList') as $row) {
@@ -165,7 +145,7 @@
         $reward = null;
         if ($row['reward_type'] != 0)
             $reward = [
-                REWARD_TYPE[$row['reward_type']],// ?? "Unknown {$row['reward_type']}",
+                \Solaris\FFBE\Mst\BeastBoardPieceMst::REWARD_TYPE[$row['reward_type']],// ?? "Unknown {$row['reward_type']}",
                 (int) $row['reward_param'],
             ];
 
@@ -176,6 +156,7 @@
             'cost'           => (int) $row['point'],
         ];
 
+        assert(count($boards[$beast_id]) == $row['index']);
         $boards[$beast_id][$node_id] = $entry;
     }
 

@@ -24,7 +24,7 @@
 
     $difficulties = [];
     foreach (GameFile::loadMst('F_EXPEDITION_DIFFICULTY_MST') as $row) {
-        $id = (int)$row['DifficultyId'];
+        $id = (int) $row['DifficultyId'];
 
         $difficulties[$id] = $row;
     }
@@ -39,7 +39,10 @@
         if ($row['RecommendedType'] == null)
             return null;
 
-        [$type, $value, $bonus] = explode(':', $row['RecommendedType']);
+        [$type, $value, $bonus] = explode(':', $row['RecommendedType']) + [null, null, null];
+
+        if (in_array(null, [$type, $value, $bonus]))
+            return null;
 
         switch ($type) {
             case 1:
@@ -48,7 +51,7 @@
             case 4:
                 // magic level
                 $type  = MAGIC_TYPE_EXPED[$type] . ' magic';
-                $value = (int)$value;
+                $value = (int) $value;
                 break;
 
             case 0:
@@ -70,45 +73,28 @@
         return [
             'type'  => $type,
             'value' => $value,
-            'bonus' => (int)$bonus,
+            'bonus' => (int) $bonus,
         ];
     }
 
     foreach (GameFile::loadMst('F_EXPEDITION_MST') as $row) {
-        $id = (int)$row['ExpdId'];
+        $id = (int) $row['ExpdId'];
 
         $diff = $difficulties[$row['DifficultyId']];
-        /*
-         *
-        Host:	lapisv220.gumi.sg
-        Connection:	keep-alive
-        Content-Length:	74
-        Accept:	text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*\/*;q=0.8
-        Origin:	null
-        User-Agent:	Mozilla/5.0 (Linux; Android 4.4.2; SM-G930x Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36
-        content-type:	application/x-www-form-urlencoded
-        Accept-Encoding:	gzip,deflate
-        Accept-Language:	en-US
-        X-Requested-With:	com.square_enix.android_googleplay.FFBEWW
 
-         ?Platform:    2
-        friendID:     515111887
-        localization: en
-        model:        SM-G930x_android4.4.2
-         */
         $entry = [
             'name'       => $row['name'],
-            'type'       => (int)$row['type'],
-            'cost'       => (int)$row['cost'] ?: null,
+            'type'       => (int) $row['type'],
+            'cost'       => (int) $row['cost'] ?: null,
             'rank'       => $diff['name'],
-            'difficulty' => (int)$row['ChallengeValue'],
-            'duration'   => (int)$diff['Duration'],
-            'units'      => (int)$row['UnitCount'],
+            'difficulty' => (int) $row['ChallengeValue'],
+            'duration'   => (int) $diff['Duration'],
+            'units'      => (int) $row['UnitCount'],
             'required'   => $row['RequiredUnitSeriesList'] == 0
                 ? null
                 : \Sol\FFBE\Strings::getString('MST_UNIT_NAME', $row['RequiredUnitSeriesList']),
 
-            'next_id'        => (int)$row['NextExpdId'] ?: null,
+            'next_id'        => (int) $row['NextExpdId'] ?: null,
 
             // rewards
             'reward'         => null,
@@ -117,15 +103,15 @@
 
             // diff?
             'unit_bonus'     => null,
-            'unit_bonus_max' => (int)$row['MaxContributionPerChar'],
+            'unit_bonus_max' => (int) $row['MaxContributionPerChar'],
             'item_bonus'     => null,
             'stat_bonus'     => [
-                'HP'  => (int)$row['bonus_hp'],
-                'MP'  => (int)$row['bonus_mp'],
-                'ATK' => (int)$row['bonus_atk'],
-                'DEF' => (int)$row['bonus_def'],
-                'MAG' => (int)$row['weight_mag'],
-                'SPR' => (int)$row['weight_spr'],
+                'HP'  => (int) $row['bonus_hp'],
+                'MP'  => (int) $row['bonus_mp'],
+                'ATK' => (int) $row['bonus_atk'],
+                'DEF' => (int) $row['bonus_def'],
+                'MAG' => (int) $row['weight_mag'],
+                'SPR' => (int) $row['weight_spr'],
             ],
 
             'strings' => [
@@ -137,20 +123,22 @@
         $relics = parseReward($row['RelicReward']);
         assert($relics[1] == 1209000808);
 
-        $entry['relics'] = (int)$relics[3];
+        $entry['relics'] = (int) $relics[3];
         $entry['reward'] = array_combine(
             ['type', 'id', 'name', 'amount'],
             array_slice(parseReward($row['DisplayReward']), 0, 4)
         );
 
-        if ($row['ConsumableItemList'] != null) {
-            $bonus = parseReward($row['ConsumableItemList']);
+        if (in_array($row['ConsumableItemList'], ["NULL", null]))
+            $entry['item_bonus'] = null;
 
+        else {
+            $bonus               = parseReward($row['ConsumableItemList']);
             $entry['item_bonus'] = [[
-                                        'id'     => (int)$bonus[1],
+                                        'id'     => (int) $bonus[1],
                                         'name'   => $bonus[2],
-                                        'amount' => (int)$bonus[3],
-                                        'bonus'  => (int)$bonus[4][0],
+                                        'amount' => (int) $bonus[3],
+                                        'bonus'  => (int) $bonus[4][0],
                                     ]];
         }
 

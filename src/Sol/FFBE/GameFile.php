@@ -8,6 +8,8 @@
     namespace Sol\FFBE;
 
     use Solaris\FFBE\AES;
+    use Solaris\FFBE\Client\ClientGL;
+    use Solaris\FFBE\Client\ClientJP;
 
     class GameFile {
         /** @var  GameFile[] */
@@ -1080,7 +1082,6 @@
             $file = self::getFilePath($input);
 
             // read file
-
             $file = new \SplFileObject($file);
             $file->setFlags(\SplFileObject::DROP_NEW_LINE | \SplFileObject::SKIP_EMPTY);
 
@@ -1107,7 +1108,6 @@
             if (self::$files == null)
                 self::init();
 
-            // foreach (['gl', 'jp'] as $region)
             foreach (self::$files as $file => $entry) {
                 try {
                     $versions = self::getFileVersions($entry, $region);
@@ -1121,7 +1121,7 @@
                         DATA_ENCODED_DIR . "{$region}/{$entry->name}_v{$version}.txt",
                         DATA_DECODED_DIR . "{$region}/{$entry->name}.txt",
                         $entry->key,
-                        $region
+                        $region == 'jp' ? ClientJP::IV : ClientGL::IV
                     );
 
                     if (filesize(DATA_DECODED_DIR . "{$region}/{$entry->name}.txt") == 0)
@@ -1133,7 +1133,7 @@
             }
         }
 
-        public static function decodeFile($in_path, $out_path, $key, $region = null) {
+        public static function decodeFile($in_path, $out_path, $key, $iv = null) {
             if (!file_exists($in_path))
                 throw new \LogicException("File does not exist: {$in_path}");
 
@@ -1141,11 +1141,7 @@
                 throw new \LogicException("Invalid key: {$key}");
 
             $data = file_get_contents($in_path);
-
-            if ($region ?? GameFile::getRegion() == 'jp')
-                $data = AES::decodeV2($data, $key);
-            else
-                $data = AES::decode($data, $key);
+            $data = AES::decode($data, $key, $iv);
 
             file_put_contents($out_path, $data);
         }
