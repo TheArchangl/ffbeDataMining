@@ -1,29 +1,25 @@
 <?php
 
-
-    use Solaris\FFBE\AES;
-
     require_once dirname(__DIR__) . "/bootstrap.php";
 
     const OVERWRITE = false;
     $client_dir = CLIENT_DIR . "files\\{$region}";
 
     //
-    echo "Updating from client files\n";
+    echo "Updating from {$region} client files\n";
 
+    $updated = [];
     $files   = file_get_contents("{$client_dir}/versions.json");
     $files   = json_decode($files, true);
-    $updated = [];
     foreach ($files as $k => $entry) {
         $name = $entry['Name'];
         $ver  = $entry['Version'];
 
-        $path_in  = "{$client_dir}/{$name}.txt";
-        $path_out = realpath(DATA_ENCODED_DIR . "/{$region}") . "/{$name}_v{$ver}.txt";
-
-
-        if (!file_exists($path_in))
+        $path_in = "{$client_dir}/{$name}.txt";
+        if (!file_exists($path_in)) {
+            echo "Could not find file for {$name} v{$ver}\n";
             continue;
+        }
 
         $file_entry = \Sol\FFBE\GameFile::getEntry($name);
         if ($file_entry == null) {
@@ -31,31 +27,22 @@
             continue;
         }
 
-        $max = max(\Sol\FFBE\GameFile::getFileVersions($file_entry) ?: [0]);
-        assert($ver >= $max) or var_dump([$name, $ver, $max]);
+        // copy to backup
+        $mod_time = filemtime($path_in);
+        $path_out = DATA_BACKUP_DIR . "/{$region}/{$name}_v{$ver}.txt";
+        if (OVERWRITE || !is_file($path_out)) {
+            copy($path_in, $path_out);
+            touch($path_out, $mod_time);
+            $updated = true;
+        }
 
-        if (file_exists($path_out))
-            continue;
+        // update most recent file
+        $max_ver  = max(\Sol\FFBE\GameFile::getFileVersions($file_entry) ?: [0]);
+        $path_out = DATA_INPUT_DIR . "/{$region}/{$name}.txt";
 
-        $data = file_get_contents($path_in);
-        $data = AES::encodeGameFile($data, $file_entry->getKey(), $region);
-
-        file_put_contents($path_out, $data);
-
-        touch($path_out, filemtime($path_in));
-
-        $updated[] = $name;
+        if ((OVERWRITE || !is_file($path_out) && $ver >= $max_ver)) {
+            echo "\t{$file_entry->getName()} -> v{$ver}\n";
+            copy($path_in, $path_out);
+            touch($path_out, $mod_time);
+        }
     }
-
-    // run decode.php !
-    foreach ($updated as $filename) {
-        $entry = \Sol\FFBE\GameFile::getEntry($filename);
-        $ver   = \Sol\FFBE\GameFile::getFileVersions($entry, $region);
-        $ver   = max($ver);
-
-        echo "\t{$entry->getName()} -> v{$ver}\n";
-
-        \Sol\FFBE\GameFile::decodeFile(DATA_ENCODED_DIR . "/{$region}/{$filename}_v{$ver}.txt", DATA_DECODED_DIR . "/{$region}/{$filename}.txt", $entry->getKey());
-    }
-
-    echo "\n";

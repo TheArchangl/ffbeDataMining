@@ -1119,12 +1119,12 @@
                     echo "{$entry->name}\n";
                     self::decodeFile(
                         DATA_ENCODED_DIR . "{$region}/{$entry->name}_v{$version}.txt",
-                        DATA_DECODED_DIR . "{$region}/{$entry->name}.txt",
+                        DATA_INPUT_DIR . "{$region}/{$entry->name}.txt",
                         $entry->key,
                         $region == 'jp' ? ClientJP::IV : ClientGL::IV
                     );
 
-                    if (filesize(DATA_DECODED_DIR . "{$region}/{$entry->name}.txt") == 0)
+                    if (filesize(DATA_INPUT_DIR . "{$region}/{$entry->name}.txt") == 0)
                         throw new \Exception('Empty output');
 
                 } catch (\Exception $e) {
@@ -1143,30 +1143,14 @@
             $data = file_get_contents($in_path);
             $data = AES::decode($data, $key, $iv);
 
+            if ($data[0] != '{' || $data[-1] != '}')
+                throw new \RuntimeException("{$in_path} not correctly decoded: " . substr($data, 0, 10));
+
             file_put_contents($out_path, $data);
         }
 
-        public static function getVersions($region) {
-            $files = glob(DATA_ENCODED_DIR . "{$region}/Ver*_*.dat");
-            if (empty($files))
-                return [];
-
-            // trim files
-            $versions = [];
-            foreach ($files as $file) {
-                $filename = basename($file, '.dat');
-                $filename = substr($filename, 3);
-                var_dump($filename);
-                die();
-            }
-
-            natsort($versions);
-
-            return $versions;
-        }
-
         public static function getFileVersions(GameFile $entry, $region = 'gl') {
-            $versions = glob(DATA_ENCODED_DIR . "/{$region}/{$entry->getName()}_v*.txt");
+            $versions = glob(DATA_BACKUP_DIR . "/{$region}/{$entry->getName()}_v*.txt");
             if (empty($versions))
                 return [];
 
@@ -1255,7 +1239,7 @@
             else
                 $region = static::$region;
 
-            $file = DATA_DECODED_DIR . "/" . $region . "/{$input->getName()}.txt";
+            $file = DATA_INPUT_DIR . "/{$region}/{$input->getName()}.txt";
 
             if (!file_exists($file))
                 throw new \LogicException("File {$file} for {$input->name} missing!");

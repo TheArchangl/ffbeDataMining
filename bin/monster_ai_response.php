@@ -69,6 +69,7 @@
     $outfile = DATA_OUTPUT_DIR . "/monster_ai_response_result.txt";
     unlink($outfile);
 
+    ksort($missions);
     foreach ($missions as $mission_id => $entries) {
         $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
         foreach ($entries as $data)

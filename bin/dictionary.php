@@ -9,8 +9,8 @@
 
     $dictionary = [];
 
-    $files = glob(DATA_DECODED_DIR . \Sol\FFBE\GameFile::getRegion() . "/F_TEXT_*");
-    var_dump($files);
+    $files = glob(DATA_INPUT_DIR . \Sol\FFBE\GameFile::getRegion() . "/F_TEXT_*");
+     var_dump($files);
 
     foreach ($files as $file) {
     }

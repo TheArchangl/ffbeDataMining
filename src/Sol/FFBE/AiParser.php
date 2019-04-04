@@ -465,6 +465,8 @@
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
                 default:
+                    $negate = ($value == 1 ? '' : 'not ');
+
                     // enemy actions
                     if (preg_match('~^before_turn_(.+)$~', $type, $match)) {
                         $strings = [
@@ -478,7 +480,7 @@
                         ];
 
                         if (strpos($match[1], '_') === false)
-                            return "{$unit}.usedLastTurn('" . ($strings[$match[1]] ?? $match[1]) . "')";
+                            return "{$negate}{$unit}.usedLastTurn('" . ($strings[$match[1]] ?? $match[1]) . "')";
 
 
                         [$p, $action] = explode('_', $match[1]);
@@ -486,22 +488,26 @@
 
                         switch ($action) {
                             case 'attack':
-                                return "{$unit}.hitByLastTurn('{$p}')";
+                                return "{$negate}{$unit}.hitByLastTurn('{$p}')";
                             case 'heal':
-                                return "{$unit}.healedByLastTurn('{$p}')";
+                                return "{$negate}{$unit}.healedByLastTurn('{$p}')";
                             case 'support':
-                                return "{$unit}.supportedWithLastTurn('{$p}')";
+                                return "{$negate}{$unit}.supportedWithLastTurn('{$p}')";
                         }
                     }
 
                     // damage types and elements
-                    if (preg_match('~^physics_(.+)$~', $type, $match))
-                        return ($value == 1 ? 'not ' : '') . "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'physical')";
+                    if (preg_match('~^physics_(.+)$~', $type, $match)) {
+                        assert($value == 0);
 
-                    elseif (preg_match('~^magic_(.+?)$~', $type, $match))
-                        return ($value == 1 ? 'not ' : '') . "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'magical')";
+                        return "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'physical')";
+                    } elseif (preg_match('~^magic_(.+?)$~', $type, $match)) {
+                        assert($value == 0);
 
-                    return "{$unit}.is('{$type}:{$value}')";
+                        return "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'magical')";
+                    }
+
+                    return "{$negate}{$unit}.is('{$type}:{$value}')";
             }
         }
 

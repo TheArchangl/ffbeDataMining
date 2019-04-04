@@ -1,7 +1,8 @@
 ### Project specific
 csv/
 dat_enc/
-dat_raw/
+dat_dec/
+dat_bak/
 data/
 etc/
 src/Solaris/

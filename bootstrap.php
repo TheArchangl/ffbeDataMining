@@ -15,8 +15,9 @@
     use Solaris\FFBE\Mst\SkillMstList;
 
     const ROOT_DIR         = __DIR__;
+    const DATA_BACKUP_DIR  = __DIR__ . "/dat_bak/";
     const DATA_ENCODED_DIR = __DIR__ . "/dat_enc/";
-    const DATA_DECODED_DIR = __DIR__ . "/dat_raw/";
+    const DATA_INPUT_DIR   = __DIR__ . "/dat_dec/";
     const DATA_OUTPUT_DIR  = __DIR__ . "/data/";
     const CLIENT_DIR       = 'C:\Arbeit\FFBE\client\\';
 

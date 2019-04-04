@@ -43,7 +43,7 @@
     // exit;
 
     // decode
-    chdir(DATA_DECODED_DIR . "/{$region}");
+    chdir(DATA_INPUT_DIR . "/{$region}");
     foreach ($result as $name => $versions) {
         $key = \Sol\FFBE\GameFile::getFileKey($name);
         if ($key == '-' || empty($key))
@@ -51,7 +51,7 @@
 
         foreach ($versions as $version) {
             $infile  = DATA_ENCODED_DIR . "/{$region}/{$name}_v{$version}.txt";
-            $outfile = DATA_DECODED_DIR . "/{$region}/{$name}.txt";
+            $outfile = DATA_BACKUP_DIR . "/{$region}/{$name}_v{$version}.txt";
 
             if (!file_exists($infile))
                 continue;

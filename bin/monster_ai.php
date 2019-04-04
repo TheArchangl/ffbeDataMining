@@ -394,7 +394,7 @@
     foreach (glob('C:\Users\aEnigma\Desktop\client\files\gl\F_TEXT_*.txt') as $file)
         Strings::readFile($file);
 
-    foreach (glob(DATA_DECODED_DIR . "gl/F_TEXT_*.txt") as $file)
+    foreach (glob(DATA_INPUT_DIR . "gl/F_TEXT_*.txt") as $file)
         Strings::readFile($file);
 
     // output
