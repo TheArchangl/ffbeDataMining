@@ -12,14 +12,13 @@
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once __DIR__ . "/../helpers.php";
-
+    $region     = 'gl';
+    $mission_id = "8993601";
 
     // setup
-    $max_num    = 50;
-    $region     = 'gl';
-    $mission_id = "8993501";
-
+    $max_num = 50;
     require_once __DIR__ . "/client_update.php";
+    require_once __DIR__ . "/generate_strings.php";
 
     // read data
     GameFile::setRegion($region);
@@ -65,9 +64,11 @@
     }
 
     // output
-    $reader = null;
+    $reader  = null;
     $outfile = DATA_OUTPUT_DIR . "/monster_ai_response_result.txt";
-    unlink($outfile);
+
+    if (is_file($outfile))
+        unlink($outfile);
 
     ksort($missions);
     foreach ($missions as $mission_id => $entries) {

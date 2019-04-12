@@ -49,13 +49,15 @@
          */
         public function __construct($region, MetaMstList $skills, $isFake = false) {
             $this->region         = $region;
-            $this->skill_mst_list = $skills;
+            $this->skill_mst_list = new MetaMstList($skills->getClient());
             $this->isFake         = $isFake;
 
             // register monster skills
             $this->monster_skill_list = new MonsterSkillMstList();
             $this->monster_skill_list->readFile();
-            $skills->addList($this->monster_skill_list);
+
+            $this->skill_mst_list->addList($this->monster_skill_list);
+            $this->skill_mst_list->addList($skills);
 
             $this->related_skills = [];
         }
@@ -614,8 +616,9 @@
          * @throws \Exception
          */
         private function printMonsterInfo($row): void {
-            $id   = (int) $row['monster_unit_id'];
-            $name = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
+            $id    = (int) $row['monster_unit_id'];
+            $ai_id = (int) $row['ai_id'];
+            $name  = Strings::getString('MST_MONSTER_NAME', $id) ?? $row['name'];
 
             if (isset($this->monster_parts["{$row['monster_unit_id']}.2"]))
                 $name .= " " . range('A', 'Z')[$row['monster_parts_num'] - 1];
@@ -628,7 +631,8 @@
 
             print "##\n# Monster Info\n##\n";
             print "#\n";
-            printf("# Monster  %s (%d)\n", $name, $id);
+            printf("# Monster  %s (%s)\n", $name, join(", ", array_unique([$id, $ai_id])));
+
             printf("# Race     %s\n", $tribes);
             printf("# Level    %s\n", $row['level']);
             printf("# Actions  %s\n", str_replace(',', '-', $row['num_actions']));

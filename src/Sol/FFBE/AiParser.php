@@ -233,6 +233,9 @@
                     if ($skill_num == 0)
                         return ["useRandomSkill('{$target}')", ''];
 
+                    if ($skill_num == -1)
+                        return ["useRandomSkill('{$target}')", '# [?]'];
+
                     $action = "useSkill({$skill_num}, '{$target}')";
 
                     // get skill id from num
@@ -461,53 +464,106 @@
 
                     return "{$unit}.hitByLastTurn($value, '{$name}')";
 
+                case "magic_user_id":
+                    // Demon Wall
+                    $name = Strings::getString('MST_MAGIC_NAME', $value);
+
+                    return "{$unit}.hitByLastTurn($value, '{$name}')";
+
                 case "rifrect_mode":
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
-                default:
+
+                case "before_turn_ab":
+                case "before_turn_attack":
+                case "before_turn_beast_attack":
+                case "before_turn_guard":
+                case "before_turn_hit_attack":
+                case "before_turn_item_attack":
+                case "before_turn_lb":
+                case "before_turn_magic_attack":
+                case "before_turn_magic_heal":
+                case "before_turn_magic_support":
+                case "before_turn_mg":
+                case "before_turn_sm":
+                case "before_turn_special_attack":
+                case "before_turn_special_heal":
+                case "before_turn_special_support":
+                    $negate  = ($value == 1 ? '' : 'not ');
+                    $strings = [
+                        'ab'      => 'ability',
+                        'sm'      => 'esper',
+                        'mg'      => 'magic',
+                        'lb'      => 'limitburst',
+                        'special' => 'ability',
+                        'hit'     => 'attack',
+                        'beast'   => 'esper',
+                    ];
+
+
+                    $skill_type  = substr($type, 12);
+                    $action_type = substr($skill_type, strrpos($skill_type, '_') + 1);
+                    $skill_type  = $strings[$skill_type] ?? $skill_type;
+
+                    switch ($action_type) {
+                        default:
+                            return "{$negate}{$unit}.usedLastTurn('{$skill_type}')";
+
+                        case 'attack':
+                            return "{$negate}{$unit}.hitByLastTurn('{$skill_type}')";
+
+                        case 'heal':
+                            return "{$negate}{$unit}.healedByLastTurn('{$skill_type}')";
+
+                        case 'support':
+                            return "{$negate}{$unit}.supportedWithLastTurn('{$skill_type}')";
+                    }
+
+                case "magic_aero":
+                case "magic_dark":
+                case "magic_fire":
+                case "magic_ice":
+                case "magic_light":
+                case "magic_quake":
+                case "magic_thunder":
+                case "magic_water":
+                case "physics_aero":
+                case "physics_dark":
+                case "physics_fire":
+                case "physics_ice":
+                case "physics_light":
+                case "physics_quake":
+                case "physics_thunder":
+                case "physics_water":
+                    [$attack_type, $element] = explode('_', $type, 2);
+                    $attack_type = ['physics' => 'physical', 'magic' => 'magical'][$attack_type] ?? $attack_type;
+
+                    $negate = ($value == 1 ? 'not [?]' : '');
+
+                    return "{$negate}{$unit}.sufferedDamageLastTurn('{$attack_type}', '{$element}')";
+
+                case "party_alive_num":
+                    $negate = ($value == 1 ? '' : 'not ');
+                    $value  = explode(',', $value);
+
+                    return "{$negate} party({$value[0]}).unitsAlive({$value[1]}) [?]";
+
+                case "normal_state":
                     $negate = ($value == 1 ? '' : 'not ');
 
-                    // enemy actions
-                    if (preg_match('~^before_turn_(.+)$~', $type, $match)) {
-                        $strings = [
-                            'ab'      => 'ability',
-                            'sm'      => 'esper',
-                            'mg'      => 'magic',
-                            'lb'      => 'limitburst',
-                            'special' => 'ability',
-                            'hit'     => 'attack',
-                            'beast'   => 'esper',
-                        ];
-
-                        if (strpos($match[1], '_') === false)
-                            return "{$negate}{$unit}.usedLastTurn('" . ($strings[$match[1]] ?? $match[1]) . "')";
-
-
-                        [$p, $action] = explode('_', $match[1]);
-                        $p = $strings[$p] ?? $p;
-
-                        switch ($action) {
-                            case 'attack':
-                                return "{$negate}{$unit}.hitByLastTurn('{$p}')";
-                            case 'heal':
-                                return "{$negate}{$unit}.healedByLastTurn('{$p}')";
-                            case 'support':
-                                return "{$negate}{$unit}.supportedWithLastTurn('{$p}')";
-                        }
-                    }
-
-                    // damage types and elements
-                    if (preg_match('~^physics_(.+)$~', $type, $match)) {
-                        assert($value == 0);
-
-                        return "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'physical')";
-                    } elseif (preg_match('~^magic_(.+?)$~', $type, $match)) {
-                        assert($value == 0);
-
-                        return "{$unit}.sufferedDamageLastTurn('{$match[1]}', 'magical')";
-                    }
-
                     return "{$negate}{$unit}.is('{$type}:{$value}')";
+
+                case "abnormal_state_heal_skill_use_possible":
+                case "atk_skill_use_possible":
+                case "before_turn_item_heal":
+                case "heal_skill_use_possible":
+                case "join_party":
+                case "lb_use_possible":
+                case "skill":
+                case "support_skill_use_possible":
+                case "turn_act":
+                default:
+                    return "conditionNotImplemented('{$type}:{$value}')";
             }
         }
 

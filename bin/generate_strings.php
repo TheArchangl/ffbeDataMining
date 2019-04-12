@@ -1,5 +1,6 @@
 <?php
 
+    use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
 
     require_once __DIR__ . "/../bootstrap.php";
@@ -106,11 +107,23 @@
                     print_r($strings);
                     throw new Exception(json_last_error() . ": " . json_last_error_msg());
                 }
-                    file_put_contents("{$dir}/{$file}.json", $data);
+                file_put_contents("{$dir}/{$file}.json", $data);
             }
             break;
 
 
         case "jp":
+            $msts = [
+                'F_MAGIC_MST' => 'MST_MAGIC_NAME'
+                ];
+
+            foreach ($msts as $mst => $table) {
+                foreach (GameFile::loadMst($mst) as $row) {
+                    $id   = current($row);
+                    $name = $row['name'];
+
+                    Strings::setString($table, $id, $name);
+                }
+            }
             break;
     }
