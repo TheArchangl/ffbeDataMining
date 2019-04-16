@@ -361,8 +361,8 @@
          * @return string
          */
         protected static function parseCondition($target, $type, $value) {
-            $target = static::formatTargetPriority($target);
-            $unit   = ($target == 'self')
+            // $target = static::formatTargetPriority($target);
+            $unit = ($target == 'self')
                 ? 'self'
                 : "unit('{$target}')";
 
@@ -665,7 +665,9 @@
          *
          * @return string
          */
-        private static function formatTargetPriority(string $target) {
+        private static function formatTargetPriority(string $string) {
+            [$target, $value] = explode(':', $string) + ['', ''];
+
             switch (strtolower($target)) {
                 case "self":
                     return "self";
@@ -688,9 +690,12 @@
                 case "mp_max":
                     return "highest MP";
 
+                case "disp_order":
+                    return "slot:" . (($value ?: 0) + 1);
+
                 case "random":
                 default:
-                    return $target;
+                    return $string;
             }
         }
 
