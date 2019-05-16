@@ -74,6 +74,7 @@
                 'effect_frames'   => [],
 
                 //
+               // 'effect_type'     => GameHelper::SKILL_EXECUTE_TYPE[$row['execute_type']],
                 'move_type'       => (int) $row['move_type'],
                 //
                 'damage_type'     => GameHelper::ATTACK_TYPE[$row['attack_type']],
@@ -122,11 +123,12 @@
                 MstKey::EFFECT_PARAM => $row['effect_param'],
             ];
 
-            $skill              = new LimitBurstMst();
-            $skill->id          = $lb_id;
-            $skill->attack_type = $lb_row['attack_type'];
-            $skill->elements    = GameHelper::readElement($lb_row['element_inflict'], true);
-            $skill->effects     = SkillMstList::parseEffects($combined_row, true);
+            $skill               = new LimitBurstMst();
+            $skill->id           = $lb_id;
+            $skill->attack_type  = $lb_row['attack_type'];
+            $skill->execute_type = $lb_row['execute_type'];
+            $skill->elements     = GameHelper::readElement($lb_row['element_inflict'], true);
+            $skill->effects      = SkillMstList::parseEffects($combined_row, true);
 
             $entry['levels'][$level] = [$cost, SkillFormatter::formatEffectsRaw($skill)];
 
