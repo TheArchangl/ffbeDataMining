@@ -11,6 +11,7 @@
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . "/bin/generate_strings.php";
 
 
     $entries = [];
@@ -20,8 +21,18 @@
         $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;
         //        $item_id           = (int)$row['ak2dhKm3'];
 
-        $reward = parseReward($row['target_info']);
-        list($reward_type, $reward_id, $name, $rest) = $reward;
+        [$reward_type, $reward_id, $name, $num, $rest] = parseReward($row['target_info']);
+
+
+        if ($reward_type == 'UNIT' && $name == "Trust Moogle") {
+            $tm_id = $rest[3] ?? "100000002";
+            $tmp   = [0, 1, 3, 5, 5, 10, 100][$reward_id[-1]];
+            $uname = substr($tm_id, 0, -1) == "10000000"
+                ? "ALL"
+                : getUnitName($tm_id);
+
+            $name .= " ({$tmp}% {$uname})";
+        }
 
         $entry = [
             'name'        => $name ?: null,
@@ -91,3 +102,17 @@
         return '{' . preg_replace('~\s+~', ' ', $match[1] . '}');
     }, $data);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/currency_exchange.json", $data);
+
+
+    function getUnitName($unit_series_id) {
+        $str = Strings::getString("MST_UNIT_NAME", $unit_series_id);
+        if ($str !== null)
+            return $str;
+
+        $base = substr($unit_series_id, 0, -1);
+        for ($i = 5; $i > 2; $i--)
+            if (($str = Strings::getString("MST_UNIT_NAME", "{$base}{$i}")) !== null)
+                return $str;
+
+        return $unit_series_id;
+    }
