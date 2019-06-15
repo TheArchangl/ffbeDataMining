@@ -15,20 +15,20 @@
 
     $entries = [];
     foreach (GameFile::loadMst('2qDEnLF9') as $row) {
-        $mog_id      = (int)$row['medal_exchange_id'];
-        $currency_id = (int)$row['ak2dhKm3'];
-        $currency    = Strings::getString('MST_ITEM_NAME', $currency_id);
-//        $item_id           = (int)$row['ak2dhKm3'];
+        $mog_id      = (int) $row['medal_exchange_id'];
+        $currency_id = (int) $row['ak2dhKm3'];
+        $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;
+        //        $item_id           = (int)$row['ak2dhKm3'];
 
         $reward = parseReward($row['target_info']);
         list($reward_type, $reward_id, $name, $rest) = $reward;
 
         $entry = [
-            'name'       => $name ?: null,
+            'name'        => $name ?: null,
             'reward_type' => $reward_type,
-            'reward_id'   => (int)$reward_id,
-            'price'       => (int)$row['count'],
-            'amount'      => ((int)$row['x0NDnEC9']),
+            'reward_id'   => (int) $reward_id,
+            'price'       => (int) $row['count'],
+            'amount'      => ((int) $row['x0NDnEC9']),
         ];
 
         $entries[$currency][] = $entry;
@@ -79,7 +79,7 @@
 
         }
     */
-//    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/analyze.json", toJSON(arrayGroupValues($e2)));
+    //    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/analyze.json", toJSON(arrayGroupValues($e2)));
 
     // event bonus units
     // I0SUr3WY
@@ -90,4 +90,4 @@
     $data = preg_replace_callback('~{\s+([^{]+)\s+}~', function ($match) {
         return '{' . preg_replace('~\s+~', ' ', $match[1] . '}');
     }, $data);
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/mog_king.json", $data);
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/currency_exchange.json", $data);
