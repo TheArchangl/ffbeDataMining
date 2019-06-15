@@ -55,67 +55,16 @@
 
             foreach ($files as $file)
                 Strings::readFile($file);
-
-
-            $strings = Strings::getEntries();
-            uksort($strings, function ($a, $b) { return strnatcmp($a, $b); });
-
-            $output = [];
-            foreach ($strings as $k => $strs) {
-                if (count($strs) < 3) {
-                    var_dump($k);
-                    continue;
-                }
-
-                $strs = array_pad($strs, 6, null);
-
-                if (preg_match('~^(.*?)_(\d+[_]?)+$~', $k, $match)) {
-                    [$_, $table, $id] = $match;
-                    $output[$table][$id] = $strs;
-                } else {
-                    if (empty($k) || ctype_digit($k))
-                        continue;
-
-                    $k = utf8_encode($k);
-
-                    $output['misc'][$k] = $strs;
-                }
-            }
-
-            foreach ($output as $file => $strings) {
-                if (count($strings) > 20)
-                    continue;
-
-                foreach ($strings as $k => $string)
-                    $output['misc']["{$file}_{$k}"] = $string;
-
-                unset($output[$file]);
-            }
-
-            //            ksort($output);
-
-            $dir = DATA_OUTPUT_DIR . "/{$region}/strings";
-            if (!is_dir($dir))
-                mkdir($dir, 0777, true);
-
-            foreach ($output as $file => $strings) {
-                ksort($strings);
-
-
-                $data = json_encode((object) $strings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-                if (!$data) {
-                    print_r($strings);
-                    throw new Exception(json_last_error() . ": " . json_last_error_msg());
-                }
-                file_put_contents("{$dir}/{$file}.json", $data);
-            }
             break;
 
 
         case "jp":
             $msts = [
-                'F_MAGIC_MST' => 'MST_MAGIC_NAME'
-                ];
+                'F_MAGIC_MST'    => 'MST_MAGIC_NAME',
+                'MissionMstList' => 'MST_MISSION_NAME',
+                'ItemMstList'    => 'MST_ITEM_NAME',
+                'F_UNIT_MST'     => 'MST_UNIT_NAME'
+            ];
 
             foreach ($msts as $mst => $table) {
                 foreach (GameFile::loadMst($mst) as $row) {
@@ -126,4 +75,71 @@
                 }
             }
             break;
+    }
+
+    // write to file
+    echo "Writing strings\n";
+
+    $strings = Strings::getEntries();
+    // $ids     = array_keys($strings);
+//    natsort($ids);
+//    $sorted = [];
+//    foreach ($ids as $id)
+//        $sorted[$id] =& $strings[$id];
+//
+//    $strings = $sorted;
+    #ksort($strings);
+    uksort($strings, "strnatcmp");
+
+    $output = [];
+    foreach ($strings as $k => $strs) {
+        if (count($strs) < 3) {
+            var_dump($k);
+            continue;
+        }
+
+        if ($region == 'gl')
+            $strs = array_pad($strs, 6, null);
+        else
+            $strs = $strs[0];
+
+        if (preg_match('~^(.*?)_(\d+(?:_\d+)*)$~', $k, $match)) {
+            $output[$match[1]][$match[2]] = $strs;
+        } else {
+            if (empty($k) || ctype_digit($k) || $k[-1] == '_')
+                continue;
+
+            $k = utf8_encode($k);
+
+            $output['misc'][$k] = $strs;
+        }
+    }
+
+    foreach ($output as $file => $strings) {
+        if (count($strings) > 20)
+            continue;
+
+        foreach ($strings as $k => $string)
+            $output['misc']["{$file}_{$k}"] = $string;
+
+        unset($output[$file]);
+    }
+
+    //            ksort($output);
+
+    $dir = DATA_OUTPUT_DIR . "/{$region}/strings";
+    if (!is_dir($dir))
+        mkdir($dir, 0777, true);
+
+    foreach ($output as $file => $strings) {
+        ksort($strings);
+
+
+        $data = json_encode((object) $strings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        if (!$data) {
+            print_r($strings);
+            throw new Exception(json_last_error() . ": " . json_last_error_msg());
+        }
+
+        file_put_contents("{$dir}/{$file}.json", $data);
     }
