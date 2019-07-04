@@ -7,6 +7,7 @@
 
     namespace Sol\FFBE\Reader;
 
+    use Sol\FFBE\AiAction;
     use Sol\FFBE\AiParser;
     use Sol\FFBE\GameFile;
     use Solaris\FFBE\GameHelper;
@@ -100,6 +101,7 @@
             $monster_ais = array_column($this->monster_parts, "ai_id");
             $monster_ais = array_reduce($monster_ais, "array_merge", []);
             $monster_ais = array_unique($monster_ais);
+
             $this->readAi(GameFile::loadMst('F_AI_MST'), $monster_ais);
 
         }
@@ -122,13 +124,12 @@
                 return [
                     'name'         => $name,
                     'flags'        => array_map("boolval", $row['flags']),
+                    // 'skill_type'   => [1 => 'Offensive','Defensive?','Heal / White','Fixed / Unprovokable?','None?'][$mst->skill_type] ?? $mst->skill_type,
                     'attack_type'  => GameHelper::ATTACK_TYPE[$mst->attack_type],
                     'execute_type' => GameHelper::SKILL_EXECUTE_TYPE[$mst->execute_type],
                     'effects'      => $row['effects'],
                     'effects_raw'  => $row['effects_raw'],
-                    'strings'      => [
-                        'name' => Strings::getStrings('MST_MONSTER_SKILL_NAME', $mst->id)
-                    ]
+                    'strings'      => ['name' => Strings::getStrings('MST_MONSTER_SKILL_NAME', $mst->id)]
                 ];
             }, $data);
 
@@ -226,7 +227,7 @@
         protected function readPassiveSkills(array $data, $ids) {
             foreach ($data as $row) {
                 $id = (int) $row['monster_passive_skill_id'];
-                if (!in_array($id, $ids))
+                if (!in_array($id, $ids) || isset($this->monster_passives[$id]))
                     continue;
 
                 $_row = [
@@ -358,6 +359,7 @@
                 $mst               = new MonsterSkillMst();
                 $mst->name         = $row['name'];
                 $mst->id           = $id;
+                $mst->skill_type   = (int) $row['skill_type'];
                 $mst->attack_type  = (int) $row['attack_type'];
                 $mst->execute_type = (int) $row['execute_type'];
                 $mst->elements     = GameHelper::readElement($row['element_inflict'], true);
@@ -492,44 +494,22 @@
          * @param int[] $ai_ids
          */
         protected function readAi(array $data, array $ai_ids) {
+            AiParser::$monsters = $this->monster_parts;
+
+            $ais = [];
             foreach ($data as $row) {
                 $id = (int) $row['ai_id'];
-                if (!in_array($id, $ai_ids))
+                if (!in_array($id, $ai_ids) || isset($this->monster_ais[$id]))
                     continue;
 
-                $priority = $row['priority'];
-                $weight   = $row['weight'];
-                $name     = $row['WhQL5ev9'];
+                //                $name = $row['WhQL5ev9'];
+                //                $step = AiAction::parseRow($row);
 
-                $conditions = substr($row['conditions'], 0, -1);
-                $conditions = explode('@#', $conditions);
-                $conditions = array_combine(['states', 'flags'], $conditions);
-
-                $conditions['states'] = explode('@', $conditions['states']);
-                $conditions['states'] = array_filter($conditions['states'], function ($val) {
-                    return $val != "0:non:non:non";
-                });
-                $conditions['flags']  = explode('@', $conditions['flags']);
-                $conditions['flags']  = array_filter($conditions['flags'], function ($val) {
-                    return $val != "non:0";
-                });
-
-                $this->monster_ais[$id]['AI']['name']      = $name;
-                $this->monster_ais[$id]['AI']['actions'][] = [
-                    'priority'       => $priority,
-                    'weight'         => $weight,
-                    'target'         => $row['AI_SEARCH_COND'],
-                    'conditions'     => $conditions,
-                    'conditions_str' => $row['conditions'],
-                    'action_str'     => $row['action'],
-                    "AI_ACT_TARGET"  => $row["AI_ACT_TARGET"],
-                    "AI_COND_TARGET" => $row["AI_COND_TARGET"],
-                    "AI_COND1"       => $row["AI_COND1"],
-                    "AI_PARAM1"      => $row["AI_PARAM1"],
-                    "AI_COND2"       => $row["AI_COND2"],
-                    "AI_PARAM2"      => $row["AI_PARAM2"],
-                ];
+                $ais[$id][] = AiAction::parseRow($row);;
             }
+
+            foreach ($ais as $id => $entry)
+                $this->monster_ais[$id] = $entry;
         }
 
         /**
@@ -602,10 +582,14 @@
                     print "###\n# {$row['name']}\n";
 
                 $ai = $this->printAI($row);
-
+                ob_start();
                 $this->printMonsterPassives($row);
                 $this->printMonsterSkills($row);
                 $this->printRelatedSkills($row);
+                $info = ob_get_clean();
+                $info = AiParser::insertMonsterNames($info);
+
+                echo $info;
                 echo $ai;
             }
         }
@@ -624,9 +608,7 @@
                 $name .= " " . range('A', 'Z')[$row['monster_parts_num'] - 1];
 
             $tribes = GameHelper::readIntArray($row['tribe_id']);
-            $tribes = array_map(function ($tribe_id) {
-                return Strings::getString('MST_TRIBE_NAME', $tribe_id);
-            }, $tribes);
+            $tribes = array_map(function ($tribe_id) { return Strings::getString('MST_TRIBE_NAME', $tribe_id); }, $tribes);
             $tribes = join(', ', $tribes);
 
             print "##\n# Monster Info\n##\n";
@@ -636,6 +618,12 @@
             printf("# Race     %s\n", $tribes);
             printf("# Level    %s\n", $row['level']);
             printf("# Actions  %s\n", str_replace(',', '-', $row['num_actions']));
+            if ($row['G5HbL0vM'] ?? 0 < 1)
+                printf("#\n# NEW DAMAGE FORMULA! (%d, %d, %d)\n", 5, 25, 185);
+
+            #$test = GameHelper::readIntArray($row['2RZQ0yfb']);
+            #if (!empty(array_filter($test)))
+            #    var_dump(['2RZQ0yfb' => $test]);
 
             vprintf("#\n#\n# Stats\n#        HP  %15d\n#        MP  %15d\n#        ATK %15d\n#        DEF %15d\n#        MAG %15d\n#        SPR %15d\n#", [
                 $row['bonus_hp'],

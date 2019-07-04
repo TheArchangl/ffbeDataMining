@@ -7,13 +7,14 @@
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\Mst\SkillMstList;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    $skills  = $container[\Solaris\FFBE\Mst\SkillMstList::class];
+    $skills  = $container[SkillMstList::class];
     $entries = [];
-    foreach (GameFile::loadMst('SublimationMstList') as $row) {
+    foreach (GameFile::loadMst('F_SUBLIMATION_RECIPE_MST') as $row) {
         $enhancement_id = (int) $row['enhancement_id'];
         // $names    = Strings::getStrings('MST_BEAST_NAME', $enhancement_id);
 
@@ -70,4 +71,4 @@
 
     ksort($entries);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/enhancements.json", toJSON($entries, false));
-    file_put_contents(DATA_OUTPUT_DIR . "/analyze.json", toJSON(arrayGroupValues(GameFile::loadMst('SublimationMstList'))));
+//    file_put_contents(DATA_OUTPUT_DIR . "/analyze.json", toJSON(arrayGroupValues(GameFile::loadMst('F_SUBLIMATION_RECIPE_MST'))));

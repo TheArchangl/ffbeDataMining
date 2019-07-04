@@ -6,6 +6,8 @@
      */
 
     use Sol\FFBE\MstList\IconMstList;
+    use Sol\FFBE\Reader\SkillReader;
+    use Solaris\FFBE\Mst\SkillMstList;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
@@ -16,8 +18,9 @@
 
     // GameFile::setRegion('jp');
 
+    var_dump($container[SkillMstList::class]->getEntry(202790));
     echo "Skills\n";
-    $reader = new \Sol\FFBE\Reader\SkillReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
+    $reader = new SkillReader($region, $container[SkillMstList::class]);
     $reader->save(join('/', [
         DATA_OUTPUT_DIR,
         $region,

@@ -8,6 +8,7 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\MstList\IconMstList;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\Mst\MateriaMstList;
     use Solaris\Formatter\SkillFormatter;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
@@ -58,7 +59,7 @@
 
     echo "Reading Equipment\n";
     $entries = [];
-    foreach (GameFile::loadMst('EquipItemMstList') as $row) {
+    foreach (GameFile::loadMst('F_EQUIP_ITEM_MST') as $row) {
         $id = (int) $row['equip_id'];
         assert($row['is_unique'] == 0);
 
@@ -167,7 +168,7 @@
     echo "Reading Materia\n";
 
     $entries = [];
-    foreach (GameFile::loadMst('MateriaMstList') as $row) {
+    foreach (GameFile::loadMst(MateriaMstList::getName()) as $row) {
         $id = $row['materia_id'];
 
         assert($row['is_unique'] == 0);
@@ -229,7 +230,7 @@
             unset($entries[$id]['unique']);
 
     else
-        foreach (GameFile::loadMst('MateriaLimitMstList') as $row) {
+        foreach (GameFile::loadMst('F_MATERIA_LIMIT_MST') as $row) {
             $ids   = explode(',', $row['materia_id']);
             $limit = $row['limit'];
 
@@ -247,7 +248,7 @@
     echo "Reading Consumables\n";
 
     $entries = [];
-    foreach (GameFile::loadMst('ItemMstList') as $k => $row) {
+    foreach (GameFile::loadMst('F_ITEM_MST') as $k => $row) {
         $id = (int) $row['item_id'];
 
         // var_dump($row);

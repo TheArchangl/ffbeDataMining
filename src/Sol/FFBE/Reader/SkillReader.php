@@ -111,9 +111,7 @@
             foreach (GameFile::loadMst('F_MAGIC_MST') as $row)
                 $this->parseMagicRow($row);
 
-            ksort($this->entries);
-
-            return $this->entries;
+           return $this->entries;
         }
 
         /**
@@ -164,7 +162,7 @@
                 'effects'      => [],
                 'effects_raw'  => "",
                 //
-                'requirements' => SkillMstList::readRequirements($row['equip_requirements']),
+                'requirements' => SkillMstList::readRequirements($row),
                 'icon'         => IconMstList::getFilename($row['icon_id']),
                 //
                 'strings'      => [],
@@ -198,6 +196,7 @@
          */
         protected function parseAbilityRow($row) {
             $id = (int) $row['ability_id'];
+
             if (isset($entries[$id]))
                 print "WARNING: $id already exists\n";
 
@@ -232,7 +231,7 @@
                 'effects'          => [],
                 'effects_raw'      => "",
                 //
-                'requirements'     => SkillMstList::readRequirements($row['equip_requirements']),
+                'requirements'     => SkillMstList::readRequirements($row),
                 'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
                 'icon'             => IconMstList::getFilename($row['icon_id']),
                 //

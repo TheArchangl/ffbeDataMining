@@ -7,6 +7,7 @@
 
     namespace Sol\FFBE;
 
+    use http\Exception\RuntimeException;
     use Solaris\FFBE\GameHelper;
     use Solaris\Formatter\FormatHelper;
 
@@ -230,8 +231,7 @@
                     }
 
                 default:
-                    var_dump($type);
-                    die();
+                    throw new \RuntimeException($type);
             }
         }
 

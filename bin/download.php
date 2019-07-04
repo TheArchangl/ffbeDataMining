@@ -11,6 +11,7 @@
         case 'gl':
             $updater = new \Sol\FFBE\Updater(DATA_ENCODED_DIR . "/gl");
             $files   = [
+                'F_TEXT_MONSTER_SKILL_SET_NAME'
             ];
             break;
 

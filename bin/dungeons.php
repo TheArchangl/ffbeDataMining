@@ -96,7 +96,7 @@
     }
 
     // mission names
-    foreach (GameFile::loadMst('MissionMstList') as $row) {
+    foreach (GameFile::loadMst('F_MISSION_MST') as $row) {
         $mission_id = (int)$row['mission_id'];
         $dungeon_id = (int)$row['dungeon_id'];
         $name       = ($region == 'gl')

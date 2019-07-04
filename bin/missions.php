@@ -8,47 +8,59 @@
     use Sol\FFBE\ChallengeParser;
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
+    function parseRewards($string) {
+        if (empty($string))
+            return [];
 
-    $entries = [];
-    foreach (GameFile::loadMst('MissionMstList') as $row) {
-        $mission_id = (int)$row['mission_id'];
-        $dungeon_id = (int)$row['dungeon_id'];
+        $rewards = [];
 
-        if ($row['completion_reward'] == '')
-            $reward = null;
-
-        else {
-            $reward = parseReward($row['completion_reward']);
-            $reward = [
+        foreach (explode(',', $string) as $reward) {
+            $reward    = parseReward($reward);
+            $rewards[] = [
                 $reward[0], // item type
-                (int)$reward[1], // item id
-                (int)$reward[3], // amount
+                (int) $reward[1], // item id
+                (int) $reward[3], // amount
                 // $reward[4][0], // max
             ];
         }
+
+        return $rewards;
+    }
+
+    const COST_TYPE     = ['NRG', 'Raid', 'Upgrade'];
+    const MISSION_TYPE  = ['UNKNOWN', 'BATTLE', 'EXPLORATION'];
+    const MISSION_FLAGS = ['continue_allowed', 'escape_allowed', 'unknown_1', 'unknown_2', 'unknown_3', 'unknown_4', 'unknown_5'];
+
+    $entries = [];
+    foreach (GameFile::loadMst('F_MISSION_MST') as $row) {
+        $mission_id = (int) $row['mission_id'];
+        $dungeon_id = (int) $row['dungeon_id'];
+
 
         $name = (GameFile::getRegion() == 'gl')
             ? Strings::getString('MST_MISSION_NAME', $mission_id, 0) ?? $row['name']
             : $row['name'];
 
         $flags = readIntArray($row['flags'], ':');
+        $flags = array_map('boolval', $flags);
+        $flags = array_slice($flags, 1, 2); // todo all flags?
+        $flags = GameHelper::array_use_keys(MISSION_FLAGS, $flags);
+
         $entry = [
             'dungeon_id' => $dungeon_id,
             'name'       => $name,
-            'type'       => ['UNKNOWN', 'BATTLE', 'EXPLORATION'][$row['mission_type']],
-            'wave_count' => (int)$row['num_waves'],
+            'type'       => MISSION_TYPE[$row['mission_type']],
+            'wave_count' => (int) $row['num_waves'],
             //
-            'cost_type'  => ['NRG', 'Raid', 'Upgrade'][$row['CostType']] ?? $row['CostType'],
-            'cost'       => (int)$row['cost'],
+            'cost_type'  => COST_TYPE[$row['CostType']] ?? $row['CostType'],
+            'cost'       => (int) $row['cost'],
             //
-            'flags'      => [
-                'continue_allowed' => $flags[1] == 1,
-                'escape_allowed'   => $flags[2] == 1,
-            ],
+            'flags'      => $flags,
 
             // temp
             // 'temp' => [
@@ -59,9 +71,9 @@
             // ],
 
             // rewards
-            'reward'     => $reward,
-            'gil'        => (int)$row['gil'], // base vals w/o monsters -> useless
-            'exp'        => (int)$row['exp'], // base vals w/o monsters -> useless
+            'rewards'    => parseRewards($row['completion_reward']),
+            'gil'        => (int) $row['gil'], // base vals w/o monsters -> useless
+            'exp'        => (int) $row['exp'], // base vals w/o monsters -> useless
 
             'challenges' => [],
         ];
@@ -69,9 +81,9 @@
         $entries[$mission_id] = $entry;
     }
 
-    foreach (GameFile::loadMst('ChallengeMstList') as $row) {
-        $mission_id   = (int)$row['mission_id'];
-        $challenge_id = (int)$row['challenge_id'];
+    foreach (GameFile::loadMst('F_CHALLENGE_MST') as $row) {
+        $mission_id   = (int) $row['mission_id'];
+        $challenge_id = (int) $row['challenge_id'];
 
         $parsed = ChallengeParser::parse($row['condition'], true);
         $parsed = array_map('utf8_encode', $parsed);
@@ -79,8 +91,8 @@
         $reward = parseReward($row['reward']);
         $reward = [
             $reward[0], // item type
-            (int)$reward[1], // item id
-            (int)$reward[3], // amount
+            (int) $reward[1], // item id
+            (int) $reward[3], // amount
         ];
 
         $name = (GameFile::getRegion() == 'gl')
@@ -97,19 +109,13 @@
 
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/missions.json", toJSON($entries, true));
 
+    /*
     // debug
     if (true)
-    return;
+        return;
 
     $entries = GameFile::loadMst('MissionMstList');
     $entries = array_combine(array_map("current", $entries), $entries);
-//    $entries = [
-//        $entries["7850100"],
-//        $entries["7850101"],
-//        $entries["7850102"],
-//        $entries["7850200"],
-//        $entries["7850201"],
-//        $entries["7850202"],
-//    ];
 
     file_put_contents(DATA_OUTPUT_DIR . "/analyze.json", toJSON(arrayGroupValues($entries, [], false)));
+*/

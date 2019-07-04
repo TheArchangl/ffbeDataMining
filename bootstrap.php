@@ -6,7 +6,7 @@
      */
 
     ini_set('serialize_precision', -1);
-//    ini_set('zend.assertions', true);
+    ini_set('zend.assertions', false);
     ini_set('memory_limit', '2G');
 
     use Sol\FFBE\GameFile;
@@ -70,10 +70,15 @@
         $magic_mst->readFile(GameFile::getFilePath('F_MAGIC_MST'));
         $limitburst_mst->readFile(GameFile::getFilePath('F_LIMITBURST_MST'));
 
-        SkillMstList::processEffects($skill_mst);
+            SkillMstList::processEffects($skill_mst);
 
         print "\tDone\n";
 
         return $skill_mst;
     };
 
+    class Env {
+        public static $container;
+    }
+
+    Env::$container = $container;

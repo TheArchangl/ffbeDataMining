@@ -1014,13 +1014,13 @@
                     continue;
 
                 $row = explode("\t", $row);
+                $row = array_pad($row, 4, "");
 
-                list($name, $class, $file, $key, $type, $notes) = $row;
+                list($name, $class, $file, $key) = $row;
                 if (isset(static::$names[$name]))
                     continue;
 
-                $notes = explode(' ', $notes);
-                $entry = new GameFile($name, $file, $key, $class, $type, $notes);
+                $entry = new GameFile($name, $file, $key, $class);
                 static::addEntry($entry);
             }
         }
@@ -1049,8 +1049,6 @@
                     $entry->getClass(),
                     $entry->getFile(),
                     $entry->getKey(),
-                    $entry->getType(),
-                    join(' ', $entry->getNotes()),
                 ]);
 
             file_put_contents($file, implode("\n", $lines));
@@ -1059,9 +1057,9 @@
         /**
          * @param string $input File name or identifier
          *
+         * @return array
          * @throws \Exception
          *
-         * @return array
          */
         public static function loadRaw($input) {
             $file = self::getFilePath($input);
@@ -1220,9 +1218,9 @@
         /**
          * @param string $input
          *
+         * @return string
          * @throws \LogicException
          *
-         * @return string
          */
         public static function getFilePath($input): string {
             if (self::$files == null)
@@ -1300,10 +1298,6 @@
         protected $key;
         /** @var string */
         protected $class;
-        /** @var string */
-        protected $type;
-        /** @var string[] */
-        protected $notes;
 
         /**
          * GameFile constructor.
@@ -1312,16 +1306,12 @@
          * @param string   $file
          * @param string   $key
          * @param string   $class
-         * @param string   $type
-         * @param string[] $notes
          */
-        public function __construct($name, $file, $key, $class = null, $type = null, $notes = []) {
+        public function __construct($name, $file, $key, $class = null) {
             $this->name  = $name;
             $this->file  = $file;
             $this->key   = $key;
             $this->class = $class;
-            $this->type  = $type;
-            $this->notes = $notes;
         }
 
         /**
@@ -1380,34 +1370,6 @@
          */
         public function setClass(string $class) {
             $this->class = $class;
-        }
-
-        /**
-         * @return string
-         */
-        public function getType(): string {
-            return $this->type;
-        }
-
-        /**
-         * @param string $type
-         */
-        public function setType(string $type) {
-            $this->type = $type;
-        }
-
-        /**
-         * @return null
-         */
-        public function getNotes() {
-            return $this->notes;
-        }
-
-        /**
-         * @param string[] $notes
-         */
-        public function setNote($notes) {
-            $this->notes = $notes;
         }
 
         public function getDlType() {

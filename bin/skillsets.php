@@ -1,7 +1,9 @@
 <?php
 
     use Sol\FFBE\GameFile;
+    use Sol\FFBE\Reader\MissionResponseReader;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Mst\SkillMstList;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
@@ -12,9 +14,9 @@
 
     // skillset
     $entries = [];
-    foreach (GameFile::loadMst('MonsterSkillSetMstList') as $row) {
+    foreach (GameFile::loadMst('F_MONSTER_SKILL_SET_MST') as $row) {
         $id     = (int) $row['monster_skill_set_id'];
-        $skills = \Solaris\FFBE\GameHelper::readIntArray(rtrim($row['monster_skill_ids'], ','));
+        $skills = GameHelper::readIntArray(rtrim($row['monster_skill_ids'], ','));
 
         $entries[$id] = [
             'name'    => $row['name'],
@@ -31,6 +33,6 @@
 
 
     // Monster skills
-    $reader = new \Sol\FFBE\Reader\MissionResponseReader($region, $container[SkillMstList::class], true);
+    $reader = new MissionResponseReader($region, $container[SkillMstList::class], true);
     $reader->readAllSkills(GameFile::loadMst('F_MONSTER_SKILL_MST'));
     $reader->saveMonsterSkills(DATA_OUTPUT_DIR . "/{$region}/monster_skills.json");

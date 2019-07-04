@@ -11,7 +11,9 @@
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
-    require_once dirname(__DIR__) . "/bin/generate_strings.php";
+
+    if ($region == 'jp')
+        require_once dirname(__DIR__) . "/bin/generate_strings.php";
 
 
     $entries = [];
@@ -24,14 +26,16 @@
         [$reward_type, $reward_id, $name, $num, $rest] = parseReward($row['target_info']);
 
 
-        if ($reward_type == 'UNIT' && $name == "Trust Moogle") {
-            $tm_id = $rest[3] ?? "100000002";
-            $tmp   = [0, 1, 3, 5, 5, 10, 100][$reward_id[-1]];
-            $uname = substr($tm_id, 0, -1) == "10000000"
-                ? "ALL"
-                : getUnitName($tm_id);
+        if ($reward_type == 'UNIT' && isset($rest[3])) {
+            $tminfo  = $rest[3] ?? "100000000";
+            $stminfo = $rest[5] ?? 0;
+            $uname   = getUnitName($tminfo, $stminfo);
+            $tmp     = getTmProgress($reward_id, $tminfo, $stminfo);
 
             $name .= " ({$tmp}% {$uname})";
+
+            #if ($currency == "ふゆうそう")
+            # var_dump([$currency, $name, $row['target_info']]);
         }
 
         $entry = [
@@ -104,15 +108,65 @@
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/currency_exchange.json", $data);
 
 
-    function getUnitName($unit_series_id) {
-        $str = Strings::getString("MST_UNIT_NAME", $unit_series_id);
+    function getUnitName($tm_info, $stm_info) {
+        if ($stm_info != 0)
+            $tm_info = substr($stm_info, 1);
+
+        elseif ($tm_info < 100000100)
+            return "ALL";
+
+        $str = Strings::getString("MST_UNIT_NAME", $tm_info);
         if ($str !== null)
             return $str;
 
-        $base = substr($unit_series_id, 0, -1);
+        $base = substr($tm_info, 0, -1);
         for ($i = 5; $i > 2; $i--)
             if (($str = Strings::getString("MST_UNIT_NAME", "{$base}{$i}")) !== null)
                 return $str;
 
-        return $unit_series_id;
+        return $tm_info;
+    }
+
+    function getTmProgress($moogle_unit_id, $tm_info, $stm_info) {
+        if ($stm_info > 0)
+            return "STMR " . [5, 25, 50, 100][$stm_info[-1]];
+
+        // ALL %
+        switch ($tm_info) {
+            case 100000001:
+                return 5;
+            case 100000002:
+                return 10;
+
+            case 100000005:
+                return 1;
+
+            case 100000008:
+                return 50;
+        }
+
+        // Specific %
+        switch ($tm_info[-1]) {
+            case 201000501:
+                return 5;
+            case 201000502:
+                return 25;
+            case 201000503:
+                return 50;
+        }
+
+        // Fallback to moogle rarity
+        switch ($moogle_unit_id[-1]) {
+            case 1:
+                return 1;
+
+            case 3:
+                return 5;
+
+            case 5:
+                return 10;
+
+            default:
+                throw new UnexpectedValueException($tm_info . "_" . $moogle_unit_id);
+        }
     }

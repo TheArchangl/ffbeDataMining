@@ -6,172 +6,246 @@
      */
 
     use Sol\FFBE\GameFile;
+    use Sol\FFBE\Reader\MstReader;
+    use Sol\FFBE\Reader\SkillReader;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
+    use Solaris\FFBE\Mst\BeastBoardPieceMst;
+    use Solaris\FFBE\Mst\LimitBurstMst;
+    use Solaris\FFBE\Mst\MetaMstList;
+    use Solaris\FFBE\Mst\MstList;
+    use Solaris\FFBE\Mst\SkillMstList;
+    use Solaris\FFBE\MstKey;
     use Solaris\Formatter\SkillFormatter;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    $entries = [];
-    foreach (GameFile::loadMst('BeastMstList') as $row) {
-        $beast_id = (int) $row['beast_id'];
+    class BeastReader extends MstReader {
+        /** @var SkillMstList|MetaMstList */
+        private $skills;
 
-        $names = $region == 'gl'
-            ? Strings::getStrings('MST_BEAST_NAME', $beast_id)
-            : [$row['name']];
+        /** @var array */
+        private $boards = [];
 
-        $entries[$beast_id] = [
-            'names'   => $names,
-            'image'   => $row['beast_art'],
-            'icon'    => $row['beast_icon'],
-            'skill'   => [],
-            'color'   => null,
-            'entries' => [],
-        ];
-    }
+        /** @var array */
+        private $stat_patterns = [];
+        /** @var array */
+        private $exp_patterns = [];
 
-    // stats
-    foreach (GameFile::loadMst('F_BEAST_STATUS_MST') as $row) {
-        $beast_id                                          = (int) $row['beast_id'];
-        $entry                                             = [
-            'stats'          => formatStats($row),
-            'element_resist' => readIntArray($row['element_resist']),
-            'status_resist'  => readIntArray($row['status_resist']),
-            'exp_pattern'    => (int) $row['exp_pattern'],
-            'stat_pattern'   => (int) $row['stat_pattern'],
-        ];
-        $entries[$beast_id]['entries'][$row['rarity'] - 1] = $entry;
+        /**
+         * @param MstList $skills
+         */
+        public function __construct(MstList $skills) { $this->skills = $skills; }
 
-        assert($row['magical_resist'] == 0);
-        assert($row['physical_resist'] == 0);
-        assert($row['special_resist'] == '');
-    }
-    // Skill
-    foreach (GameFile::loadMst('BeastSkillMstList') as $row) {
-        $skill_id = (int) $row['beast_skill_id'];
-        $beast_id = (int) substr($skill_id, 1, 2);
-
-        $name = $region == 'gl'
-            ? Strings::getStrings('MST_BEASTSKILL_NAME', $skill_id)
-            : $row['name'];
-
-        $desc = $region == 'gl'
-            ? Strings::getStrings('MST_BEASTSKILL_DESCRIPTION', $skill_id)
-            : $row['desc'];
-
-        $entry = [
-            // effect
-            'effects'       => null,
-            'effects_raw'   => null,
-
-            // frames
-            'attack_count'  => 0,
-            'attack_damage' => [],
-            'attack_frames' => [],
-            'effect_frames' => [],
-
-            'strings' => [
-                'name' => $name,
-                'desc' => $desc,
-            ],
-        ];
-
-        $_row = [
-            \Solaris\FFBE\MstKey::TARGET_RANGE => $row['target_range'],
-            \Solaris\FFBE\MstKey::TARGET       => $row['target'],
-            \Solaris\FFBE\MstKey::EFFECT_TYPE  => $row['effect_type'],
-            \Solaris\FFBE\MstKey::EFFECT_PARAM => $row['effect_param'],
-        ];
-
-        $skill              = new \Solaris\FFBE\Mst\LimitBurstMst();
-        $skill->id          = $skill_id;
-        $skill->attack_type = $row['attack_type'];
-        $skill->elements    = GameHelper::readElement($row['element_inflict'], true);
-        $skill->effects     = \Solaris\FFBE\Mst\SkillMstList::parseEffects($_row, true);
-
-        $entry['effects']     = SkillFormatter::formatEffects($skill, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
-        $entry['effects_raw'] = SkillFormatter::formatEffectsRaw($skill);
-
-        $entry = \Sol\FFBE\Reader\SkillReader::parseFrames($row, $entry);
-
-        $entries[$beast_id]['skill'][$skill_id] = $entry;
-    }
-    // bonus color
-    foreach (GameFile::loadMst('ItemExtBeastMstList') as $row) {
-        if (!isset($row['item_id']))
-            continue;
-
-        $bonus = $row['beast_exp_bonus'];
-        if ($bonus == '')
-            continue;
-
-        $name  = Strings::getString('MST_ITEM_NAME', $row['item_id'], 0);
-        $color = explode(" ", $name, 2)[0];
-        $bonus = readParameters($bonus, ":,");
-
-        foreach ($bonus as list($beast_id, $factor)) {
-            $entries[$beast_id]['color'][$color] = $factor / 100;
+        public function saveBoards(string $path) {
+            file_put_contents($path, $this->formatOutput($this->boards));
         }
-        // $entries[] = $row;
+
+        public function saveExpPatterns(string $path) {
+            file_put_contents($path, $this->formatOutput($this->exp_patterns));
+        }
+
+        public function saveStatPatterns(string $path) {
+            file_put_contents($path, $this->formatOutput($this->stat_patterns));
+        }
+
+
+        protected function parseData() {
+            $this->entries = [];
+            $this->parseBeasts();
+            $this->parseBeastStats();
+            $this->parseBeastSkills();
+            $this->parseBeastColors();
+            $this->parseBeastGrowth();
+            $this->parseBeastBoards();
+
+            return $this->entries;
+        }
+
+        private function parseBeasts() {
+            foreach (GameFile::loadMst('F_BEAST_MST') as $row) {
+                $beast_id = (int) $row['beast_id'];
+
+                $names = GameFile::getRegion() == 'gl'
+                    ? Strings::getStrings('MST_BEAST_NAME', $beast_id)
+                    : [$row['name']];
+
+                $this->entries[$beast_id] = [
+                    'names'   => $names,
+                    'image'   => $row['beast_art'],
+                    'icon'    => $row['beast_icon'],
+                    'skill'   => [],
+                    'color'   => null,
+                    'entries' => [],
+                ];
+            }
+        }
+
+        private function parseBeastStats() {
+            foreach (GameFile::loadMst('F_BEAST_STATUS_MST') as $row) {
+                $beast_id = (int) $row['beast_id'];
+                $entry    = [
+                    'stats'          => formatStats($row),
+                    'element_resist' => readIntArray($row['element_resist']),
+                    'status_resist'  => readIntArray($row['status_resist']),
+                    'exp_pattern'    => (int) $row['exp_pattern'],
+                    'stat_pattern'   => (int) $row['stat_pattern'],
+                    'cp_pattern'     => [],
+                ];
+
+                $this->entries[$beast_id]['entries'][$row['rarity'] - 1] = $entry;
+
+                assert($row['magical_resist'] == 0);
+                assert($row['physical_resist'] == 0);
+                assert($row['special_resist'] == '');
+                assert($row['5hqFc4ey'] == "{$beast_id}{$row['rarity']}");
+            }
+        }
+
+        private function parseBeastSkills() {
+            foreach (GameFile::loadMst('F_BEAST_SKILL_MST') as $row) {
+                $skill_id = (int) $row['beast_skill_id'];
+                $beast_id = (int) substr($skill_id, 1, 2);
+
+                $name = GameFile::getRegion() == 'gl'
+                    ? Strings::getStrings('MST_BEASTSKILL_NAME', $skill_id)
+                    : $row['name'];
+
+                $desc = GameFile::getRegion() == 'gl'
+                    ? Strings::getStrings('MST_BEASTSKILL_DESCRIPTION', $skill_id)
+                    : $row['desc'];
+
+                $entry = [
+                    // effect
+                    'effects'       => null,
+                    'effects_raw'   => null,
+
+                    // frames
+                    'attack_count'  => 0,
+                    'attack_damage' => [],
+                    'attack_frames' => [],
+                    'effect_frames' => [],
+
+                    'strings' => [
+                        'name' => $name,
+                        'desc' => $desc,
+                    ],
+                ];
+
+                $_row = [
+                    MstKey::TARGET_RANGE => $row['target_range'],
+                    MstKey::TARGET       => $row['target'],
+                    MstKey::EFFECT_TYPE  => $row['effect_type'],
+                    MstKey::EFFECT_PARAM => $row['effect_param'],
+                ];
+
+                $skill              = new LimitBurstMst();
+                $skill->id          = $skill_id;
+                $skill->attack_type = $row['attack_type'];
+                $skill->elements    = GameHelper::readElement($row['element_inflict'], true);
+                $skill->effects     = SkillMstList::parseEffects($_row, true);
+
+                $entry['effects']     = SkillFormatter::formatEffects($skill, $this->skills);
+                $entry['effects_raw'] = SkillFormatter::formatEffectsRaw($skill);
+
+                $entry = SkillReader::parseFrames($row, $entry);
+
+                $this->entries[$beast_id]['skill'][$skill_id] = $entry;
+            }
+        }
+
+        private function parseBeastColors() {
+            foreach (GameFile::loadMst('F_ITEM_EXT_BEAST_MST') as $row) {
+                if (!isset($row['item_id']))
+                    continue;
+
+                $bonus = $row['beast_exp_bonus'];
+                if ($bonus == '')
+                    continue;
+
+                $name  = Strings::getString('MST_ITEM_NAME', $row['item_id'], 0);
+                $color = explode(" ", $name, 2)[0];
+                $bonus = readParameters($bonus, ":,");
+
+                foreach ($bonus as list($beast_id, $factor))
+                    $this->entries[$beast_id]['color'][$color] = $factor / 100;
+            }
+        }
+
+        private function parseBeastGrowth() {
+            foreach (GameFile::loadMst('F_BEAST_CP_MST') as $row) {
+                $beast_evo_id = (int) $row['5hqFc4ey'];
+                [$beast_id, $rarity] = [substr($beast_evo_id, 0, -1), substr($beast_evo_id, -1)];
+                $values = rtrim($row['hbm8t3uK'], ',');
+                $values = GameHelper::readIntArray($values);
+
+                $this->entries[$beast_id]['entries'][$rarity - 1]['cp_pattern'] = $values;
+            }
+
+            $this->stat_patterns = [];
+            foreach (GameFile::loadMst('F_BEAST_GROW_MST') as $row) {
+                $pattern   = $row['stat_pattern'];
+                $max_level = $row['max_level'];
+                $level     = $row['level'];
+
+                $this->stat_patterns[$pattern][$max_level][$level - 1] = (int) $row['UjKF93ok'];
+            }
+
+            $this->exp_patterns = [];
+            foreach (GameFile::loadMst('F_BEAST_EXP_PATTERN_MST') as $row) {
+                $pattern = $row['exp_pattern'];
+                $level   = $row['level'];
+
+                $this->exp_patterns[$pattern][$level - 1] = (int) $row['93fnYUJG'];
+            }
+        }
+
+        private function parseBeastBoards() {
+            // build parent map
+            $parent_map = [];
+            foreach (GameFile::loadMst('F_BEAST_BOARD_PIECE_MST') as $row) {
+                $node_id = (int) $row['beast_board_piece_id'];
+
+                $child_nodes = readIntArray($row['beast_board_piece_childnodes']);
+                foreach ($child_nodes as $child_node_id)
+                    $parent_map[$child_node_id] = $node_id;
+            }
+
+            // fill data
+            foreach (GameFile::loadMst('F_BEAST_BOARD_PIECE_MST') as $row) {
+                $node_id  = (int) $row['beast_board_piece_id'];
+                $beast_id = (int) $row['beast_id'];
+
+                if (!isset($this->entries[$beast_id]))
+                    continue;
+
+                $reward = null;
+                if ($row['reward_type'] != 0) {
+                    if (!isset(BeastBoardPieceMst::REWARD_TYPE[$row['reward_type']]))
+                        throw new RuntimeException("Unknown board reward type {$row['reward_type']} ({$row['reward_param']})");
+
+                    $reward = [BeastBoardPieceMst::REWARD_TYPE[$row['reward_type']], (int) $row['reward_param']];
+                }
+
+                $entry = [
+                    'parent_node_id' => $parent_map[$node_id] ?? null,
+                    'reward'         => $reward,
+                    'position'       => readIntArray(str_replace(':', ',', $row['board_piece_pos'])),
+                    'cost'           => (int) $row['point'],
+                ];
+
+                assert(count($this->boards[$beast_id]) == $row['index']);
+                $this->boards[$beast_id][$node_id] = $entry;
+            }
+
+            assert(count(GameFile::loadMst('BeastBoardPieceExtMstList')) == 1);
+        }
     }
 
-    // foreach ($entries as $beast_id => $entry)
-    //     var_dump($entry) || die();
-    //     $entries[$beast_id]['color'] = $entry['color'] == null
-    //         ? null
-    //         : array_unique($entry['color']);
 
-    // Board
-    $boards = [];
-    // build parent map
-    $parent_map = [];
-    foreach (GameFile::loadMst('BeastBoardPieceMstList') as $row) {
-        $node_id = (int) $row['beast_board_piece_id'];
-
-        $child_nodes = readIntArray($row['beast_board_piece_childnodes']);
-        foreach ($child_nodes as $child_node_id)
-            $parent_map[$child_node_id] = $node_id;
-    }
-
-    // fill data
-    foreach (GameFile::loadMst('BeastBoardPieceMstList') as $row) {
-        $node_id  = (int) $row['beast_board_piece_id'];
-        $beast_id = (int) $row['beast_id'];
-
-        if (!isset($entries[$beast_id]))
-            continue;
-
-        $reward = null;
-        if ($row['reward_type'] != 0)
-            $reward = [
-                \Solaris\FFBE\Mst\BeastBoardPieceMst::REWARD_TYPE[$row['reward_type']],// ?? "Unknown {$row['reward_type']}",
-                (int) $row['reward_param'],
-            ];
-
-        $entry = [
-            'parent_node_id' => $parent_map[$node_id] ?? null,
-            'reward'         => $reward,
-            'position'       => readIntArray(str_replace(':', ',', $row['board_piece_pos'])),
-            'cost'           => (int) $row['point'],
-        ];
-
-        assert(count($boards[$beast_id]) == $row['index']);
-        $boards[$beast_id][$node_id] = $entry;
-    }
-
-    assert(count(GameFile::loadMst('BeastBoardPieceExtMstList')) == 1);
-
-    $data = toJSON($entries, false);
-
-    foreach (['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw'] as $x)
-        $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
-            $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
-            $trimmed = str_replace(',', ', ', $trimmed);
-
-            return $match[1] . $trimmed . $match[3];
-        }, $data);
-
-
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/summons.json", $data);
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/summons_boards.json", toJSON($boards));
+    $reader = new BeastReader($container[SkillMstList::class]);
+    $reader->save(DATA_OUTPUT_DIR . "/{$region}/summons.json");
+    $reader->saveBoards(DATA_OUTPUT_DIR . "/{$region}/summons_boards.json");
+    $reader->saveExpPatterns(DATA_OUTPUT_DIR . "/{$region}/summons_exp_patterns.json");
+    $reader->saveStatPatterns(DATA_OUTPUT_DIR . "/{$region}/summons_stat_patterns.json");

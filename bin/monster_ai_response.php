@@ -12,8 +12,8 @@
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once __DIR__ . "/../helpers.php";
-    $region     = 'gl';
-    $mission_id = "8993601";
+    $region     = 'jp';
+    $mission_id = "9091109";
 
     // setup
     $max_num = 50;
@@ -33,9 +33,8 @@
 
     // limit to 100 files
     shuffle($files);
-    if (count($files) > $max_num) {
+    if (count($files) > $max_num)
         $files = array_slice($files, 0, $max_num);
-    }
 
     $missions = [];
     foreach ($files as $file) {
@@ -70,7 +69,7 @@
     if (is_file($outfile))
         unlink($outfile);
 
-    ksort($missions);
+    uksort($missions, 'strnatcmp');
     foreach ($missions as $mission_id => $entries) {
         $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
         foreach ($entries as $data)
@@ -81,5 +80,3 @@
 
     if ($reader instanceof MissionResponseReader)
         $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');
-
-

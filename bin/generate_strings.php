@@ -11,6 +11,8 @@
         'F_TEXT_MAP_OBJECT',
         'F_TEXT_ANALYTICS_ITEMS',
         'F_TEXT_ANALYTICS_LOCALIZE',
+        'F_TEXT_DEFINE',
+        'F_TEXT_DESCRIPTION_FORMAT'
         //        'F_TEXT_TEXT_EN.txt',
     ];
 
@@ -60,10 +62,10 @@
 
         case "jp":
             $msts = [
-                'F_MAGIC_MST'    => 'MST_MAGIC_NAME',
-                'MissionMstList' => 'MST_MISSION_NAME',
-                'ItemMstList'    => 'MST_ITEM_NAME',
-                'F_UNIT_MST'     => 'MST_UNIT_NAME'
+                'F_MAGIC_MST'   => 'MST_MAGIC_NAME',
+                'F_MISSION_MST' => 'MST_MISSION_NAME',
+                'F_ITEM_MST'    => 'MST_ITEM_NAME',
+                'F_UNIT_MST'    => 'MST_UNIT_NAME'
             ];
 
             foreach ($msts as $mst => $table) {
@@ -74,6 +76,15 @@
                     Strings::setString($table, $id, $name);
                 }
             }
+
+            // read gl as backup
+            $files = glob(CLIENT_DIR . "files/gl/F_TEXT_*.txt");
+            $files = array_filter($files, function ($file) { return !in_array(basename($file, '.txt'), BLACKLIST); });
+
+            foreach ($files as $file)
+                Strings::readFile($file);
+
+            return; // no saving for now
             break;
     }
 
@@ -82,12 +93,12 @@
 
     $strings = Strings::getEntries();
     // $ids     = array_keys($strings);
-//    natsort($ids);
-//    $sorted = [];
-//    foreach ($ids as $id)
-//        $sorted[$id] =& $strings[$id];
-//
-//    $strings = $sorted;
+    //    natsort($ids);
+    //    $sorted = [];
+    //    foreach ($ids as $id)
+    //        $sorted[$id] =& $strings[$id];
+    //
+    //    $strings = $sorted;
     #ksort($strings);
     uksort($strings, "strnatcmp");
 

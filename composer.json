@@ -16,9 +16,10 @@
         }
     },
     "require":           {
-        "ext-json":                          "*",
-        "mdurrant/php-binary-reader":        "^1.0",
-        "guzzlehttp/guzzle":                 "^6.2",
-        "pimple/pimple":                     "^3.2"
+        "ext-json":                   "*",
+        "ext-openssl":                "*",
+        "mdurrant/php-binary-reader": "^1.0",
+        "guzzlehttp/guzzle":          "^6.2",
+        "pimple/pimple":              "^3.2"
     }
 }

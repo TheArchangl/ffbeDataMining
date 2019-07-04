@@ -5,33 +5,26 @@
      * Time: 17:15
      */
 
-    use Sol\FFBE\GameFile;
-    use Solaris\FFBE\Helper\Strings;
+    use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
 
     require_once "../bootstrap.php";
     require_once "../../ffbe-discord/tmp/request_helper.php";
     require_once "../../ffbe-discord/tmp/init_strings.php";
 
+    ini_set('assert.active', 1);
     // setup
-    $region     = 'jp';
-    $mission_id = "876010*";
+    $region     = 'gl';
+    $dungeon_id = '96101';
+    $mission_id = '961010*';
 
     // JP workaround
-    if ($region == 'jp') {
-        GameFile::setRegion($region);
+    if ($region == 'jp')
+        require_once __DIR__ . "/generate_strings.php";
 
-        foreach (GameFile::loadMst('MissionMstList') as $row)
-            Strings::setString("MST_MISSION_NAME", $row['mission_id'], $row['name']);
-
-
-        foreach (GameFile::loadMst('ItemMstList') as $k => $row)
-            Strings::setString("MST_ITEM_NAME", $row['item_id'], $row['name']);
-    }
 
     // get data
-    $files = glob(CLIENT_DIR . "missions\\{$region}\\*\\{$mission_id}\\*.json", GLOB_BRACE);
-    natsort($files);
-
+    $files  = glob(CLIENT_DIR . "missions\\{$region}\\{$dungeon_id}\\{$mission_id}\\*.json", GLOB_BRACE);
     $reader = new MonsterGroupReader();
     $reader->readFiles($files);
     $reader->printOutput();
@@ -42,11 +35,9 @@
         protected $missions      = [];
         protected $battle_groups = [];
         protected $mission_runs  = [];
-        protected $waves         = [];
+        private   $waves         = [];
 
         public function readFiles(array $files) {
-
-            $last_mission = null;
             foreach ($files as $file) {
                 $data = file_get_contents($file);
                 $data = json_decode($data, true);
@@ -98,6 +89,7 @@
 
                     $entry = [
                         'name'         => Strings::getString('MST_MONSTER_NAME', $id) ?? $entry['name'],
+                        // 'ai_id'        => (int) $entry['ai_id'],
                         'normal'       => $this->parseTable($entry["loot_table"]),
                         'unique'       => $this->parseTable($entry["loot_table_unique"]),
                         'rare'         => $this->parseTable($entry["loot_table_rare"]),
@@ -119,18 +111,15 @@
                 // wavebattle
                 foreach ($data['MissionPhaseMst'] ?? [] as $phase) {
                     $battle_group_id = $phase['battle_group_id'];
-                    if ($battle_group_id == '')
-                        continue;
+                    $wave_num        = $phase['wave_num'];
 
-                    $wave_num = $phase['wave_num'];
-
-                    //if (!array_search($battle_group_id, $this->missions[$mission_id][$wave_num]))
                     @$this->missions[$mission_id][$wave_num][$battle_group_id]++;
 
-                    if (isset($this->waves[$wave_num]))
-                        assert($this->waves[$wave_num] == $phase['weight']);
+                    if (isset($this->waves[$mission_id][$wave_num]))
+                        assert($this->waves[$mission_id][$wave_num] == $phase['weight']);
+
                     else
-                        $this->waves[$wave_num] = (int) $phase['weight'];
+                        $this->waves[$mission_id][$wave_num] = (int) $phase['weight'];
                 }
 
                 // exploration
@@ -139,7 +128,6 @@
                     $battle_group_id = $entry['battle_group_id'];
 
                     $i = $entry['order_index'] - 1;
-                    // $this->>battle_groups[$battle_group_id][$i] = $entry['monster_unit_id'];
                     if ($i > 0 || $battle_group_id == '')
                         continue;
 
@@ -150,19 +138,15 @@
                     $scenario_id     = $phase['scenario_battle_id'];
                     $battle_group_id = $phase['battle_group_id'];
 
-                    // $this->>battle_groups[$battle_group_id][$phase['order_index'] - 1] = $phase['monster_unit_id'];
                     if ($battle_group_id == '')
                         continue;
 
                     @$this->missions[$mission_id][$scenario_id][$battle_group_id]++;
                 }
             }
-            //ksort($this->>waves);
-            $this->waves = array_filter($this->waves, function ($val) { return $val < 100; });
-            ksort($this->waves);
-            print_r($this->waves);
 
             ksort($this->missions);
+            ksort($this->waves);
         }
 
         function parseTable($string) {
@@ -175,10 +159,9 @@
             foreach ($entries as $val) {
                 [$type, $id, $a, $b] = explode(':', $val);
 
-                $table = \Solaris\FFBE\GameHelper::TEXT_TYPE[$type];
-                $name  = \Solaris\FFBE\Helper\Strings::getString($table, $id)
-                    ?? "{$type}:{$id}";
-                $val   = "{$name}-{$a}-{$b}";
+                $table = GameHelper::TEXT_TYPE[$type];
+                $name  = Strings::getString($table, $id) ?? "{$type}:{$id}";
+                $val   = "{$name} x{$a} ({$b}%)";
 
                 $array[] = $val;
             }
@@ -187,15 +170,15 @@
         }
 
         public function printOutput() {
-            foreach ($this->missions as $mission_id => $this->waves) {
+            foreach ($this->missions as $mission_id => $waves) {
                 $sum          = $this->mission_runs[$mission_id];
                 $mission_name = Strings::getString('MST_MISSION_NAME', $mission_id) ?? "Mission {$mission_id}";
                 print " + {$mission_name} ({$mission_id}) [{$sum}]\n";
 
-                ksort($this->waves);
-                foreach ($this->waves as $wave_num => $groups) {
+                ksort($waves);
+                foreach ($waves as $wave_num => $groups) {
                     $count = array_sum($groups);
-                    print "    Wave {$wave_num} [{$count} - " . number_format($count / $sum * 100, 1) . "%]\n";
+                    printf("    Wave {$wave_num} [{$count} - %.1f%% | %.1f%%]\n", $count / $sum * 100, $this->waves[$mission_id][$wave_num] ?? 100);
 
                     ksort($groups);
 
@@ -230,13 +213,9 @@
             $loot = array_filter($loot);
 
             $string = '';
-            foreach ($loot as $table => $items) {
-                $string .= vsprintf("        %12s   %s%s", [
-                    $table,
-                    is_array($items) ? implode(', ', $items) : $items,
-                    "\n",
-                ]);
-            }
+            foreach ($loot as $table => $items)
+                if ($table != "name")
+                    $string .= vsprintf("        %12s   %s%s", [$table, is_array($items) ? implode(', ', $items) : $items, "\n",]);
 
             return $string;
         }

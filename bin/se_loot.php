@@ -11,10 +11,9 @@
     require_once "../bootstrap.php";
     require_once "../../ffbe-discord/tmp/init_strings.php";
 
-    $se_id = '866';
+    $se_id = '823';
     $region = 'gl';
     $files  = glob(CLIENT_DIR . "missions\\{$region}\\{$se_id}*\\*\\*.json");
-
 
     natsort($files);
     $missions     = [];

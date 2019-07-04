@@ -6,7 +6,7 @@
      */
 
     require_once dirname(__DIR__) . "/bootstrap.php";
-    chdir(__DIR__ . "/dat_raw/gl") or die("chdir");
+    chdir(__DIR__ . "/dat_dec/gl") or die("chdir");
 
     /*
     $entries = `C:/cmder/vendor/git-for-windows/bin/git.exe ls-files`;
@@ -289,7 +289,7 @@
         $versions = \Sol\FFBE\GameFile::getFileVersions($entry);
         rsort($versions);
 
-        $current = file_get_contents(__DIR__ . "/dat_raw/gl/{$file}.txt");
+        $current = file_get_contents(__DIR__ . "/dat_dec/gl/{$file}.txt");
 
         foreach ($versions as $v) {
             $decoded = file_get_contents(__DIR__ . "/dat_enc/gl/{$file}_v{$v}.txt");

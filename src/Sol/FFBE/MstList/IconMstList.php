@@ -8,7 +8,7 @@
     namespace Sol\FFBE\MstList;
 
     class IconMstList extends AbstractMstList {
-        const MST_LIST = ['IconMstList'];
+        const MST_LIST = ['F_ICON_MST'];
         protected static $rows = [];
 
         public static function getFilename($icon_id) {

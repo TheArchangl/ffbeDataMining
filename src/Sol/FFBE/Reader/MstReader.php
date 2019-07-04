@@ -28,7 +28,7 @@
             $data = toJSON($entries, false);
 
             // un-indent arrays
-            foreach (['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw', 'levels'] as $x)
+            foreach (['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw', 'levels', 'requirements'] as $x)
                 $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
                     $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
                     $trimmed = str_replace(',', ', ', $trimmed);

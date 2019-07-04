@@ -16,5 +16,5 @@
     //     $key      = GameFile::getFileKey($filename);
     //
     //     if ($key != null && $key != '-')
-    //         GameFile::decodeFile($file, ROOT_DIR . "/dat_raw/jp/{$filename}.dat", $key);
+    //         GameFile::decodeFile($file, ROOT_DIR . "/dat_dec/jp/{$filename}.dat", $key);
     // }

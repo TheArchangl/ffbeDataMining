@@ -47,7 +47,7 @@
     }
 
     // git init before
-    chdir(DATA_DECODED_DIR . "/{$region}");
+    chdir(DATA_INPUT_DIR . "/{$region}");
     // shift first version off
     foreach ($filevers as $name => $versions) {
         $first = array_shift($filevers[$name]);
@@ -69,9 +69,9 @@
             if ($key == '-' || empty($key))
                 continue;
 
-            $outfile = DATA_DECODED_DIR . "{$region}/{$name}.txt";
+            $outfile = DATA_INPUT_DIR . "{$region}/{$name}.txt";
             \Sol\FFBE\GameFile::decodeFile(
-                DATA_ENCODED_DIR . "/{$region}/{$name}_v{$version}.txt",
+                DATA_BACKUP_DIR . "/{$region}/{$name}_v{$version}.txt",
                 $outfile,
                 $key
             );

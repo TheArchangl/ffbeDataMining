@@ -11,8 +11,10 @@
     require_once "client_update.php";
 
     // read strings
-    if ($region == 'gl')
-        require_once "generate_strings.php";
+    require_once "generate_strings.php";
+
+    // mogking
+    require_once "event.php";
 
     // units and beasts
     require_once "units.php";
@@ -27,8 +29,6 @@
     require_once "items.php";
     require_once "recipes.php";
 
-    // mogking
-    require_once "event.php";
 
     // world -> missions
     require_once "worlds.php";

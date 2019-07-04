@@ -34,7 +34,7 @@
 
         // update most recent file
         $mod_time = filemtime($path_in);
-        $max_ver  = max(GameFile::getFileVersions($file_entry) ?: [0]);
+        $max_ver  = max(GameFile::getFileVersions($file_entry, $region) ?: [0]);
         $path_out = DATA_INPUT_DIR . "/{$region}/{$name}.txt";
         if ((OVERWRITE && $ver == $max_ver) || $ver > $max_ver) {
             echo "\t{$file_entry->getName()} -> v{$ver}\n";

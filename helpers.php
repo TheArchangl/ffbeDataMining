@@ -7,6 +7,8 @@
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\Mst\SkillMst;
+    use Solaris\FFBE\Mst\SkillMstList;
 
     function readArray($input, $delim, $force) {
         if (is_int($input) || is_string($input))
@@ -108,9 +110,11 @@
      */
     function parseReward($string) {
         $rest = explode(':', $string);
+        $rest = array_map("trim", $rest);
         $type = array_shift($rest);
-        $id   = trim(array_shift($rest));
+        $id   = array_shift($rest);
         $num  = array_shift($rest);
+        $name = null;
 
         switch ($type) {
             case 10:
@@ -142,6 +146,13 @@
                 $type     = 'MATERIA';
                 break;
 
+            case 26:
+                // emblem / trophy thingies
+                $name = 'unk';
+                $type = "EMBLEM";
+                break;
+
+
             case 50:
                 // Lapis? currency?
                 $name     = 'Lapis';
@@ -163,20 +174,26 @@
                 $type     = 'RECIPE';
                 break;
 
+            case 90:
+            case 91:
+                // switch id
+                // unit series upgrades
+                $type = 'SWITCH';
+                $name = "";
+                break;
+
             default:
-                return ['ERR1', $type, $string, $id];
-                var_dump(['ERR1', $type, $id, $string]);
-                die();
+                throw new RuntimeException("Unknown mst type {$type} with id {$id}");
         }
 
-        if (!isset($str_db))
+        if (!isset($str_db) && !empty($mst_name))
             $str_db = "{$mst_name}_NAME";
 
-        if (!isset($name))
+        if ($name == null && isset($str_db))
             $name = Strings::getString($str_db, $id, 0);
 
 
-        if ($name == null) {
+        if ($name == null && !empty($mst_name)) {
             $items = GameFile::loadMst('F_' . substr($mst_name, 4) . '_MST');
             $items = array_combine(
                 array_map("current", $items),
@@ -376,11 +393,7 @@
             ksort($entries);
 
         $entries = utf8($entries);
-        $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE, 1024);
-        if ($data === false) {
-            // var_dump(arrayRecursiveDiff($entries, $test));
-            throw new \RuntimeException(json_last_error() . ": " . json_last_error_msg());
-        }
+        $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
 
         if ($trimStringArrays)
             $data = preg_replace_callback('/\[([^{[]+?)\]/sm', function ($match) {

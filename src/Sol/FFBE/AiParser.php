@@ -77,38 +77,39 @@
             7 => '7:enemy',
             8 => '8:ally', // Monster part
         ];
-
+        public static  $monsters = [];
         private static $skillset;
         private static $skills;
-        private static $monsters;
         private static $isFake;
 
+        public static function parseSteps(array $steps) {
+
+        }
+
         /**
-         * @param array $ai
-         * @param int[] $skillset
-         * @param array $skills
-         * @param array $monsters
-         * @param bool  $isFake
+         * @param AiAction[] $actions
+         * @param int[]      $skillset
+         * @param array      $skills
+         * @param array      $monsters
+         * @param bool       $isFake
          *
          * @return string
          */
-        public static function parseAI(array $ai, array $skillset, array $skills, array $monsters, $isFake = false) {
+        public static function parseAI(array $actions, array $skillset, array $skills, array $monsters, $isFake = false) {
             static::$skillset = $skillset;
             static::$skills   = $skills;
             static::$monsters = $monsters;
             static::$isFake   = $isFake;
 
+            // add normal attacks as fallback
+            $actions[] = new AiAction();
+
             // for each step / check
             $steps = [];
-            foreach ($ai['AI']['actions'] as $step) {
-                [$conditions, $skill_num] = self::parseConditions($step);
-                [$action, $flags] = explode('@', $step['action_str'], 2);
-                $target = static::parseTarget($step['target']);
-                $flags  = self::parseSetFlags($flags);
+            foreach ($actions as $step) {
+                $steps[] = $step;
 
-                $steps[] = [$conditions, $action, $target, $skill_num, $flags];
-
-                if (empty($conditions))
+                if (empty($step->conditions))
                     // always true
                     // -> ignore further steps
                     break;
@@ -148,8 +149,10 @@
                         ? "{$str}:{$num}"
                         : "{$str}:{$num}:{$name}";
 
-                case 3: //  ally by index
                 case 7: // enemy by index
+                    return "{$str}:{$num}";
+
+                case 3: //  ally by index
                     $monster = static::getMonsterByIndex($num - 1);
 
                     return $monster == null
@@ -172,195 +175,13 @@
         }
 
         /**
-         * @param array $step
-         *
-         * @return array
-         */
-        protected static function parseConditions($step): array {
-            $conditions = [];
-
-            // RNG
-            if ($step['weight'] != 100)
-                $conditions[] = sprintf("random() <= %.2f", $step['weight'] / 100);
-
-            // states
-            foreach ($step['conditions']['states'] as $val) {
-                list($target_range, $num, $type, $value) = explode(':', $val);
-                $target = static::formatTarget($target_range, $num);
-
-                $conditions[] = self::parseCondition($target, $type, $value);
-            }
-
-            // flags
-            $skill_num = -1;
-            foreach ($step['conditions']['flags'] as $val) {
-                list($key, $val) = explode(':', $val);
-
-                if ($key == 'skill')
-                    $skill_num = (int) $val;
-
-                else
-                    $conditions[] = self::parseCondition('self', $key, $val);
-            }
-
-            return [$conditions, $skill_num];
-        }
-
-        /**
-         * @param int $var_num
-         *
-         * @return string
-         */
-        protected static function getVarName(int $var_num) {
-            return static::VAR_NAMES[$var_num] ?? "var_{$var_num}";
-        }
-
-        /**
-         * @param string $action
-         * @param string $target
-         * @param int    $skill_num
-         *
-         * @return array
-         */
-        protected static function parseAction($action, $target, $skill_num): array {
-            $target = static::formatTargetPriority($target);
-
-            switch ($action) {
-                case 'turn_end':
-                    return ['endTurn()', ''];
-
-                case 'skill':
-                    if ($skill_num == 0)
-                        return ["useRandomSkill('{$target}')", ''];
-
-                    if ($skill_num == -1)
-                        return ["useRandomSkill('{$target}')", '# [?]'];
-
-                    $action = "useSkill({$skill_num}, '{$target}')";
-
-                    // get skill id from num
-                    $skill_id = static::$skillset[$skill_num - 1] ?? null;
-                    if ($skill_id == null)
-                        return [$action, "# Unknown skill - wrong skillset?"];
-
-                    // get skill from id
-                    $skill   = static::$skills[$skill_id];
-                    $effects = $skill['effects'];
-                    $effects = join(", ", $effects);
-                    $effects = str_replace("\n", " ", $effects);
-
-                    return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
-
-                case "attack":
-                    return ["{$action}('{$target}')", ""];
-
-                case "wait":
-                    $target = $target == 'random'
-                        ? ''
-                        : "'{$target}'";
-
-                    return ["wait({$target})", "# No action"];
-
-                default:
-                    return ["{$action}('{$target}')", "# Unknown action"];
-            }
-        }
-
-        /**
-         * @param string $string
-         *
-         * @return array
-         */
-        protected static function parseSetFlags($string) {
-            $temp = GameHelper::readParameters($string, '@,');
-
-            $arr = [];
-            $off = [0, 30];
-            foreach ($temp as $k => $flags) {
-                array_pop($flags); // empty last
-                $flags = array_chunk($flags, 2);
-
-                foreach ($flags as [$flag, $val])
-                    if ($flag != -1)
-                        $arr[] = [$flag + $off[$k], $val];
-            }
-
-            return $arr;
-        }
-
-        /**
-         * @param array[] $flags
-         *
-         * @return string
-         */
-        protected static function formatFlags(array $flags) {
-            // sort by var num
-            uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
-
-            // format
-            $code = '';
-            foreach ($flags as list($var_num, $value)) {
-                $note   = '';
-                $letter = static::getVarName($var_num);
-                $type   = static::getVarType($var_num);
-
-                switch ($type) {
-                    default:
-                    case 'unknown':
-                        assert(in_array($value, [0, 1]));
-                        $note   = "# unknown flag type";
-                        $action = "{$letter} = " . ($value ? 'True' : 'False');
-                        break;
-
-
-                    case 'counter':
-                        if ($value == 1)
-                            $action = "{$letter} += 1";
-
-                        elseif ($value == -1)
-                            $action = "{$letter} -= 1";
-
-                        else
-                            $action = "{$letter}  = $value";
-
-                        break;
-
-                    case 'volatile':
-                        $note   = "# reset next turn";
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        break;
-
-                    case 'flag':
-                        $note   = "# persistent";
-                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
-                        break;
-
-                    case 'timer':
-                        if ($value) {
-                            $note   = "# timer";
-                            $action = "{$letter}  = Timer.create()";
-                        } else {
-                            $note   = "# timer";
-                            $action = "{$letter}.reset()";
-                        }
-
-                        break;
-                }
-
-                $code .= sprintf("\t%-30s %s\n", $action, $note);
-            }
-
-            return $code;
-        }
-
-        /**
          * @param string $target
          * @param string $type
          * @param string $value
          *
          * @return string
          */
-        protected static function parseCondition($target, $type, $value) {
+        public static function parseCondition($target, $type, $value) {
             // $target = static::formatTargetPriority($target);
             $unit = ($target == 'self')
                 ? 'self'
@@ -389,7 +210,7 @@
                 case 'flg_cntup_under':
                     list($var_num, $value) = explode(',', $value);
 
-                    return static::getVarName($var_num + 25) . " <= {$value}";
+                    return static::getVarName($var_num + 25) . " < {$value}";
 
                 // timers
                 case 'flg_timer_act':
@@ -568,44 +389,164 @@
         }
 
         /**
-         * @param mixed[] $steps
+         * @param int $var_num
+         *
+         * @return string
+         */
+        protected static function getVarName(int $var_num) {
+            return static::VAR_NAMES[$var_num] ?? "var_{$var_num}";
+        }
+
+        /**
+         * @param string $action
+         * @param string $target
+         * @param int    $skill_num
+         *
+         * @return array
+         */
+        protected static function parseAction($action, $target, $skill_num): array {
+            $target = static::formatTargetPriority($target);
+
+            switch ($action) {
+                case 'turn_end':
+                    return ['endTurn()', ''];
+
+                case 'skill':
+                    if ($skill_num == 0)
+                        return ["useRandomSkill('{$target}')", ''];
+
+                    if ($skill_num == -1)
+                        return ["useRandomSkill('{$target}')", '# [?]'];
+
+                    $action = "useSkill({$skill_num}, '{$target}')";
+
+                    // get skill id from num
+                    $skill_id = static::$skillset[$skill_num - 1] ?? null;
+                    if ($skill_id == null)
+                        return [$action, "# Unknown skill - wrong skillset?"];
+
+                    // get skill from id
+                    $skill   = static::$skills[$skill_id];
+                    $effects = $skill['effects'];
+                    $effects = join(", ", $effects);
+                    $effects = str_replace("\n", " ", $effects);
+
+                    return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
+
+                case "attack":
+                    return ["{$action}('{$target}')", ""];
+
+                case "wait":
+                    $target = $target == 'random'
+                        ? ''
+                        : "'{$target}'";
+
+                    return ["wait({$target})", "# No action"];
+
+                default:
+                    return ["{$action}('{$target}')", "# Unknown action"];
+            }
+        }
+
+        /**
+         * @param array[] $flags
+         *
+         * @return string
+         */
+        protected static function formatFlags(array $flags) {
+            // sort by var num
+            uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
+
+            // format
+            $code = '';
+            foreach ($flags as list($var_num, $value)) {
+                $note   = '';
+                $letter = static::getVarName($var_num);
+                $type   = static::getVarType($var_num);
+
+                switch ($type) {
+                    default:
+                    case 'unknown':
+                        assert(in_array($value, [0, 1]));
+                        $note   = "# unknown flag type";
+                        $action = "{$letter} = " . ($value ? 'True' : 'False');
+                        break;
+
+
+                    case 'counter':
+                        if ($value == 1)
+                            $action = "{$letter} += 1";
+
+                        elseif ($value == -1)
+                            $action = "{$letter} -= 1";
+
+                        else
+                            $action = "{$letter}  = $value";
+
+                        break;
+
+                    case 'volatile':
+                        $note   = "# reset next turn";
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        break;
+
+                    case 'flag':
+                        $note   = "# persistent";
+                        $action = "{$letter}  = " . ($value ? 'True' : 'False');
+                        break;
+
+                    case 'timer':
+                        if ($value) {
+                            $note   = "# timer";
+                            $action = "{$letter}  = Timer.create()";
+                        } else {
+                            $note   = "# timer";
+                            $action = "{$letter}.reset()";
+                        }
+
+                        break;
+                }
+
+                $code .= sprintf("\t%-30s %s\n", $action, $note);
+            }
+
+            return $code;
+        }
+
+        /**
+         * @param AiAction[] $steps
          *
          * @return string
          */
         private static function formatOutput(array $steps) {
             $first = true;
             $code  = "";
-            foreach ($steps as [$conditions, $action, $target, $skill_num, $flags]) {
+
+            foreach ($steps as $step) {
                 /** @var string[] $conditions */
                 // conditions
-                if (empty($conditions))
+                if (empty($step->conditions))
                     $code .= $first
                         ? "if   True:\n"
                         : "else:\n";
 
                 else {
-                    $conditions = join(' and ', $conditions);
+                    $conditions = join(' and ', $step->conditions);
                     $code       .= $first
                         ? "if   {$conditions}:\n"
                         : "elif {$conditions}:\n";
                 }
 
                 // action + flags
-                $code .= self::formatAction($action, $target, $skill_num);
-                $code .= self::formatFlags($flags);
+                $code .= self::formatAction($step->action, $step->target, $step->skill_num);
+                $code .= self::formatFlags($step->flags ?? []);
                 $code .= "\n";
 
                 $first = false;
             }
 
             // replace relative summs if possible
-            $code = preg_replace_callback("~Summon ally #(\d+)~", function ($match) {
-                $monster = static::getMonsterByIndex($match[1] - 1);
-                if ($monster == null)
-                    return $match[0];
-
-                return "Summon {$monster['name']} ({$monster['id']})";
-            }, $code);
+            $code = self::insertMonsterNames($code);
 
             return $code;
         }
@@ -621,19 +562,6 @@
             [$action, $note] = static::parseAction($action, $target, $skill_num);
 
             return sprintf("\t%-30s %s\n", $action, $note);
-        }
-
-        /**
-         * @param string $str
-         *
-         * @return string
-         */
-        private static function parseTarget($str) {
-            [$target, $i] = explode(':', $str, 2);
-
-            return $i == 0
-                ? $target
-                : $str;
         }
 
         /**
@@ -705,6 +633,7 @@
          * @return array|null
          */
         private static function getMonsterByIndex($i) {
+
             if ($i >= count(static::$monsters))
                 return null;
 
@@ -713,11 +642,11 @@
             [$monster_id, $part_num] = explode('.', $key);
 
             $entry = static::$monsters[$key];
-
-            $name = Strings::getString('MST_MONSTER_NAME', $monster_id) ?? $entry['name'];
+            $name  = Strings::getString('MST_MONSTER_NAME', $monster_id) ?: $entry['name'];
+            $name  = $entry['name'];
 
             if (isset(static::$monsters["{$monster_id}.2"]))
-                $name .= " " . range("A", "Z")[$part_num - 1];
+                $name .= " " . chr(ord('A') + $part_num - 1);
 
             return [
                 'id'    => $monster_id,
@@ -725,5 +654,22 @@
                 'name'  => $name,
                 'entry' => $entry
             ];
+        }
+
+        /**
+         * @param string $code
+         *
+         * @return string
+         */
+        public static function insertMonsterNames(string $code) {
+            $code = preg_replace_callback("~Summon ally #(\d+)~", function ($match) {
+                $monster = static::getMonsterByIndex($match[1] - 1);
+                if ($monster == null)
+                    return $match[0];
+
+                return "Summon {$monster['name']} ({$monster['id']})";
+            }, $code);
+
+            return $code;
         }
     }
