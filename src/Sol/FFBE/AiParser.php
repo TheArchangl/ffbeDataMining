@@ -77,6 +77,18 @@
             7 => '7:enemy',
             8 => '8:ally', // Monster part
         ];
+
+        /** @var string[] */
+        const SKILL_TYPES = [
+            'ab'      => 'ability',
+            'special' => 'ability',
+            'sm'      => 'summon',
+            'beast'   => 'esper',
+            'mg'      => 'magic',
+            'lb'      => 'limitburst',
+            'hit'     => 'attack',
+        ];
+
         public static  $monsters = [];
         private static $skillset;
         private static $skills;
@@ -295,36 +307,37 @@
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
 
-                case "before_turn_ab":
-                case "before_turn_attack":
-                case "before_turn_beast_attack":
                 case "before_turn_guard":
+                case "before_turn_lb":
+                case "before_turn_attack":
                 case "before_turn_hit_attack":
                 case "before_turn_item_attack":
-                case "before_turn_lb":
+
+                case "before_turn_sm":
+                case "before_turn_beast_attack":
+
+                case "before_turn_mg":
                 case "before_turn_magic_attack":
                 case "before_turn_magic_heal":
                 case "before_turn_magic_support":
-                case "before_turn_mg":
-                case "before_turn_sm":
+
+                case "before_turn_ab":
                 case "before_turn_special_attack":
                 case "before_turn_special_heal":
                 case "before_turn_special_support":
-                    $negate  = ($value == 1 ? '' : 'not ');
-                    $strings = [
-                        'ab'      => 'ability',
-                        'sm'      => 'esper',
-                        'mg'      => 'magic',
-                        'lb'      => 'limitburst',
-                        'special' => 'ability',
-                        'hit'     => 'attack',
-                        'beast'   => 'esper',
-                    ];
+                    // Reactions
+                    $negate = ($value == 1 ? '' : 'not ');
 
+                    $type = substr($type, 12);
+                    if (($pos = strrpos($type, '_')) !== false) {
+                        $skill_type  = substr($type, 0, $pos);
+                        $action_type = substr($type, $pos + 1);
+                    } else {
+                        $action_type = null;
+                        $skill_type  = $type;
+                    }
 
-                    $skill_type  = substr($type, 12);
-                    $action_type = substr($skill_type, strrpos($skill_type, '_') + 1);
-                    $skill_type  = $strings[$skill_type] ?? $skill_type;
+                    $skill_type = self::SKILL_TYPES[$skill_type] ?? $skill_type;
 
                     switch ($action_type) {
                         default:

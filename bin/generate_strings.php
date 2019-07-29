@@ -138,7 +138,7 @@
 
     //            ksort($output);
 
-    $dir = DATA_OUTPUT_DIR . "/{$region}/strings";
+    $dir = ROOT_DIR . "/strings/{$region}";
     if (!is_dir($dir))
         mkdir($dir, 0777, true);
 
