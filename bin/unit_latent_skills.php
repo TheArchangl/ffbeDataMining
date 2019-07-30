@@ -19,7 +19,7 @@
     $reverse = [];
 
     foreach (\Sol\FFBE\GameFile::loadMst('F_HIDDEN_SKILL_MST') as $row) {
-        ['uNQgv5QM' => $hidden_id, 'gil' => $gil_cost, '3V7vwrcM' => $points, 'kjK5eW55' => $skill_id, 'ULAYukCb' => $next] = $row;
+        ['uNQgv5QM' => $hidden_id, 'gil' => $gil_cost, '3V7vwrcM' => $points, 'ULAYukCb' => $skill_id, 'kjK5eW55' => $next] = $row;
 
         $entries[$hidden_id] = [
             'units'    => [],
