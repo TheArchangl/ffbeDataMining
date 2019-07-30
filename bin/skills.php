@@ -18,7 +18,6 @@
 
     // GameFile::setRegion('jp');
 
-    var_dump($container[SkillMstList::class]->getEntry(202790));
     echo "Skills\n";
     $reader = new SkillReader($region, $container[SkillMstList::class]);
     $reader->save(join('/', [
