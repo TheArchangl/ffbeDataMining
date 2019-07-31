@@ -17,7 +17,7 @@
 
 
     $entries = [];
-    foreach (GameFile::loadMst('2qDEnLF9') as $row) {
+    foreach (GameFile::loadMst('F_MEDAL_EXCHANGE_MST') as $row) {
         $mog_id      = (int) $row['medal_exchange_id'];
         $currency_id = (int) $row['ak2dhKm3'];
         $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;

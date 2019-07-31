@@ -24,6 +24,7 @@
     require_once __DIR__ . "/vendor/autoload.php";
 
     \Sol\FFBE\GameFile::init();
+    $container = new \Pimple\Container();
 
     // region
     $region = 'gl';
@@ -34,6 +35,11 @@
 
     $container           = new \Pimple\Container();
     $container['region'] = $region;
+
+    // assert dirs exist
+    foreach ([DATA_BACKUP_DIR, DATA_ENCODED_DIR, DATA_INPUT_DIR, DATA_OUTPUT_DIR] as $dir)
+        if (!is_dir("{$dir}/$region"))
+            mkdir("{$dir}/$region", 0777, true);
 
     // fix Skills
     $container[SkillMstList::class] = function () use ($region) {
@@ -46,7 +52,7 @@
             'MST_ITEM_EQUIP_NAME'  => 'F_TEXT_ITEM_EQUIP_NAME',
             'MST_TRIBE'            => 'F_TEXT_TRIBE',
             'MST_BEAST_NAME'       => 'F_TEXT_BEAST_NAME',
-            'MST_UNITS_NAME'       => 'F_TEXT_UNITS_NAME'
+            'MST_UNITS_NAME'       => 'F_TEXT_UNITS_NAME',
         ];
 
         foreach ($files as $table => $filename)

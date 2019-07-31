@@ -8,6 +8,7 @@
     use Solaris\FFBE\Helper\Strings;
 
     require "../bootstrap.php";
+    require_once "../../heroku/tmp/request_helper.php";
     require "../../ffbe/vendor/autoload.php";
 
     ini_set('memory_limit', '2G');
@@ -18,13 +19,18 @@
         Strings::readFile($file);
 
     // import all requests
-    $dir   = __DIR__ . "/requests/event_babel_elt";
-    $files = glob($dir . "/*_MissionStartResponse.json");
+    $region     = 'gl';
+    $mission_id = "11430201";
+
+    $files = glob(CLIENT_DIR . "missions\\{$region}\\*\\{$mission_id}\\*.json");
+    natsort($files);
 
     $rewards = [];
     foreach ($files as $file) {
         $data = file_get_contents($file);
         $data = json_decode($data, true);
+        $data = replaceRequestKeys($data);
+
         $data = $data['body']['data'];
 
         $mission_id = $data['MissionStartRequest'][0]['mission_id'];
@@ -81,12 +87,12 @@
 
             $name = $monsters[$monster_unit_id];
 
-            $story_encounters[$battle_group_id][$compendium_id][] =  [
+            $story_encounters[$battle_group_id][$compendium_id][] = [
                 'name' => $name,
                 'loot' => $loot_tables,
             ];
 
-            var_dump($encounters);
+            // var_dump($encounters);
         }
 
         //
@@ -94,3 +100,5 @@
     }
 
     ksort($rewards);
+
+    var_dump($story_encounters);
