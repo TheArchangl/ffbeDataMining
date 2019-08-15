@@ -332,7 +332,8 @@
                     if (($pos = strrpos($type, '_')) !== false) {
                         $skill_type  = substr($type, 0, $pos);
                         $action_type = substr($type, $pos + 1);
-                    } else {
+                    }
+                    else {
                         $action_type = null;
                         $skill_type  = $type;
                     }
@@ -480,9 +481,14 @@
                 switch ($type) {
                     default:
                     case 'unknown':
-                        assert(in_array($value, [0, 1]));
-                        $note   = "# unknown flag type";
-                        $action = "{$letter} = " . ($value ? 'True' : 'False');
+                        if (in_array($value, [0, 1])) {
+                            $note   = "# unknown flag type";
+                            $action = "{$letter} = " . ($value ? 'True' : 'False');
+                        }
+                        else {
+                            $note   = "# unknown flag type 2";
+                            $action = "{$letter} = {$value}";
+                        }
                         break;
 
 
@@ -499,20 +505,30 @@
                         break;
 
                     case 'volatile':
+                        if (!in_array($value, [0, 1]))
+                            die("WEEE WOOO");
+
                         $note   = "# reset next turn";
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         break;
 
                     case 'flag':
+                        if (!in_array($value, [0, 1]))
+                            die("WEEE WOOO");
+
                         $note   = "# persistent";
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         break;
 
                     case 'timer':
+                        if (!in_array($value, [0, 1]))
+                            die("WEEE WOOO");
+
                         if ($value) {
                             $note   = "# timer";
                             $action = "{$letter}  = Timer.create()";
-                        } else {
+                        }
+                        else {
                             $note   = "# timer";
                             $action = "{$letter}.reset()";
                         }
@@ -665,7 +681,7 @@
                 'id'    => $monster_id,
                 'part'  => $part_num,
                 'name'  => $name,
-                'entry' => $entry
+                'entry' => $entry,
             ];
         }
 

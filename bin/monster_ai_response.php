@@ -7,6 +7,9 @@
 
     namespace Sol\FFBE;
 
+    assert_options(ASSERT_ACTIVE, true);
+    assert_options(ASSERT_EXCEPTION, true);
+
     use Sol\FFBE\Reader\MissionResponseReader;
     use Solaris\FFBE\Helper\Strings;
 
@@ -17,6 +20,7 @@
 
     // setup
     $max_num = 50;
+
     require_once __DIR__ . "/client_update.php";
     require_once __DIR__ . "/generate_strings.php";
 
@@ -66,8 +70,11 @@
     $reader  = null;
     $outfile = DATA_OUTPUT_DIR . "/monster_ai_response_result.txt";
 
-    if (is_file($outfile))
-        unlink($outfile);
+    if (is_file($outfile)) {
+        $fh = new \SplFileObject($outfile, 'w');
+        $fh->ftruncate(0);
+        unset($fh);
+    }
 
     uksort($missions, 'strnatcmp');
     foreach ($missions as $mission_id => $entries) {
