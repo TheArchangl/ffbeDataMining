@@ -25,16 +25,20 @@
          * @return string
          */
         protected function formatOutput(array $entries) {
+            ksort($entries);
             $data = toJSON($entries, false);
 
             // un-indent arrays
-            foreach (['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw', 'levels', 'requirements'] as $x)
-                $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
-                    $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
-                    $trimmed = str_replace(',', ', ', $trimmed);
+            $keys = ['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw', 'levels', 'requirements'];
+            $keys = array_map('preg_quote', $keys);
+            $keys = join('|', $keys);
 
-                    return "{$match[1]}{$trimmed}{$match[3]}";
-                }, $data);
+            $data = preg_replace_callback('/(\"(?:' . $keys . ')":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
+                $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
+                $trimmed = str_replace(',', ', ', $trimmed);
+
+                return "{$match[1]}{$trimmed}{$match[3]}";
+            }, $data);
 
             // un-indent objects
             $data = preg_replace_callback('/("cost":\s*{)([^}]+)(},)/sm', function ($match) {

@@ -67,32 +67,23 @@
                 'name'            => $names[0] ?? $row['name'] ?? null,
                 'cost'            => 0,
 
-                // frames
+                // frames & timing
                 'attack_count'    => 0,
                 'attack_damage'   => [],
                 'attack_frames'   => [],
                 'effect_frames'   => [],
 
-                //
-               // 'effect_type'     => GameHelper::SKILL_EXECUTE_TYPE[$row['execute_type']],
                 'move_type'       => (int) $row['move_type'],
-                //
+
+                // effects
                 'damage_type'     => GameHelper::ATTACK_TYPE[$row['attack_type']],
                 'element_inflict' => GameHelper::readElement($row['element_inflict']) ?: null,
+
                 //
                 'min_level'       => [],
                 'max_level'       => [],
                 'levels'          => [],
-
-                //
-                'strings'         => [
-                    'name' => $names,
-                    'desc' => Strings::getStrings('MST_LIMITBURST_DESCRIPTION', $lb_id),
-                ],
             ];
-
-            if (GameFile::getRegion() == 'jp')
-                $entry['strings'] = [];
 
             $entry = SkillReader::parseFrames($row, $entry);
 
@@ -104,9 +95,6 @@
          * @param array $row
          */
         protected function readLimitburstLevelRow(array $row) {
-            // if ($row['level'] != 1 && $row['level'] != 15 && $row['level'] != 20 && $row['level'] != 25)
-            //     continue;
-
             $lb_id  = (int) $row['lb_id'];
             $lb_row = $this->lb_map[$lb_id] ?? null;
             if ($lb_row == null)
