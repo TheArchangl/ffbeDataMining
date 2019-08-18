@@ -294,6 +294,8 @@
                 'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
             ];
 
+            $entry = $this->parseSkillEffects($id, $entry);
+
             return $entry;
         }
 
