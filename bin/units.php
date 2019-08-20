@@ -5,10 +5,11 @@
      * Time: 17:39
      */
 
+    // $region = 'jp';
+
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    $region = $region ?? 'gl';
     $lang   = 0; // EN
 
     // unit data

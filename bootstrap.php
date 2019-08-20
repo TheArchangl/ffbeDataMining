@@ -27,7 +27,7 @@
     $container = new \Pimple\Container();
 
     // region
-    $region = 'gl';
+    $region = $region ?? 'gl';
     if (strtolower($argv[1] ?? $region) == 'jp')
         $region = 'jp';
 

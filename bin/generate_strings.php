@@ -65,7 +65,7 @@
                 'F_MAGIC_MST'   => 'MST_MAGIC_NAME',
                 'F_MISSION_MST' => 'MST_MISSION_NAME',
                 'F_ITEM_MST'    => 'MST_ITEM_NAME',
-                'F_UNIT_MST'    => 'MST_UNIT_NAME'
+                'F_UNIT_MST'    => 'MST_UNIT_NAME',
             ];
 
             foreach ($msts as $mst => $table) {
@@ -87,9 +87,16 @@
             return; // no saving for now
             break;
     }
-
     // write to file
     echo "Writing strings\n";
+
+    $file = realpath($argv[0] );
+    if ($file != realpath(__FILE__) && $file != realpath(__DIR__ . DIRECTORY_SEPARATOR . 'runAll.php')) {
+        // ghetto __main__
+        echo "\tSkip!\n";
+
+        return;
+    }
 
     $strings = Strings::getEntries();
     // $ids     = array_keys($strings);
@@ -116,7 +123,8 @@
 
         if (preg_match('~^(.*?)_(\d+(?:_\d+)*)$~', $k, $match)) {
             $output[$match[1]][$match[2]] = $strs;
-        } else {
+        }
+        else {
             if (empty($k) || ctype_digit($k) || $k[-1] == '_')
                 continue;
 
