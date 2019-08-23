@@ -128,6 +128,7 @@
                 'game_id' => (int) $row['game_id'],
                 'game'    => null,
 
+                'roles'  => array_map(function ($key) { return GameHelper::UNIT_ROLE[$key] ?? "UNKNOWN ROLE {$key}"; }, GameHelper::readIntArray($row['27GkYdEu'])),
                 'job_id' => (int) $row['job_id'],
                 'job'    => null,
 
@@ -155,7 +156,8 @@
                 unset($arr['job']);
                 unset($arr['game']);
                 unset($arr['names']);
-            } else {
+            }
+            else {
                 $arr['game'] = Strings::getString('MST_GAME_TITLE_NAME', $row['game_id']);
                 $arr['job']  = Strings::getString('MST_JOB_NAME', $row['job_id']);
             }
