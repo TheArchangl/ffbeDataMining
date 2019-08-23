@@ -59,6 +59,7 @@
             //
             'cost_type'  => COST_TYPE[$row['CostType']] ?? $row['CostType'],
             'cost'       => (int) $row['cost'],
+            'difficulty' => (int) $row['rarity'],
             //
             'flags'      => $flags,
 
