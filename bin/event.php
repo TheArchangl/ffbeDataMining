@@ -129,7 +129,7 @@
 
     function getTmProgress($moogle_unit_id, $tm_info, $stm_info) {
         if ($stm_info > 0)
-            return "STMR " . [5, 25, 50, 100][$stm_info[-1]];
+            return "STMR " . [5, 25, 50, 100][$stm_info[-1]] ?? '??';
 
         // ALL %
         switch ($tm_info) {
