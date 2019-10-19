@@ -9,7 +9,7 @@
     require_once dirname(__DIR__) . "/helpers.php";
 
     if ($region != 'gl')
-        exit();
+        return;
 
     #    \Sol\FFBE\GameFile::setRegion('jp');
 
