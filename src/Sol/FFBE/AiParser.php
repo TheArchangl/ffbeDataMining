@@ -137,7 +137,7 @@
          * @return string
          */
         static function formatTarget($range, $num) {
-            $str = static::CONDITION_TARGET[$range] ?? "unknown";
+            $str = static::CONDITION_TARGET[$range] ?? "unknown:{$range}";
 
             switch ($range) {
                 /** @noinspection PhpMissingBreakStatementInspection */
@@ -380,8 +380,9 @@
                 case "party_alive_num":
                     $negate = ($value == 1 ? '' : 'not ');
                     $value  = explode(',', $value);
+                    $name   = ['monsters', 'player', 'unknown'][$value[0]];
 
-                    return "{$negate} party({$value[0]}).unitsAlive({$value[1]}) [?]";
+                    return "{$negate} party('{$name}').unitsAlive({$value[1]})";
 
                 case "normal_state":
                     $negate = ($value == 1 ? '' : 'not ');
