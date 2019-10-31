@@ -619,7 +619,7 @@
         }
 
         /**
-         * @param string $target
+         * @param string $string
          *
          * @return string
          */
@@ -663,17 +663,16 @@
          * @return array|null
          */
         private static function getMonsterByIndex($i) {
-
             if ($i >= count(static::$monsters))
                 return null;
 
             $key = array_keys(static::$monsters)[$i];
 
             [$monster_id, $part_num] = explode('.', $key);
-
             $entry = static::$monsters[$key];
-            $name  = Strings::getString('MST_MONSTER_NAME', $monster_id) ?: $entry['name'];
-            $name  = $entry['name'];
+            $name  = GameFile::getRegion() == 'gl'
+                ? (Strings::getString('MST_MONSTER_NAME', $monster_id) ?: $entry['name'])
+                : $entry['name'];
 
             if (isset(static::$monsters["{$monster_id}.2"]))
                 $name .= " " . chr(ord('A') + $part_num - 1);
