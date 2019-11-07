@@ -624,29 +624,30 @@
          * @return string
          */
         private static function formatTargetPriority(string $string) {
-            [$target, $value] = explode(':', $string) + ['', ''];
+            [$target, $value] = explode(':', strtolower($string)) + ['', ''];
 
-            switch (strtolower($target)) {
+            switch ($target) {
                 case "self":
                     return "self";
 
                 case "atk_max":
-                    return "highest ATK";
-
                 case "def_max":
-                    return "highest DEF";
-
-                case "mind_max":
-                    return "highest SPR";
-
                 case "int_max":
-                    return "highest MAG";
-
+                case "mind_max":
                 case "hp_max":
-                    return "highest HP";
-
                 case "mp_max":
-                    return "highest MP";
+                case "atk_min":
+                case "def_min":
+                case "int_min":
+                case "mind_min":
+                case "hp_min":
+                case "mp_min":
+                    assert($value == 0);
+                    [$stat, $minmax] = explode('_', $target);
+                    $stat   = ['int' => 'MAG', 'mind' => 'SPR'][$stat] ?? strtoupper($stat);
+                    $minmax = ['max' => 'highest', 'min' => 'lowest'][$minmax] ?? $minmax;
+
+                    return "{$minmax} {$stat}";
 
                 case "disp_order":
                     return "slot:" . (($value ?: 0) + 1);
