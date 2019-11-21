@@ -354,6 +354,11 @@
                             return "{$negate}{$unit}.supportedWithLastTurn('{$skill_type}')";
                     }
 
+                case "before_turn_limit_attack":
+                    $negate = ($value == 1 ? '' : 'not ');
+
+                    return "{$negate}unit('any').usedLastTurn('limitburst')";
+
                 case "magic_aero":
                 case "magic_dark":
                 case "magic_fire":
@@ -388,6 +393,7 @@
                     $negate = ($value == 1 ? '' : 'not ');
 
                     return "{$negate}{$unit}.is('{$type}:{$value}')";
+
 
                 case "abnormal_state_heal_skill_use_possible":
                 case "atk_skill_use_possible":
