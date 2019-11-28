@@ -12,6 +12,7 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Helper\Environment;
+    use Solaris\FFBE\Mst\AbilitySkillMst;
     use Solaris\FFBE\Mst\MstList;
     use Solaris\FFBE\Mst\SkillMst;
     use Solaris\FFBE\Mst\SkillMstList;
@@ -38,7 +39,7 @@
          */
         public static function parseFrames($data, $entry) {
             // attack frames
-            if (! empty($data['attack_frames'])) {
+            if (!empty($data['attack_frames'])) {
                 $frames = parseList($data['attack_frames'], '@-:');
 
                 $entry['attack_frames'] = static::flattenFrames($frames, 0);
@@ -128,10 +129,11 @@
         public function saveAbilities(string $file) {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
-                if ($row['is_active'] == "1")
+                $id  = current($row);
+                $mst = $this->skill_mst->getEntry($id);
+                if ($mst == null || !$mst->isActive())
                     continue;
 
-                $id    = current($row);
                 $entry = $this->parseAbilityRow($row);
 
                 $data[$id] = $entry;
@@ -149,7 +151,9 @@
         public function savePassives(string $file) {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
-                if ($row['is_active'] !== "1")
+                $id  = current($row);
+                $mst = $this->skill_mst->getEntry($id);
+                if ($mst == null || $mst->isActive())
                     continue;
 
                 $id    = current($row);
@@ -273,9 +277,9 @@
                 ? Strings::getString('MST_ABILITY_NAME', $id) ?? $row['name']
                 : $row['name'];
 
-            $mst      = $this->skill_mst->getEntry($id);
-            $isActive = $mst->isActive();
-            $entry    = [
+            /** @var AbilitySkillMst $mst */
+            $mst   = $this->skill_mst->getEntry($id);
+            $entry = [
                 'name'          => $name,
                 'icon'          => IconMstList::getFilename($row['icon_id']),
                 'compendium_id' => (int) $row['order_index'],

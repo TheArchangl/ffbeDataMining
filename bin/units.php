@@ -48,11 +48,3 @@
     $file = join('/', [DATA_OUTPUT_DIR, $region, 'unit_selection.json']);
     file_put_contents($file, json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
-    //
-    echo "Limitbursts\n";
-    $reader = new \Sol\FFBE\Reader\LimitburstReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
-    $reader->save(join('/', [
-        DATA_OUTPUT_DIR,
-        $region,
-        'limitbursts.json'
-    ]));

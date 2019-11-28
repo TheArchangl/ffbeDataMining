@@ -6,6 +6,7 @@
      */
 
     use Sol\FFBE\MstList\IconMstList;
+    use Sol\FFBE\Reader\LimitburstReader;
     use Sol\FFBE\Reader\SkillReader;
     use Solaris\FFBE\Mst\SkillMstList;
 
@@ -23,3 +24,12 @@
     $reader->saveAbilities(join('/', [DATA_OUTPUT_DIR, $region, 'skills_ability.json']));
     $reader->savePassives(join('/', [DATA_OUTPUT_DIR, $region, 'skills_passive.json']));
     $reader->saveMagic(join('/', [DATA_OUTPUT_DIR, $region, 'skills_magic.json']));
+
+    //
+    echo "Limitbursts\n";
+    $reader = new LimitburstReader($region, $container[SkillMstList::class]);
+    $reader->save(join('/', [
+        DATA_OUTPUT_DIR,
+        $region,
+        'limitbursts.json'
+    ]));
