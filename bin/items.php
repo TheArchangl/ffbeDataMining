@@ -166,6 +166,7 @@
 
     #region Materia
     echo "Reading Materia\n";
+    Strings::readTable('MST_ABILITY_SHORTDESCRIPTION');
 
     $entries = [];
     foreach (GameFile::loadMst(MateriaMstList::getName()) as $row) {

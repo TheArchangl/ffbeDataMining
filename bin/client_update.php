@@ -5,13 +5,13 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
 
     const OVERWRITE = false;
-    $client_dir = CLIENT_DIR . "files\\{$region}";
+    $client_dir = CLIENT_DIR . "files/{$region}";
 
     //
     echo "Updating from {$region} client files\n";
 
     $updated = [];
-    $files   = file_get_contents("{$client_dir}/versions.json");
+    $files   = file_get_contents("{$client_dir}/versions.json") or die();
     $files   = json_decode($files, true);
     foreach ($files as $k => $entry) {
         if ($entry['Type'] == 2)

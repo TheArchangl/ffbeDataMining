@@ -9,7 +9,7 @@
 
     use Solaris\FFBE\GameHelper;
 
-    ini_set('zend.assertions', true);
+    @ini_set('zend.assertions', true);
     ini_set('assert.active', true);
 
     class AiParser {
