@@ -512,8 +512,11 @@
                         break;
 
                     case 'volatile':
-                        if (!in_array($value, [0, 1]))
-                            die("WEEE WOOO");
+                        if (!in_array($value, [0, 1])) {
+                            $action = "{$letter}  = {$value}";
+                            $note   = "# reset next turn [?]";
+                            break;
+                        }
 
                         $note   = "# reset next turn";
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
@@ -521,7 +524,7 @@
 
                     case 'flag':
                         if (!in_array($value, [0, 1]))
-                            die("WEEE WOOO");
+                            die("WEEE WOOO 2: $value");
 
                         $note   = "# persistent";
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
@@ -529,7 +532,7 @@
 
                     case 'timer':
                         if (!in_array($value, [0, 1]))
-                            die("WEEE WOOO");
+                            die("WEEE WOOO 3: $value");
 
                         if ($value) {
                             $note   = "# timer";
