@@ -23,7 +23,7 @@
     // skills
     require_once "skills.php";
     require_once "enhancements.php";
-    require_once "skillsets.php";
+    require_once "skillsets.php"; // monster skills + skillsets
     require_once "unit_latent_skills.php";
 
     // items
