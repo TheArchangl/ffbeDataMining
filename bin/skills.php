@@ -17,8 +17,6 @@
     ini_set('memory_limit', '2G');
     IconMstList::init();
 
-    // GameFile::setRegion('jp');
-
     echo "Skills\n";
     $reader = new SkillReader($region, $container[SkillMstList::class]);
     $reader->saveAbilities(join('/', [DATA_OUTPUT_DIR, $region, 'skills_ability.json']));
