@@ -5,13 +5,14 @@
      * Time: 16:13
      */
 
-    use Sol\FFBE\GameFile;
-    use Sol\FFBE\MstList\IconMstList;
-    use Sol\FFBE\Strings;
-    use Solaris\FFBE\Mst\MateriaMstList;
-    use Solaris\Formatter\SkillFormatter;
+use Sol\FFBE\GameFile;
+use Sol\FFBE\MstList\IconMstList;
+use Sol\FFBE\Strings;
+use Solaris\FFBE\GameHelper;
+use Solaris\FFBE\Mst\MateriaMstList;
+use Solaris\Formatter\SkillFormatter;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
+require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
     IconMstList::init();
@@ -76,9 +77,9 @@
             //
             'rarity'           => (int) $row['rarity'],
             'type_id'          => (int) $row['equip_type'],
-            'type'             => \Solaris\FFBE\GameHelper::EQUIPMENT_TYPE[$row['equip_type']],
+            'type'             => GameHelper::EQUIPMENT_TYPE[$row['equip_type']],
             'slot_id'          => (int) $row['equip_slot_type'],
-            'slot'             => \Solaris\FFBE\GameHelper::EQUIPMENT_SLOT_ID[$row['equip_slot_type']],
+            'slot'             => GameHelper::EQUIPMENT_SLOT_ID[$row['equip_slot_type']],
             // 'unique'        => $row['is_unique'] == 1, // none
 
             // weapon
@@ -98,11 +99,11 @@
                 'MAG' => (int) $row['bonus_mag'],
                 'SPR' => (int) $row['bonus_spr'],
 
-                'element_resist'  => \Solaris\FFBE\GameHelper::readElement($row['element_resist'], false) ?: null,
-                'element_inflict' => \Solaris\FFBE\GameHelper::readElement($row['element_inflict']) ?: null,
+                'element_resist'  => GameHelper::readElement($row['element_resist'], false) ?: null,
+                'element_inflict' => GameHelper::readElement($row['element_inflict']) ?: null,
 
-                'status_resist'  => \Solaris\FFBE\GameHelper::readStatus($row['status_resist']) ?: null,
-                'status_inflict' => \Solaris\FFBE\GameHelper::readStatus($row['status_inflict']) ?: null,
+                'status_resist'  => GameHelper::readStatus($row['status_resist']) ?: null,
+                'status_inflict' => GameHelper::readStatus($row['status_inflict']) ?: null,
             ],
 
             'price_buy'  => (int) $row['price_buy'],
@@ -127,8 +128,8 @@
         }
 
         if ($row['equip_slot_type'] == "1") {
-            if ($row['atk_variance'] != \Solaris\FFBE\GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]) {
-                printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance']), json_encode(\Solaris\FFBE\GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]));
+            if ($row['atk_variance'] != GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]) {
+                printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance']), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]));
 
                 $entry['dmg_variance'] = explode(',', $row['atk_variance']);
                 $entry['dmg_variance'] = array_map(
@@ -143,7 +144,7 @@
         if (!empty($reqs)) {
             static $req_types = [1 => 'SEX', 3 => 'UNIT_ID'];
 
-            $reqs = \Solaris\FFBE\GameHelper::readParameters($reqs, '@');
+            $reqs = GameHelper::readParameters($reqs, '@');
 
             if (!isset($req_types[$reqs[0]]))
                 throw new \LogicException("no type");
@@ -215,7 +216,7 @@
             /** @var \Solaris\FFBE\Mst\SkillMst $skill */
             $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($firstSkill);
             if (!empty($skill->requirements['unit']))
-                $entry['unit_restriction'] = \Solaris\FFBE\GameHelper::readIntArray($skill->requirements['unit']);
+                $entry['unit_restriction'] = GameHelper::readIntArray($skill->requirements['unit']);
         }
 
         // local
@@ -230,7 +231,7 @@
         foreach ($entries as $id => $val)
             unset($entries[$id]['unique']);
 
-    else
+    else {
         foreach (GameFile::loadMst('F_MATERIA_LIMIT_MST') as $row) {
             $ids   = explode(',', $row['materia_id']);
             $limit = $row['limit'];
@@ -240,6 +241,23 @@
             foreach ($ids as $id)
                 $entries[$id]['unique'] = true;
         }
+        /*
+         * todo
+        $exclusive = [];
+        foreach (GameFile::loadMst('F_MATERIA_LIMIT_MST') as $row) {
+            $ids   = GameHelper::readIntArray($row['materia_id']);
+            $limit = $row['limit'];
+            assert($limit == '1');
+
+            if (count($ids) === 1)
+                $entries[$ids[0]]['unique'] = true;
+
+            else
+                foreach ($ids as $id)
+                    $entries[$id]['unique'] = $ids;
+        }
+        */
+    }
 
     //    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/materia.json", toJSON($entries));
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/materia.json", toJSON($entries, false));

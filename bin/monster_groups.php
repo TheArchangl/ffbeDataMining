@@ -8,9 +8,9 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
 
-    require_once "../bootstrap.php";
-    require_once "../../ffbe-discord/tmp/request_helper.php";
-    require_once "../../ffbe-discord/tmp/init_strings.php";
+    require_once '../bootstrap.php';
+    require_once '../../ffbe-discord/tmp/request_helper.php';
+    // require_once "../../ffbe-discord/tmp/init_strings.php";
 
     ini_set('assert.active', 1);
     // setup
@@ -20,7 +20,7 @@
 
     // JP workaround
     if ($region == 'jp')
-        require_once __DIR__ . "/generate_strings.php";
+        require_once __DIR__ . '/generate_strings.php';
 
 
     // get data
@@ -37,12 +37,13 @@
         protected $mission_runs  = [];
         private   $waves         = [];
 
-        public function readFiles(array $files) {
+        public function readFiles(array $files): void
+        {
             foreach ($files as $file) {
                 $data = file_get_contents($file);
                 $data = json_decode($data, true);
                 if (!is_array($data)) {
-                    var_dump(["error", $file]);
+                    var_dump(['error', $file]);
                     continue;
                 }
 
@@ -90,14 +91,14 @@
                     $entry = [
                         'name'         => Strings::getString('MST_MONSTER_NAME', $id) ?? $entry['name'],
                         // 'ai_id'        => (int) $entry['ai_id'],
-                        'normal'       => $this->parseTable($entry["loot_table"]),
-                        'unique'       => $this->parseTable($entry["loot_table_unique"]),
-                        'rare'         => $this->parseTable($entry["loot_table_rare"]),
-                        'steal_normal' => $this->parseTable($entry["steal_table"]),
-                        'steal_unique' => $this->parseTable($entry["steal_table_unique"]),
-                        'steal_rare'   => $this->parseTable($entry["steal_table_rare"]),
-                        'steal_gil'    => $entry["steal_gil"],
-                        'drop_gil'     => $entry["gil"],
+                        'normal'       => $this->parseTable($entry['loot_table']),
+                        'unique'       => $this->parseTable($entry['loot_table_unique']),
+                        'rare'         => $this->parseTable($entry['loot_table_rare']),
+                        'steal_normal' => $this->parseTable($entry['steal_table']),
+                        'steal_unique' => $this->parseTable($entry['steal_table_unique']),
+                        'steal_rare'   => $this->parseTable($entry['steal_table_rare']),
+                        'steal_gil'    => $entry['steal_gil'],
+                        'drop_gil'     => $entry['gil'],
                     ];
 
                     if (isset($this->monsters[$id][$part]) && $this->monsters[$id][$part] != $entry) {
@@ -214,8 +215,8 @@
 
             $string = '';
             foreach ($loot as $table => $items)
-                if ($table != "name")
-                    $string .= vsprintf("        %12s   %s%s", [$table, is_array($items) ? implode(', ', $items) : $items, "\n",]);
+                if ($table != 'name')
+                    $string .= vsprintf('        %12s   %s%s', [$table, is_array($items) ? implode(', ', $items) : $items, "\n",]);
 
             return $string;
         }

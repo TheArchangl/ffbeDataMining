@@ -74,7 +74,7 @@
             4 => '4:ally',  // Orthros & Typhon, Echidna
             5 => '5:enemy', // Azure Knight (any)
             6 => '6:enemy',
-            7 => '7:enemy',
+            7 => '7:enemy', // Demon wall
             8 => '8:ally', // Monster part
         ];
 
@@ -94,7 +94,7 @@
         private static $skills;
         private static $isFake;
 
-        public static function parseSteps(array $steps) {
+        public static function parseSteps(array $steps): void {
 
         }
 
@@ -107,7 +107,7 @@
          *
          * @return string
          */
-        public static function parseAI(array $actions, array $skillset, array $skills, array $monsters, $isFake = false) {
+        public static function parseAI(array $actions, array $skillset, array $skills, array $monsters, $isFake = false): string {
             static::$skillset = $skillset;
             static::$skills   = $skills;
             static::$monsters = $monsters;
@@ -136,19 +136,19 @@
          *
          * @return string
          */
-        static function formatTarget($range, $num) {
+        public static function formatTarget($range, $num): ?string {
             $str = static::CONDITION_TARGET[$range] ?? "unknown:{$range}";
 
             switch ($range) {
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 1: // ally  (any)
-                    if (!static::$isFake && count(static::$monsters) == 1)
-                        return "self";
+                    if (!static::$isFake && count(static::$monsters) === 1)
+                        return 'self';
 
                 case 4: // enemy (any)
                 case 5: // enemy (???)
                     if ($num == 0)
-                        $num = "any";
+                        $num = 'any';
 
                     return "{$str}:{$num}";
 
@@ -167,15 +167,15 @@
                 case 3: //  ally by index
                     $monster = static::getMonsterByIndex($num - 1);
 
-                    return $monster == null
-                        ? "{$str}:{$num}"
+                    return $monster === null
+                        ? "{$str}:{$num}:MISSING MONSTER?"
                         : "{$str}:{$num}:{$monster['name']}";
 
                 case 8: // enemy monster part by ID
                     [$num, $part] = explode('&', $num);
                     $name = Strings::getString('MST_MONSTER_NAME', $num);
 
-                    $part = range("A", "Z")[$part];
+                    $part = range('A', 'Z')[$part];
 
                     return $name == null
                         ? "{$str}:{$num}:{$part}"
@@ -193,7 +193,7 @@
          *
          * @return string
          */
-        public static function parseCondition($target, $type, $value) {
+        public static function parseCondition($target, $type, $value): ?string {
             // $target = static::formatTargetPriority($target);
             $unit = ($target == 'self')
                 ? 'self'
@@ -210,33 +210,33 @@
 
                 // counters
                 case 'flg_cntup_act':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 25) . " == {$value}";
 
                 case 'flg_cntup_over':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 25) . " >= {$value}";
 
                 case 'flg_cntup_under':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 25) . " < {$value}";
 
                 // timers
                 case 'flg_timer_act':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 20) . " == {$value}";
 
                 case 'flg_timer_over':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 20) . " >= {$value}";
 
                 case 'flg_timer_under':
-                    list($var_num, $value) = explode(',', $value);
+                    [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 20) . " <= {$value}";
 
@@ -250,19 +250,19 @@
                 // flags
                 case 'limited_act':
                     if ($value == 1)
-                        return "once()";
+                        return 'once()';
 
                     return "timesExecuted() < {$value}";
 
                 case 'flg_on':
-                    return static::getVarName($value) . " == True";
+                    return static::getVarName($value) . ' == True';
                 case 'flg2_on':
-                    return static::getVarName((int) $value + 30) . " == True";
+                    return static::getVarName((int) $value + 30) . ' == True';
 
                 case 'flg_off':
-                    return static::getVarName($value) . " == False";
+                    return static::getVarName($value) . ' == False';
                 case 'flg2_off':
-                    return static::getVarName((int) $value + 30) . " == False";
+                    return static::getVarName((int) $value + 30) . ' == False';
 
                 // states
                 case 'abnormal_state':
@@ -288,43 +288,43 @@
                     return "{$unit}.is('{$state}')";
 
                 // actions
-                case "total_damage_over":
+                case 'total_damage_over':
                     return "{$unit}.totalDamage() > {$value}";
 
-                case "special_user_id":
+                case 'special_user_id':
                     // king mog
                     $name = Strings::getString('MST_ABILITY_NAME', $value);
 
                     return "{$unit}.hitByLastTurn($value, '{$name}')";
 
-                case "magic_user_id":
+                case 'magic_user_id':
                     // Demon Wall
                     $name = Strings::getString('MST_MAGIC_NAME', $value);
 
                     return "{$unit}.hitByLastTurn($value, '{$name}')";
 
-                case "rifrect_mode":
+                case 'rifrect_mode':
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
 
-                case "before_turn_guard":
-                case "before_turn_lb":
-                case "before_turn_attack":
-                case "before_turn_hit_attack":
-                case "before_turn_item_attack":
+                case 'before_turn_guard':
+                case 'before_turn_lb':
+                case 'before_turn_attack':
+                case 'before_turn_hit_attack':
+                case 'before_turn_item_attack':
 
-                case "before_turn_sm":
-                case "before_turn_beast_attack":
+                case 'before_turn_sm':
+                case 'before_turn_beast_attack':
 
-                case "before_turn_mg":
-                case "before_turn_magic_attack":
-                case "before_turn_magic_heal":
-                case "before_turn_magic_support":
+                case 'before_turn_mg':
+                case 'before_turn_magic_attack':
+                case 'before_turn_magic_heal':
+                case 'before_turn_magic_support':
 
-                case "before_turn_ab":
-                case "before_turn_special_attack":
-                case "before_turn_special_heal":
-                case "before_turn_special_support":
+                case 'before_turn_ab':
+                case 'before_turn_special_attack':
+                case 'before_turn_special_heal':
+                case 'before_turn_special_support':
                     // Reactions
                     $negate = ($value == 1 ? '' : 'not ');
 
@@ -353,28 +353,29 @@
                         case 'support':
                             return "{$negate}{$unit}.supportedWithLastTurn('{$skill_type}')";
                     }
+                    break;
 
-                case "before_turn_limit_attack":
+                case 'before_turn_limit_attack':
                     $negate = ($value == 1 ? '' : 'not ');
 
                     return "{$negate}unit('any').usedLastTurn('limitburst')";
 
-                case "magic_aero":
-                case "magic_dark":
-                case "magic_fire":
-                case "magic_ice":
-                case "magic_light":
-                case "magic_quake":
-                case "magic_thunder":
-                case "magic_water":
-                case "physics_aero":
-                case "physics_dark":
-                case "physics_fire":
-                case "physics_ice":
-                case "physics_light":
-                case "physics_quake":
-                case "physics_thunder":
-                case "physics_water":
+                case 'magic_aero':
+                case 'magic_dark':
+                case 'magic_fire':
+                case 'magic_ice':
+                case 'magic_light':
+                case 'magic_quake':
+                case 'magic_thunder':
+                case 'magic_water':
+                case 'physics_aero':
+                case 'physics_dark':
+                case 'physics_fire':
+                case 'physics_ice':
+                case 'physics_light':
+                case 'physics_quake':
+                case 'physics_thunder':
+                case 'physics_water':
                     [$attack_type, $element] = explode('_', $type, 2);
                     $attack_type = ['physics' => 'physical', 'magic' => 'magical'][$attack_type] ?? $attack_type;
 
@@ -382,28 +383,28 @@
 
                     return "{$negate}{$unit}.sufferedDamageLastTurn('{$attack_type}', '{$element}')";
 
-                case "party_alive_num":
+                case 'party_alive_num':
                     $negate = ($value == 1 ? '' : 'not ');
                     $value  = explode(',', $value);
                     $name   = ['monsters', 'player', 'unknown'][$value[0]];
 
                     return "{$negate} party('{$name}').unitsAlive({$value[1]})";
 
-                case "normal_state":
+                case 'normal_state':
                     $negate = ($value == 1 ? '' : 'not ');
 
                     return "{$negate}{$unit}.is('{$type}:{$value}')";
 
 
-                case "abnormal_state_heal_skill_use_possible":
-                case "atk_skill_use_possible":
-                case "before_turn_item_heal":
-                case "heal_skill_use_possible":
-                case "join_party":
-                case "lb_use_possible":
-                case "skill":
-                case "support_skill_use_possible":
-                case "turn_act":
+                case 'abnormal_state_heal_skill_use_possible':
+                case 'atk_skill_use_possible':
+                case 'before_turn_item_heal':
+                case 'heal_skill_use_possible':
+                case 'join_party':
+                case 'lb_use_possible':
+                case 'skill':
+                case 'support_skill_use_possible':
+                case 'turn_act':
                 default:
                     return "conditionNotImplemented('{$type}:{$value}')";
             }
@@ -414,7 +415,7 @@
          *
          * @return string
          */
-        protected static function getVarName(int $var_num) {
+        protected static function getVarName(int $var_num): string {
             return static::VAR_NAMES[$var_num] ?? "var_{$var_num}";
         }
 
@@ -444,28 +445,28 @@
                     // get skill id from num
                     $skill_id = static::$skillset[$skill_num - 1] ?? null;
                     if ($skill_id == null)
-                        return [$action, "# Unknown skill - wrong skillset?"];
+                        return [$action, '# Unknown skill - wrong skillset?'];
 
                     // get skill from id
                     $skill   = static::$skills[$skill_id];
                     $effects = $skill['effects'];
-                    $effects = join(", ", $effects);
-                    $effects = str_replace("\n", " ", $effects);
+                    $effects = join(', ', $effects);
+                    $effects = str_replace("\n", ' ', $effects);
 
                     return [$action, "# {$skill['name']} ({$skill_id}): {$effects}"];
 
-                case "attack":
-                    return ["{$action}('{$target}')", ""];
+                case 'attack':
+                    return ["{$action}('{$target}')", ''];
 
-                case "wait":
+                case 'wait':
                     $target = $target == 'random'
                         ? ''
                         : "'{$target}'";
 
-                    return ["wait({$target})", "# No action"];
+                    return ["wait({$target})", '# No action'];
 
                 default:
-                    return ["{$action}('{$target}')", "# Unknown action"];
+                    return ["{$action}('{$target}')", '# Unknown action'];
             }
         }
 
@@ -474,13 +475,13 @@
          *
          * @return string
          */
-        protected static function formatFlags(array $flags) {
+        protected static function formatFlags(array $flags): string {
             // sort by var num
             uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
 
             // format
             $code = '';
-            foreach ($flags as list($var_num, $value)) {
+            foreach ($flags as [$var_num, $value]) {
                 $note   = '';
                 $letter = static::getVarName($var_num);
                 $type   = static::getVarType($var_num);
@@ -489,11 +490,11 @@
                     default:
                     case 'unknown':
                         if (in_array($value, [0, 1])) {
-                            $note   = "# unknown flag type";
+                            $note   = '# unknown flag type';
                             $action = "{$letter} = " . ($value ? 'True' : 'False');
                         }
                         else {
-                            $note   = "# unknown flag type 2";
+                            $note   = '# unknown flag type 2';
                             $action = "{$letter} = {$value}";
                         }
                         break;
@@ -514,11 +515,11 @@
                     case 'volatile':
                         if (!in_array($value, [0, 1])) {
                             $action = "{$letter}  = {$value}";
-                            $note   = "# reset next turn [?]";
+                            $note   = '# reset next turn [?]';
                             break;
                         }
 
-                        $note   = "# reset next turn";
+                        $note   = '# reset next turn';
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         break;
 
@@ -526,7 +527,7 @@
                         if (!in_array($value, [0, 1]))
                             die("WEEE WOOO 2: $value");
 
-                        $note   = "# persistent";
+                        $note   = '# persistent';
                         $action = "{$letter}  = " . ($value ? 'True' : 'False');
                         break;
 
@@ -535,11 +536,11 @@
                             die("WEEE WOOO 3: $value");
 
                         if ($value) {
-                            $note   = "# timer";
+                            $note   = '# timer';
                             $action = "{$letter}  = Timer.create()";
                         }
                         else {
-                            $note   = "# timer";
+                            $note   = '# timer';
                             $action = "{$letter}.reset()";
                         }
 
@@ -557,9 +558,9 @@
          *
          * @return string
          */
-        private static function formatOutput(array $steps) {
+        private static function formatOutput(array $steps): string {
             $first = true;
-            $code  = "";
+            $code  = '';
 
             foreach ($steps as $step) {
                 /** @var string[] $conditions */
@@ -597,7 +598,7 @@
          *
          * @return string
          */
-        private static function formatAction($action, $target, $skill_num) {
+        private static function formatAction($action, $target, $skill_num): string {
             [$action, $note] = static::parseAction($action, $target, $skill_num);
 
             return sprintf("\t%-30s %s\n", $action, $note);
@@ -608,7 +609,7 @@
          *
          * @return string
          */
-        private static function getVarType($num) {
+        private static function getVarType($num): string {
             if ($num < 11)
                 return 'flag';
 
@@ -632,25 +633,25 @@
          *
          * @return string
          */
-        private static function formatTargetPriority(string $string) {
+        private static function formatTargetPriority(string $string): ?string {
             [$target, $value] = explode(':', strtolower($string)) + ['', ''];
 
             switch ($target) {
-                case "self":
-                    return "self";
+                case 'self':
+                    return 'self';
 
-                case "atk_max":
-                case "def_max":
-                case "int_max":
-                case "mind_max":
-                case "hp_max":
-                case "mp_max":
-                case "atk_min":
-                case "def_min":
-                case "int_min":
-                case "mind_min":
-                case "hp_min":
-                case "mp_min":
+                case 'atk_max':
+                case 'def_max':
+                case 'int_max':
+                case 'mind_max':
+                case 'hp_max':
+                case 'mp_max':
+                case 'atk_min':
+                case 'def_min':
+                case 'int_min':
+                case 'mind_min':
+                case 'hp_min':
+                case 'mp_min':
                     assert($value == 0);
                     [$stat, $minmax] = explode('_', $target);
                     $stat   = ['int' => 'MAG', 'mind' => 'SPR'][$stat] ?? strtoupper($stat);
@@ -658,10 +659,10 @@
 
                     return "{$minmax} {$stat}";
 
-                case "disp_order":
-                    return "slot:" . (($value ?: 0) + 1);
+                case 'disp_order':
+                    return 'slot:' . (($value ?: 0) + 1);
 
-                case "random":
+                case 'random':
                 default:
                     return $string;
             }
@@ -672,7 +673,7 @@
          *
          * @return array|null
          */
-        private static function getMonsterByIndex($i) {
+        private static function getMonsterByIndex($i): ?array {
             if ($i >= count(static::$monsters))
                 return null;
 
@@ -680,12 +681,12 @@
 
             [$monster_id, $part_num] = explode('.', $key);
             $entry = static::$monsters[$key];
-            $name  = GameFile::getRegion() == 'gl'
+            $name  = (GameFile::getRegion() === 'gl')
                 ? (Strings::getString('MST_MONSTER_NAME', $monster_id) ?: $entry['name'])
                 : $entry['name'];
 
             if (isset(static::$monsters["{$monster_id}.2"]))
-                $name .= " " . chr(ord('A') + $part_num - 1);
+                $name .= ' ' . chr(ord('A') + $part_num - 1);
 
             return [
                 'id'    => $monster_id,
@@ -700,10 +701,10 @@
          *
          * @return string
          */
-        public static function insertMonsterNames(string $code) {
+        public static function insertMonsterNames(string $code): string {
             $code = preg_replace_callback("~Summon ally #(\d+)~", function ($match) {
                 $monster = static::getMonsterByIndex($match[1] - 1);
-                if ($monster == null)
+                if ($monster === null)
                     return $match[0];
 
                 return "Summon {$monster['name']} ({$monster['id']})";

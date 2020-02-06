@@ -11,13 +11,13 @@
          *
          * @return AiRow
          */
-        public static function parseRow(array $row) {
+        public static function parseRow(array $row): AiRow {
             [$states, $flags] = explode('@#', rtrim($row['conditions'], '@'));
             $states = explode('@', $states);
-            $states = array_filter($states, function ($val) { return $val != "0:non:non:non"; });
+            $states = array_filter($states, static function ($val) { return $val !== '0:non:non:non'; });
 
             $flags = explode('@', $flags);
-            $flags = array_filter($flags, function ($val) { return $val != "non:0"; });
+            $flags = array_filter($flags, static function ($val) { return $val !== 'non:0'; });
 
 
             $o                 = new static();
@@ -28,12 +28,12 @@
             $o->flags          = $flags;
             $o->conditions_str = $row['conditions'];
             $o->action_str     = $row['action'];
-            $o->AI_ACT_TARGET  = $row["AI_ACT_TARGET"];
-            $o->AI_COND_TARGET = $row["AI_COND_TARGET"];
-            $o->AI_COND1       = $row["AI_COND1"];
-            $o->AI_PARAM1      = $row["AI_PARAM1"];
-            $o->AI_COND2       = $row["AI_COND2"];
-            $o->AI_PARAM2      = $row["AI_PARAM2"];
+            $o->AI_ACT_TARGET  = $row['AI_ACT_TARGET'];
+            $o->AI_COND_TARGET = $row['AI_COND_TARGET'];
+            $o->AI_COND1       = $row['AI_COND1'];
+            $o->AI_PARAM1      = $row['AI_PARAM1'];
+            $o->AI_COND2       = $row['AI_COND2'];
+            $o->AI_PARAM2      = $row['AI_PARAM2'];
 
             return $o;
         }
@@ -43,7 +43,7 @@
          *
          * @return array
          */
-        protected static function parseSetFlags($string) {
+        protected static function parseSetFlags($string): array {
             $temp = GameHelper::readParameters($string, '@,');
 
             $arr = [];
@@ -77,7 +77,7 @@
         /**
          * @return string
          */
-        public function parseTarget() {
+        public function parseTarget(): string {
             [$target, $i] = explode(':', $this->target, 2);
 
             return $i == 0
@@ -88,16 +88,16 @@
         /**
          * @return array
          */
-        public function parseConditions() {
+        public function parseConditions(): array {
             $conditions = [];
 
             // RNG
             if ($this->weight != 100)
-                $conditions[] = sprintf("random() <= %.2f", $this->weight / 100);
+                $conditions[] = sprintf('random() <= %.2f', $this->weight / 100);
 
             // states
             foreach ($this->states as $val) {
-                list($target_range, $num, $type, $value) = explode(':', $val);
+                [$target_range, $num, $type, $value] = explode(':', $val);
                 $target = AiParser::formatTarget($target_range, $num);
 
                 $conditions[] = AiParser::parseCondition($target, $type, $value);
@@ -106,9 +106,9 @@
             // flags
             $skill_num = -1;
             foreach ($this->flags as $val) {
-                list($key, $val) = explode(':', $val);
+                [$key, $val] = explode(':', $val);
 
-                if ($key == 'skill')
+                if ($key === 'skill')
                     $skill_num = (int) $val;
 
                 else
@@ -118,7 +118,7 @@
             return [$conditions, $skill_num];
         }
 
-        public function parseActionFlags() {
+        public function parseActionFlags(): array {
             [$action, $flags] = explode('@', $this->action_str, 2);
             $flags = self::parseSetFlags($flags);
 
@@ -132,7 +132,7 @@
          *
          * @return AiAction
          */
-        public static function parseRow(array $row) {
+        public static function parseRow(array $row): AiAction {
             $row = AiRow::parseRow($row);
 
             [$action, $flags] = $row->parseActionFlags();
