@@ -136,7 +136,7 @@
         /**
          * Read all files in the file map
          */
-        public static function readAll() {
+        public static function readAll(): void {
             foreach (static::FILE_MAP as $files)
                 foreach ($files as $filename)
                     static::readFile(GameFile::getFilePath($filename));
@@ -147,38 +147,38 @@
          *
          * @return bool
          */
-        public static function hasBeenLoaded($type) {
+        public static function hasBeenLoaded($type): bool {
             return static::$loaded[$type] ?? false;
         }
 
 
         /**
-         * @param string $type
+         * @param string $table
          * @param int    $id
          *
          * @return string[]
          */
-        public static function getStrings($type, $id) {
-            if (static::hasBeenLoaded($type) !== true)
-                static::readTable($type);
+        public static function getStrings($table, $id): array {
+            if (static::hasBeenLoaded($table) !== true)
+                static::readTable($table);
 
-            return parent::getStrings($type, $id);
+            return parent::getStrings($table, $id);
         }
 
         /**
-         * @param string $type
-         * @param int    $id
-         *
-         * @return bool
+         * @inheritDoc
          */
-        public static function hasStrings($type, $id) {
-            if (static::hasBeenLoaded($type) !== true)
-                static::readTable($type);
+        public static function hasStrings($table, $id): bool {
+            if (static::hasBeenLoaded($table) !== true)
+                static::readTable($table);
 
-            return parent::hasStrings($type, $id);
+            return parent::hasStrings($table, $id);
         }
 
-        public static function readFile($file) {
+        /**
+         * @inheritDoc
+         */
+        public static function readFile($file): void {
             static::$loaded[basename($file, '.txt')] = true;
 
             parent::readFile($file);
@@ -190,21 +190,22 @@
          *
          * @return bool
          */
-        public static function readTable($type) {
+        public static function readTable($type): bool {
             $files = static::FILE_MAP[$type] ?? [str_replace('MST_', 'F_TEXT_', $type)];
-
-            static::$loaded[$type] = true;
+            $files = array_map([GameFile::class, 'getFilePath'], $files);
+            if (empty($files))
+                return false;
 
             foreach ($files as $file) {
                 if (isset(static::$loaded[$file]))
                     // file already loaded
                     continue;
 
-                $path = GameFile::getFilePath($file);
-
-                static::readFile($path);
-                static::$loaded[$type] = true;
+                static::readFile($file);
             }
+
+            // mark table name as loaded
+            static::$loaded[$type] = true;
 
             return true;
             //            } catch (\LogicException $e) {

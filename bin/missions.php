@@ -10,8 +10,14 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
+
+    if (! Strings::hasBeenLoaded('MST_CHALLENGE_NAME') && ! Strings::readTable('MST_CHALLENGE_NAME'))
+        throw new \Exception("Could not load 'MST_CHALLENGE_NAME'");
+
+    var_dump(Strings::getEntries());
+die();
 
     function parseRewards($string) {
         if (empty($string))
