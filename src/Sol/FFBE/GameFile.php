@@ -1006,21 +1006,16 @@
             self::$names = [];
 
             foreach (file($file) as $k => $row) {
-                if ($k === 0)
-                    continue;
-
                 $row = trim($row);
                 if (empty($row))
                     continue;
 
                 $row = explode("\t", $row);
-                $row = array_pad($row, 4, "");
-
-                list($name, $class, $file, $key) = $row;
+                [$name, $class, $file, $key, $notes] = array_pad($row, 5, "");
                 if (isset(static::$names[$name]))
                     continue;
 
-                $entry = new GameFile($name, $file, $key, $class);
+                $entry = new GameFile($name, $file, $key, $class, explode(' ', $notes ?? ''));
                 static::addEntry($entry);
             }
         }
@@ -1037,18 +1032,17 @@
 
         public static function save() {
             $file  = ROOT_DIR . "/files2.tsv";
-            $lines = [
-                'NAME	CLASS	FILE	KEY	TYPE	NOTE',
-            ];
 
             uasort(static::$files, function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
 
+            $lines = [];
             foreach (static::$files as $entry)
                 $lines[] = implode("\t", [
                     $entry->getName(),
                     $entry->getClass(),
                     $entry->getFile(),
                     $entry->getKey(),
+                    join(' ', $entry->getNotes()),
                 ]);
 
             file_put_contents($file, implode("\n", $lines));
@@ -1298,6 +1292,8 @@
         protected $key;
         /** @var string */
         protected $class;
+        /** @var string[] */
+        protected $notes;
 
         /**
          * GameFile constructor.
@@ -1306,12 +1302,14 @@
          * @param string   $file
          * @param string   $key
          * @param string   $class
+         * @param string[] $notes
          */
-        public function __construct($name, $file, $key, $class = null) {
+        public function __construct($name, $file, $key, $class = null, array $notes = []) {
             $this->name  = $name;
             $this->file  = $file;
             $this->key   = $key;
             $this->class = $class;
+            $this->notes = $notes;
         }
 
         /**
@@ -1377,7 +1375,23 @@
                 return 'localized_texts';
 
             return 'mst';
+        }
 
+        /**
+         * @return string[]
+         */
+        public function getNotes(): array {
+            return $this->notes;
+        }
+
+        /**
+         * @param string[] $notes
+         *
+         * @return GameFile
+         */
+        public function setNotes(array $notes): GameFile {
+            $this->notes = $notes;
+            return $this;
         }
         #endregion
     }
