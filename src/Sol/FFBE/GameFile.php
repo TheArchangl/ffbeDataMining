@@ -241,13 +241,13 @@
 
             'h8V3AzqP' => 'drop_limit',
             '9BetM2Ds' => 'loot_table',
-            "MZn8LC6H" => 'loot_table_rare',   // rare
-            "g4voc2Aw" => 'loot_table_unique', // unique
-            "Vf5DGw07" => 'loot_table_unit',
+            'MZn8LC6H' => 'loot_table_rare',   // rare
+            'g4voc2Aw' => 'loot_table_unique', // unique
+            'Vf5DGw07' => 'loot_table_unit',
 
             '3frn4ILX' => 'steal_table',
-            "IRf10dwx" => 'steal_table_rare',
-            "e5xoiC84" => 'steal_table_unique',
+            'IRf10dwx' => 'steal_table_rare',
+            'e5xoiC84' => 'steal_table_unique',
             'ATM35pjf' => 'steal_gil',
             'Wm93vGVU' => 'steal_count_limit',
 
@@ -587,7 +587,6 @@
             'NYb0Cri6' => 'archive_id',
             '6gAX1BpC' => 'archive_value',
 
-            ''         => '',
             'Jr6z91Tf' => 'UserAnnounceInfo',
             'X3bZ86C7' => 'announce_info',
 
@@ -764,7 +763,7 @@
             '70oO1OaR' => 'bundle_desc_var',
             'pRYHbNN5' => 'currency_type',
             'AOHRcCC2' => 'price',
-            "cSUSxGZA" => 'bundle_icon',
+            'cSUSxGZA' => 'bundle_icon',
             'MfynwFte' => 'bundle_bg',
             'hJs2B3X5' => 'banner',
             'yZxOduZT' => 'bundle_type',
@@ -795,11 +794,11 @@
             'Zgsr7t06' => 'getItemNum(0,18,0,99)',
             'Wdi3mas2' => 'reward_gil',
             'p1K5NecV' => 'FirstClearBonus',
-            "S4U09svH" => 'add_item_num_exp_0_0_0',  // kill exp
-            "ZGSr7T06" => 'add_item_num_exp_0_18_0',
-            "Wdi3MAs2" => 'add_item_num_gil_0_0_0',  // kill gold
-            "Syar71nw" => 'add_item_num_gil_0_2_0',
-            "8CfoLQv5" => 'add_item_num_gil_0_4_0',
+            'S4U09svH' => 'add_item_num_exp_0_0_0',  // kill exp
+            'ZGSr7T06' => 'add_item_num_exp_0_18_0',
+            'Wdi3MAs2' => 'add_item_num_gil_0_0_0',  // kill gold
+            'Syar71nw' => 'add_item_num_gil_0_2_0',
+            '8CfoLQv5' => 'add_item_num_gil_0_4_0',
             'wQhu9G7n' => 'add_item_num_gil_0_18_0',
             'xF9Sr1a6' => 'add_item_csv_20_0',
             'JHMit30L' => 'add_item_csv_20_1',
@@ -870,11 +869,8 @@
             '73CfbLEx' => 'ko_log',
             'Z1p0j9uF' => 'log_dead_count',
             '69ieJGhD' => 'battle_clear_log',
-            ''         => '',
 
             // Arena stuff
-            ''         => '',
-
             'g4Pu8oUt' => 'UserRbInfo',
             // 'UbQ26oH4'         => '',
             // 'mRY52Tib'         => '',
@@ -935,8 +931,6 @@
             '1MH7Na23' => 'skill_id_old',
             '6bHxDEL0' => 'skill_id_new',
 
-            ''         => '',
-
             // sgExpeditionMst
             'Ko86047K' => 'ExpdId',
             'Up7229W2' => 'DifficultyId',
@@ -973,18 +967,18 @@
             // JP explos
             'w46Zt1MT' => 'ExploreScheduleMst',
             'fK3W9qYA' => 'ScheduleId',
-            "x5huPsU6" => 'AreaId',
-            "wh6U0f1Z" => 'AreaId',
+            'x5huPsU6' => 'AreaId',
+            'wh6U0f1Z' => 'AreaId',
 
-            "2J1wCyhQ" => 'UserExploreInfo',
-            "FHk74LUd" => 'FrameNo',
-            "9sE0nJPi" => 'TimeId',
-            "RBcpE27S" => 'state',
-            "TIpgd4Q0" => 'ResultState',
-            "P7sEZ0vN" => 'RewardInfo',
-            "9yEe4dt6" => 'RewardLimitDate',
-            "uX54AqwV" => 'IsNew',
-            "4P7BaEed" => 'date_end',
+            '2J1wCyhQ' => 'UserExploreInfo',
+            'FHk74LUd' => 'FrameNo',
+            '9sE0nJPi' => 'TimeId',
+            'RBcpE27S' => 'state',
+            'TIpgd4Q0' => 'ResultState',
+            'P7sEZ0vN' => 'RewardInfo',
+            '9yEe4dt6' => 'RewardLimitDate',
+            'uX54AqwV' => 'IsNew',
+            '4P7BaEed' => 'date_end',
 
             // SEs
             'jSC4Tx9H' => 'UserRmActualInfo',
@@ -992,15 +986,13 @@
             '1w6Ju7Ie' => 'PtBeastInfo',
             '0VBhN1UC' => 'FriendInfo',
             'Zh73m5Nq' => 'FriendActualInfo',
-            ''         => '',
-            ''         => '',
         ];
 
         /**
          *
          */
         public static function init() {
-            $file = ROOT_DIR . "/files.tsv";
+            $file = ROOT_DIR . '/files.tsv';
 
             self::$files = [];
             self::$names = [];
@@ -1011,7 +1003,7 @@
                     continue;
 
                 $row = explode("\t", $row);
-                [$name, $class, $file, $key, $notes] = array_pad($row, 5, "");
+                [$name, $class, $file, $key, $notes] = array_pad($row, 5, '');
                 if (isset(static::$names[$name]))
                     continue;
 
@@ -1023,17 +1015,17 @@
         public static function addEntry(GameFile $entry) {
             self::$files[$entry->getFile()] = $entry;
 
-            if ($entry->getName() != '-' && $entry->getName() != null)
+            if (! in_array($entry->getName(), [null, '', '-'], true))
                 self::$names[$entry->getName()] = $entry;
 
-            if ($entry->getClass() != '-' && $entry->getClass() != null)
+            if (! in_array($entry->getClass(), [null, '', '-'], true))
                 self::$names[$entry->getClass()] = $entry;
         }
 
         public static function save() {
-            $file  = ROOT_DIR . "/files2.tsv";
+            $file = ROOT_DIR . '/files2.tsv';
 
-            uasort(static::$files, function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
+            uasort(static::$files, static function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
 
             $lines = [];
             foreach (static::$files as $entry)
@@ -1051,16 +1043,16 @@
         /**
          * @param string $input File name or identifier
          *
-         * @return array
          * @throws \Exception
          *
+         * @return array
          */
         public static function loadRaw($input) {
             $file = self::getFilePath($input);
 
             // read file
             $data = file($file);
-            $data = array_map(function ($row) { return json_decode($row, true); }, $data);
+            $data = array_map(static function ($row) { return json_decode($row, true, 512, JSON_THROW_ON_ERROR); }, $data);
 
             return $data;
         }
@@ -1084,7 +1076,7 @@
 
                 $row = trim($line);
                 $row = mb_convert_encoding($row, 'UTF-8');
-                $row = json_decode($row, true);
+                $row = json_decode($row, true, 512, JSON_THROW_ON_ERROR);
 
                 if ($row == null)
                     continue;
@@ -1096,6 +1088,9 @@
             return $entries;
         }
 
+        /**
+         * @deprecated
+         */
         public static function decodeAll($region = 'gl') {
             if (self::$files == null)
                 self::init();
@@ -1104,7 +1099,7 @@
                 try {
                     $versions = self::getFileVersions($entry, $region);
                     if (empty($versions))
-                        throw new \Exception("No files found for {$entry->name}: {$entry->file}.");
+                        throw new \RuntimeException("No files found for {$entry->name}: {$entry->file}.");
 
                     $version = max($versions);
 
@@ -1117,16 +1112,17 @@
                     );
 
                     if (filesize(DATA_INPUT_DIR . "{$region}/{$entry->name}.txt") == 0)
-                        throw new \Exception('Empty output');
+                        throw new \RuntimeException('Empty output');
 
-                } catch (\Exception $e) {
+                }
+                catch (\Exception $e) {
                     print "File {$entry->name}: {$entry->file}.{$region} could not be decoded: {$e->getMessage()}\n";
                 }
             }
         }
 
         public static function decodeFile($in_path, $out_path, $key, $iv = null) {
-            if (!file_exists($in_path))
+            if (! file_exists($in_path))
                 throw new \LogicException("File does not exist: {$in_path}");
 
             if (strlen($key) != 8)
@@ -1141,15 +1137,15 @@
             file_put_contents($out_path, $data);
         }
 
-        public static function getFileVersions(GameFile $entry, $region = 'gl') {
-            $versions = glob(DATA_BACKUP_DIR . "/{$region}/{$entry->getName()}_v*.txt");
+        public static function getFileVersions(GameFile $entry, $region = 'gl', $language = '') {
+            $versions = glob(DATA_BACKUP_DIR . "/{$region}/{$language}/{$entry->getName()}_v*.txt");
             if (empty($versions))
                 return [];
 
             // trim files
-            $versions = array_map(function ($file) {
+            $versions = array_map(static function ($file) {
                 $file = basename($file, '.txt');
-                $file = substr($file, strrpos($file, "_v") + 2);
+                $file = substr($file, strrpos($file, '_v') + 2);
 
                 assert(is_numeric($file));
 
@@ -1211,29 +1207,28 @@
 
         /**
          * @param string $input
+         * @param string $lang
          *
          * @return string
-         * @throws \LogicException
-         *
          */
-        public static function getFilePath($input): string {
+        public static function getFilePath($input, $lang = ''): string {
             if (self::$files == null)
                 self::init();
 
             // find file
             $input = static::$files[$input] ?? static::$names[$input] ?? $input;
-            if (!$input instanceof GameFile)
+            if (! $input instanceof self)
                 throw new \LogicException("Invalid file name or id '{$input}'.");
 
             // override region for localization data
-            if (substr($input->getName(), 0, 6) == 'F_TEXT')
+            if (strpos($input->getName(), 'F_TEXT') === 0)
                 $region = 'gl';
             else
                 $region = static::$region;
 
-            $file = DATA_INPUT_DIR . "/{$region}/{$input->getName()}.txt";
+            $file = DATA_INPUT_DIR . "/{$region}/{$lang}/{$input->getName()}.txt";
 
-            if (!file_exists($file))
+            if (! file_exists($file))
                 throw new \LogicException("File {$file} for {$input->name} missing!");
 
             return $file;
@@ -1260,7 +1255,7 @@
             foreach ($row as $key => $val) {
                 unset($row[$key]);
 
-                if (!array_key_exists($key, static::$keys)) {
+                if (! array_key_exists($key, static::$keys)) {
                     // unknown key
                     $row[$key] = $val;
                     continue;
@@ -1371,7 +1366,7 @@
         }
 
         public function getDlType() {
-            if (substr($this->name, 0, 7) == "F_TEXT_")
+            if (substr($this->name, 0, 7) == 'F_TEXT_')
                 return 'localized_texts';
 
             return 'mst';

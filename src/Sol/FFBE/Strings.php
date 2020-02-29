@@ -8,8 +8,7 @@
      * Time: 19:53
      */
     class Strings extends \Solaris\FFBE\Helper\Strings {
-        const LANGUAGES = 6;
-        const FILE_MAP  = [
+        public const FILE_MAP = [
             'BAD_STATE_DESC'                            => ['F_TEXT_TEXT_EN'],
             'BUFF_DESC'                                 => ['F_TEXT_TEXT_EN'],
             'CASH_BUNDLE_PACK_DESC'                     => ['F_TEXT_TEXT_EN'],
@@ -139,7 +138,8 @@
         public static function readAll(): void {
             foreach (static::FILE_MAP as $files)
                 foreach ($files as $filename)
-                    static::readFile(GameFile::getFilePath($filename));
+                    foreach (array_keys(static::LANGUAGE_ID) as $lang)
+                        static::readFile(GameFile::getFilePath($filename, $lang), $lang);
         }
 
         /**
@@ -178,12 +178,11 @@
         /**
          * @inheritDoc
          */
-        public static function readFile($file): void {
+        public static function readFile($file, $language): void {
             static::$loaded[basename($file, '.txt')] = true;
 
-            parent::readFile($file);
+            parent::readFile($file, $language);
         }
-
 
         /**
          * @param string $type
@@ -192,26 +191,30 @@
          */
         public static function readTable($type): bool {
             $files = static::FILE_MAP[$type] ?? [str_replace('MST_', 'F_TEXT_', $type)];
-            $files = array_map([GameFile::class, 'getFilePath'], $files);
             if (empty($files))
                 return false;
 
-            foreach ($files as $file) {
-                if (isset(static::$loaded[$file]))
+            foreach ($files as $file)
+                if (static::$loaded[$file] ?? false)
                     // file already loaded
                     continue;
 
-                static::readFile($file);
-            }
+                else {
+                    $loaded = false;
+                    foreach (array_keys(static::LANGUAGE_ID) as $lang) {
+                        try {
+                            static::readFile($file, $lang);
+                            $loaded = true;
+                        }
+                        catch (\LogicException $e) {
+                            // File not found
+                        }
+                    }
 
-            // mark table name as loaded
-            static::$loaded[$type] = true;
+                    // mark table name as loaded
+                    static::$loaded[$type] = $loaded;
+                }
 
             return true;
-            //            } catch (\LogicException $e) {
-            //                echo "{$e}\n\n";
-            //
-            //                return false;
-            //            }
         }
     }

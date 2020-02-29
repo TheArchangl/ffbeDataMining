@@ -3,7 +3,7 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
 
-    require_once __DIR__ . "/../bootstrap.php";
+    require_once __DIR__ . '/../bootstrap.php';
 
     const BLACKLIST = [
         'F_TEXT_BATTLE_SCRIPT',
@@ -18,49 +18,17 @@
 
     echo "Reading strings\n";
 
-    /**
-     * generate file map
-     *
-     *
-     * $map   = [];
-     * $files = glob(CLIENT_DIR . "files/gl/F_TEXT_*.txt");
-     * foreach ($files as $file) {
-     * $name = basename($file, '.txt');
-     * if (in_array($name, BLACKLIST))
-     * continue;
-     *
-     * $data = file_get_contents($file);
-     * $data = preg_replace('~^([^\^]+?)(_\d+)*\^(.*?)$~m', '$1', $data);
-     * $data = preg_split('~\r?\n~', $data);
-     * $data = array_filter($data);
-     * $data = array_count_values($data);
-     *
-     * foreach ($data as $k => $count)
-     * if ($count > 3)
-     * $map[$k][] = $name;
-     * }
-     * ksort($map);
-     * foreach ($map as $type => $files) {
-     * $files = array_map(function ($f) { return "'{$f}'"; }, $files);
-     * $files = join(', ', $files);
-     *
-     * echo "  '{$type}' => [{$files}],\n";
-     * }
-     * die();
-     */
-
-
     switch ($region) {
-        case "gl":
-            $files = glob(CLIENT_DIR . "files/gl/F_TEXT_*.txt");
-            $files = array_filter($files, function ($file) { return !in_array(basename($file, '.txt'), BLACKLIST); });
+        case 'gl':
+            $files = glob(CLIENT_DIR . 'files/gl/*/F_TEXT_*.txt');
+            $files = array_filter($files, static function ($file) { return ! in_array(basename($file, '.txt'), BLACKLIST, true); });
 
             foreach ($files as $file)
-                Strings::readFile($file);
+                Strings::readFile($file, basename(dirname($file)));
             break;
 
 
-        case "jp":
+        case 'jp':
             $msts = [
                 'F_MAGIC_MST'   => 'MST_MAGIC_NAME',
                 'F_MISSION_MST' => 'MST_MISSION_NAME',
@@ -78,8 +46,8 @@
             }
 
             // read gl as backup
-            $files = glob(CLIENT_DIR . "files/gl/F_TEXT_*.txt");
-            $files = array_filter($files, function ($file) { return !in_array(basename($file, '.txt'), BLACKLIST); });
+            $files = glob(CLIENT_DIR . 'files/gl/F_TEXT_*.txt');
+            $files = array_filter($files, function ($file) { return ! in_array(basename($file, '.txt'), BLACKLIST); });
 
             foreach ($files as $file)
                 Strings::readFile($file);
@@ -90,7 +58,7 @@
     // write to file
     echo "Writing strings\n";
 
-    $file = realpath($argv[0] );
+    $file = realpath($argv[0]);
     if ($file != realpath(__FILE__) && $file != realpath(__DIR__ . DIRECTORY_SEPARATOR . 'runAll.php')) {
         // ghetto __main__
         echo "\tSkip!\n";
@@ -99,26 +67,13 @@
     }
 
     $strings = Strings::getEntries();
-    // $ids     = array_keys($strings);
-    //    natsort($ids);
-    //    $sorted = [];
-    //    foreach ($ids as $id)
-    //        $sorted[$id] =& $strings[$id];
-    //
-    //    $strings = $sorted;
-    #ksort($strings);
-    uksort($strings, "strnatcmp");
+    uksort($strings, 'strnatcmp');
 
     $output = [];
+    $base   = ['en' => null, 'zh' => null, 'ko' => null, 'fr' => null, 'de' => null, 'es' => null];
+    $base   = array_fill(0, Strings::LANGUAGES, null);
     foreach ($strings as $k => $strs) {
-        if (count($strs) < 3) {
-            var_dump($k);
-            continue;
-        }
-
-        if ($region == 'gl')
-            $strs = array_pad($strs, 6, null);
-        else
+        if ($region !== 'gl')
             $strs = $strs[0];
 
         if (preg_match('~^(.*?)_(\d+(?:_\d+)*)$~', $k, $match)) {
@@ -147,17 +102,16 @@
     //            ksort($output);
 
     $dir = ROOT_DIR . "/strings/{$region}";
-    if (!is_dir($dir))
+    if (! is_dir($dir))
         mkdir($dir, 0777, true);
 
     foreach ($output as $file => $strings) {
         ksort($strings);
 
-
-        $data = json_encode((object) $strings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        if (!$data) {
+        $data = json_encode((object) $strings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT, 512);
+        if (! $data) {
             print_r($strings);
-            throw new Exception(json_last_error() . ": " . json_last_error_msg());
+            throw new Exception(json_last_error() . ': ' . json_last_error_msg());
         }
 
         file_put_contents("{$dir}/{$file}.json", $data);
