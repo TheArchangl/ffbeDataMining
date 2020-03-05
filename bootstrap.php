@@ -21,13 +21,13 @@ use Solaris\FFBE\Mst\MetaMstList;
 use Solaris\FFBE\Mst\SkillMstList;
 
 const ROOT_DIR         = __DIR__;
-const DATA_BACKUP_DIR  = __DIR__ . "/dat_bak/";
-const DATA_ENCODED_DIR = __DIR__ . "/dat_enc/";
-const DATA_INPUT_DIR   = __DIR__ . "/dat_dec/";
-const DATA_OUTPUT_DIR  = __DIR__ . "/data/";
+const DATA_BACKUP_DIR  = __DIR__ . '/dat_bak/';
+const DATA_ENCODED_DIR = __DIR__ . '/dat_enc/';
+const DATA_INPUT_DIR   = __DIR__ . '/dat_dec/';
+const DATA_OUTPUT_DIR  = __DIR__ . '/data/';
 const CLIENT_DIR       = '/mnt/c/Arbeit/FFBE/client/'; # 'C:\Arbeit\FFBE\client\\';
 
-require_once __DIR__ . "/vendor/autoload.php";
+require_once __DIR__ . '/vendor/autoload.php';
 
 GameFile::init();
 $container = new Container();

@@ -195,8 +195,8 @@
             if (empty($files))
                 return false;
 
-            foreach ($files as $file)
-                if (static::$loaded[$file] ?? false)
+            foreach ($files as $filename)
+                if (static::$loaded[$filename] ?? false)
                     // file already loaded
                     continue;
 
@@ -204,7 +204,7 @@
                     $loaded = false;
                     foreach (array_keys(static::LANGUAGE_ID) as $lang) {
                         try {
-                            static::readFile($file, $lang);
+                            static::readFile(GameFile::getFilePath($filename, $lang), $lang);
                             $loaded = true;
                         }
                         catch (\LogicException $e) {

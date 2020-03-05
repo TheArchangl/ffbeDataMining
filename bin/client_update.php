@@ -29,6 +29,7 @@
             continue;
         }
 
+
         $file_entry = GameFile::getEntry($name);
         if ($file_entry == null) {
             echo "\tSkipping {$name}\n";
@@ -41,12 +42,12 @@
         $max_ver  = max(GameFile::getFileVersions($file_entry, $region, $entry['LanguageCode'] ?? '') ?: [0]);
         $path_out = ! empty($entry['LanguageCode'])
             ? DATA_INPUT_DIR . "/{$region}/{$entry['LanguageCode']}/{$name}.txt"
-            : DATA_INPUT_DIR . "/{$region}/{$client_dir}/{$name}.txt";
+            : DATA_INPUT_DIR . "/{$region}/{$name}.txt";
 
         if (! is_dir($dir = dirname($path_out)) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
             throw new RuntimeException("Could not create directory '{$dir}'");
 
-        if ((OVERWRITE && $ver == $max_ver) || $ver > $max_ver) {
+        if (OVERWRITE || $ver > $max_ver || ! file_exists($path_out) || $mod_time > filemtime($path_out)) {
             echo "\t{$file_entry->getName()} {$lang} -> v{$ver}\n";
             copy($path_in, $path_out);
             touch($path_out, $mod_time);
