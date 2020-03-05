@@ -218,4 +218,8 @@
 
             return true;
         }
+
+        public static function setLoaded(string $table, bool $loaded): void {
+            static::$loaded[$table] = $loaded;
+        }
     }

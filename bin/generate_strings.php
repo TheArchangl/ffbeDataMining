@@ -29,6 +29,7 @@
 
 
         case 'jp':
+            // fill jp data
             $msts = [
                 'F_MAGIC_MST'   => 'MST_MAGIC_NAME',
                 'F_MISSION_MST' => 'MST_MISSION_NAME',
@@ -45,12 +46,12 @@
                 }
             }
 
-            // read gl as backup
-            $files = glob(CLIENT_DIR . 'files/gl/F_TEXT_*.txt');
-            $files = array_filter($files, function ($file) { return ! in_array(basename($file, '.txt'), BLACKLIST); });
+            // overwrite with gl if possible
+            $files = glob(CLIENT_DIR . 'files/gl/en/F_TEXT_*.txt');
+            $files = array_filter($files, static function ($file) { return ! in_array(basename($file, '.txt'), BLACKLIST, true); });
 
             foreach ($files as $file)
-                Strings::readFile($file);
+                Strings::readFile($file, 'en');
 
             return; // no saving for now
             break;
