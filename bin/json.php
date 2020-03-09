@@ -5,13 +5,15 @@
      * Time: 23:51
      */
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    use Sol\FFBE\GameFile;
 
-    $data = @file_get_contents("json.json") ?: '{}';
-    $data = json_decode($data, true);
-    $data = \Sol\FFBE\GameFile::replaceKeysRecursive($data);
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
-    $data = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    file_put_contents("json.json", $data);
+    $data = @file_get_contents('json.json') ?: '{}';
+    $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+    $data = GameFile::replaceKeysRecursive($data);
+
+    $data = json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE, 512);
+    file_put_contents('json.json', $data);
     echo $data;
