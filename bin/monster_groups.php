@@ -37,12 +37,11 @@
         protected $mission_runs  = [];
         private   $waves         = [];
 
-        public function readFiles(array $files): void
-        {
+        public function readFiles(array $files): void {
             foreach ($files as $file) {
                 $data = file_get_contents($file);
                 $data = json_decode($data, true);
-                if (!is_array($data)) {
+                if (! is_array($data)) {
                     var_dump(['error', $file]);
                     continue;
                 }
@@ -78,7 +77,8 @@
                             var_dump($this->battle_groups[$group_id], $monster_ids);
                             die();
                         }
-                    } else {
+                    }
+                    else {
                         $this->battle_groups[$group_id] = $monster_ids;
                     }
                 }
@@ -125,13 +125,14 @@
 
                 // exploration
                 foreach ($data['EncountInfo'] ?? [] as $entry) {
-                    $fight_id        = "{$entry['EncountFieldID']}.{$entry['EncountNum']}";
+                    $fight_id        = $entry['EncountFieldID'];
                     $battle_group_id = $entry['battle_group_id'];
 
                     $i = $entry['order_index'] - 1;
                     if ($i > 0 || $battle_group_id == '')
                         continue;
 
+                    $this->missions[$mission_id][$fight_id]['exploration'] = true;
                     @$this->missions[$mission_id][$fight_id][$battle_group_id]++;
                 }
 
@@ -178,19 +179,34 @@
 
                 ksort($waves);
                 foreach ($waves as $wave_num => $groups) {
-                    $count = array_sum($groups);
-                    printf("    Wave {$wave_num} [{$count} - %.1f%% | %.1f%%]\n", $count / $sum * 100, $this->waves[$mission_id][$wave_num] ?? 100);
+                    $explo  = $groups['exploration'] ?? false;
+                    $type   = $explo ? 'Zone' : 'Wave';
+                    $groups = array_filter($groups, 'is_int');
+                    $count  = array_sum($groups);
+
+                    printf("    {$type} {$wave_num} [{$count}");
+                    if (! $explo)
+                        printf(' - %.1f%% | %.1f%%]', $count / $sum * 100, $this->waves[$mission_id][$wave_num] ?? 100);
+                    else
+                        print ']';
+                    print("\n");
 
                     ksort($groups);
 
                     foreach ($groups as $group_id => $count) {
-                        print "        Group {$group_id} [{$count} - " . number_format($count / $sum * 100, 1) . "%]\n";
+                        print "        Group {$group_id} [{$count}";
+                        if (! $explo)
+                            print ' - ' . number_format($count / $sum * 100, 1) . ' %]';
+                        else
+                            print ']';
+
+                        print("\n");
 
                         foreach ($this->battle_groups[$group_id] as $monster_id) {
                             // $loot         = $this->monsters[$monster_id] ?? [];
                             // $loot         = printTable($loot, true);
                             foreach ($this->monsters[$monster_id] as $part => $monster)
-                                print "            ($monster_id.{$part}) {$monster['name']}\n";
+                                print "            ({$monster_id}.{$part}) {$monster['name']}\n";
                         }
                     }
 
@@ -210,7 +226,8 @@
 
         }
 
-        protected function printTable($loot) {
+        protected
+        function printTable($loot) {
             $loot = array_filter($loot);
 
             $string = '';

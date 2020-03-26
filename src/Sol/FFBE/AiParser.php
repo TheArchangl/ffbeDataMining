@@ -288,8 +288,12 @@
                     return "{$unit}.is('{$state}')";
 
                 // actions
+                case 'turn_damage_over':
+                    return "{$unit}.damageTakenLastTurn() > {$value}";
+
                 case 'total_damage_over':
-                    return "{$unit}.totalDamage() > {$value}";
+                    return "{$unit}.damageTakenTotal() > {$value}";
+
 
                 case 'special_user_id':
                     // king mog
@@ -395,6 +399,11 @@
 
                     return "{$negate}{$unit}.is('{$type}:{$value}')";
 
+
+                case 'outside_field':
+                    $negate = ($value == 0 ? '' : 'not ');
+
+                    return "{$negate}{$unit}.inBattlefield()";
 
                 case 'abnormal_state_heal_skill_use_possible':
                 case 'atk_skill_use_possible':
