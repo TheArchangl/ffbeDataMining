@@ -991,7 +991,7 @@
         /**
          *
          */
-        public static function init() {
+        public static function init(): void {
             $file = ROOT_DIR . '/files.tsv';
 
             self::$files = [];
@@ -1012,7 +1012,7 @@
             }
         }
 
-        public static function addEntry(GameFile $entry) {
+        public static function addEntry(GameFile $entry): void {
             self::$files[$entry->getFile()] = $entry;
 
             if (! in_array($entry->getName(), [null, '', '-'], true))
@@ -1022,7 +1022,7 @@
                 self::$names[$entry->getClass()] = $entry;
         }
 
-        public static function save() {
+        public static function save(): void {
             $file = ROOT_DIR . '/files2.tsv';
 
             uasort(static::$files, static function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
@@ -1047,7 +1047,7 @@
          *
          * @return array
          */
-        public static function loadRaw($input) {
+        public static function loadRaw($input): array {
             $file = self::getFilePath($input);
 
             // read file
@@ -1062,7 +1062,7 @@
          *
          * @return array
          */
-        public static function loadMst($input) {
+        public static function loadMst($input): array {
             $file = self::getFilePath($input);
 
             // read file
@@ -1089,9 +1089,11 @@
         }
 
         /**
+         * @param string $region
+         *
          * @deprecated
          */
-        public static function decodeAll($region = 'gl') {
+        public static function decodeAll($region = 'gl'): void {
             if (self::$files == null)
                 self::init();
 
@@ -1121,7 +1123,7 @@
             }
         }
 
-        public static function decodeFile($in_path, $out_path, $key, $iv = null) {
+        public static function decodeFile($in_path, $out_path, $key, $iv = null): void {
             if (! file_exists($in_path))
                 throw new \LogicException("File does not exist: {$in_path}");
 
@@ -1158,7 +1160,7 @@
             return $versions;
         }
 
-        public static function replaceKeysRecursive(array $data) {
+        public static function replaceKeysRecursive(array $data): array {
             foreach ($data as $key => $value) {
                 unset($data[$key]);
 
@@ -1183,7 +1185,7 @@
             return $data;
         }
 
-        public static function getFileKey($filename) {
+        public static function getFileKey($filename): ?string {
             $entry = static::getEntry($filename);
 
             return $entry == null
@@ -1191,15 +1193,15 @@
                 : $entry->key;
         }
 
-        public static function getRegion() {
+        public static function getRegion(): string {
             return static::$region;
         }
 
-        public static function setRegion($string) {
+        public static function setRegion($string): void {
             static::$region = $string;
         }
 
-        public static function getEntry($file) {
+        public static function getEntry($file): ?GameFile {
             if (self::$files == null)
                 self::init();
 
@@ -1217,7 +1219,7 @@
                 self::init();
 
             // find file
-            $input = static::$files[$input] ?? static::$names[$input] ?? $input;
+            $input = static::$files[$input] ?? static::$names[$input] ?? null;
             if (! $input instanceof self)
                 throw new \LogicException("Invalid file name or id '{$input}'.");
 
@@ -1240,7 +1242,7 @@
         /**
          * @return GameFile[]
          */
-        public static function getEntries() {
+        public static function getEntries(): array {
             if (self::$files == null)
                 self::init();
 
@@ -1252,7 +1254,7 @@
          *
          * @return array
          */
-        private static function replaceKeys(array $row) {
+        private static function replaceKeys(array $row): array {
             foreach ($row as $key => $val) {
                 unset($row[$key]);
 
@@ -1318,7 +1320,7 @@
         /**
          * @param string $name
          */
-        public function setName(string $name) {
+        public function setName(string $name): void {
             $this->name = $name;
         }
 
@@ -1334,7 +1336,7 @@
         /**
          * @param string $file
          */
-        public function setFile(string $file) {
+        public function setFile(string $file): void {
             $this->file = $file;
         }
 
@@ -1348,7 +1350,7 @@
         /**
          * @param string $key
          */
-        public function setKey(string $key) {
+        public function setKey(string $key): void {
             $this->key = $key;
         }
 
@@ -1362,12 +1364,12 @@
         /**
          * @param string $class
          */
-        public function setClass(string $class) {
+        public function setClass(string $class): void {
             $this->class = $class;
         }
 
-        public function getDlType() {
-            if (substr($this->name, 0, 7) == 'F_TEXT_')
+        public function getDlType(): string {
+            if (strpos($this->name, 'F_TEXT_') === 0)
                 return 'localized_texts';
 
             return 'mst';
