@@ -1129,7 +1129,8 @@
                 throw new \LogicException("Invalid key: {$key}");
 
             $data = file_get_contents($in_path);
-            $data = AES::decode($data, $key, $iv);
+            $data = AES::decode($data, $key, $iv)
+                ?: AES::decode($data, $key);
 
             if ($data[0] != '{' || $data[-1] != '}')
                 throw new \RuntimeException("{$in_path} not correctly decoded: " . substr($data, 0, 10));
