@@ -6,8 +6,8 @@
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Mst\SkillMstList;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
     // strings
     Strings::readTable('MST_MONSTER_SKILL_NAME');
@@ -26,9 +26,6 @@
     }
 
     $data = toJSON($entries, true, true);
-    //    $data = preg_replace_callback('~{\s+([^{]+)\s+}~', function ($match) {
-    //        return '{' . preg_replace('~\s+~', ' ', $match[1] . '}');
-    //    }, $data);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monster_skillsets.json", $data);
 
 

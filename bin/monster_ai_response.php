@@ -43,7 +43,7 @@
     $missions = [];
     foreach ($files as $file) {
         $data = file_get_contents($file);
-        $data = json_decode($data, true);
+        $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         $data = GameFile::replaceKeysRecursive($data);
         $data = $data['body']['data'] ?? null;
         if ($data == null)
