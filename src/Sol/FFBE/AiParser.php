@@ -249,9 +249,10 @@
 
                 // flags
                 case 'limited_act':
+                    /*
                     if ($value == 1)
                         return 'once()';
-
+*/
                     return "timesExecuted() < {$value}";
 
                 case 'flg_on':
@@ -360,7 +361,7 @@
                     break;
 
                 case 'before_turn_limit_attack':
-                    $negate = ($value == 1 ? '' : 'not ');
+                    $negate = ($value == 0 ? '' : 'not ');
 
                     return "{$negate}unit('any').usedLastTurn('limitburst')";
 
