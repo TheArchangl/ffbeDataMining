@@ -5,10 +5,7 @@
      * Time: 17:40
      */
 
-    use Sol\FFBE\GameFile;
-    use Sol\FFBE\Strings;
-    use Solaris\FFBE\Mst\SkillMst;
-    use Solaris\FFBE\Mst\SkillMstList;
+    use Solaris\FFBE\GameHelper;
 
     function readArray($input, $delim, $force) {
         if (is_int($input) || is_string($input))
@@ -20,7 +17,7 @@
             else
                 return explode($delim, $input);
 
-        if (!is_array($input))
+        if (! is_array($input))
             throw new \LogicException();
 
         foreach ($input as $k => $val)
@@ -103,129 +100,12 @@
         return $vals;
     }
 
-    /**
-     * @param $string
-     *
-     * @return array
-     */
-    function parseReward($string) {
-        $rest = explode(':', $string);
-        $rest = array_map("trim", $rest);
-        $type = array_shift($rest);
-        $id   = array_shift($rest);
-        $num  = array_shift($rest);
-        $name = null;
-
-        switch ($type) {
-            case 10:
-                // Unit
-                $mst_name = 'MST_UNIT';
-                $type     = 'UNIT';
-                break;
-
-            case 23:
-                // key item
-                $mst_name = 'MST_IMPORTANT_ITEM';
-                $type     = 'KEYITEM';
-                break;
-
-            case 20:
-                $mst_name = 'MST_ITEM';
-                $type     = 'ITEM';
-                break;
-
-            case 21:
-                // equipment
-                $mst_name = 'MST_EQUIP_ITEM';
-                $type     = 'EQUIP';
-                break;
-
-            case 22:
-                // materia
-                $mst_name = 'MST_MATERIA';
-                $type     = 'MATERIA';
-                break;
-
-            case 26:
-                // emblem / trophy thingies
-                $name = 'unk';
-                $type = "EMBLEM";
-                break;
-
-
-            case 50:
-                // Lapis? currency?
-                $name     = 'Lapis';
-                $mst_name = 'CURRENCY';
-                $type     = 'LAPIS';
-                break;
-
-            case 51:
-                // Gil?
-                $name     = 'Gil';
-                $mst_name = 'CURRENCY';
-                $type     = 'GIL';
-                break;
-
-            case 60:
-                // recipe
-                $mst_name = 'MST_RECIPE_BOOK';
-                $str_db   = 'MST_RECIPEBOOK_NAME';
-                $type     = 'RECIPE';
-                break;
-
-            case 90:
-            case 91:
-                // switch id
-                // unit series upgrades
-                $type = 'SWITCH';
-                $name = "";
-                break;
-
-            default:
-                throw new RuntimeException("Unknown mst type {$type} with id {$id}");
-        }
-
-        if (!isset($str_db) && !empty($mst_name))
-            $str_db = "{$mst_name}_NAME";
-
-        if ($name == null && isset($str_db))
-            $name = Strings::getString($str_db, $id, 0);
-
-
-        if ($name == null && !empty($mst_name)) {
-            $items = GameFile::loadMst('F_' . substr($mst_name, 4) . '_MST');
-            $items = array_combine(
-                array_map("current", $items),
-                $items
-            );
-            $name  = $items[$id]['name'] ?? null;
-        }
-
-        return [$type, $id, $name, $num, $rest];
-    }
-
     function readTM($string) {
         if ($string == '')
             return null;
 
-        list($type, $id) = parseReward($string);
-        //        $strings = [];
-        //        foreach (['NAME', 'SHORTDESCRIPTION', 'LONGDESCRIPTION'] as $k => $str_type)
-        //            $strings[] = Sol\FFBE\Strings::getString("{$str_db}_{$str_type}", $id, 0);
-        //            foreach (Sol\FFBE\Strings::readStrings("{$str_db}_{$str_type}", $id) as $j => $str)
-        //                $strings[$j][$k] = $str;
-
+        [$type, $id] = GameHelper::parseMstItem($string);
         return [$type, (int) $id];
-        //
-        //        return [
-        //            'type' => $type,
-        //            'id'   => (int)$id,
-        //            'name' => Sol\FFBE\Strings::getString("{$str_db}_NAME", $id, 0),
-        //            'desc' => Sol\FFBE\Strings::getString("{$str_db}_LONGDESCRIPTION", $id, 0) ??
-        //                      Sol\FFBE\Strings::getString("{$str_db}_SHORTDESCRIPTION", $id, 0),
-        //
-        //        ];
     }
 
     function formatStats($entry) {
@@ -368,12 +248,14 @@
                     if (count($aRecursiveDiff)) {
                         $aReturn[$mKey] = $aRecursiveDiff;
                     }
-                } else {
+                }
+                else {
                     if ($mValue != $aArray2[$mKey]) {
                         $aReturn[$mKey] = $mValue;
                     }
                 }
-            } else {
+            }
+            else {
                 $aReturn[$mKey] = $mValue;
             }
         }

@@ -12,7 +12,7 @@
     echo "Updating from {$region} client files\n";
 
     $updated = [];
-    $files = file_get_contents("{$client_dir}/versions.json") or die();
+    $files = file_get_contents("{$client_dir}/versions.json") or die('File not found');
     $files = json_decode($files, true, 512, JSON_THROW_ON_ERROR);
     foreach ($files as $k => $entry) {
         if ($entry['Type'] == 2)

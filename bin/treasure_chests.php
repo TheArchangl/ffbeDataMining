@@ -16,7 +16,7 @@
         var_dump($row);
         die();
 
-        $reward = parseReward($row['treasure_content']);
+        $reward = \Solaris\FFBE\GameHelper::parseMstItem($row['treasure_content']);
         $entries[$id] = [$reward[2], (int)$reward[3]];
     }
 

@@ -14,20 +14,13 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
 
-    $lang = 0; // EN
-
     // unit data
     $units    = [];
     $unit_map = [];
 
-
     echo "Units\n";
     $reader = new UnitReader($region);
-    $reader->save(join('/', [
-        DATA_OUTPUT_DIR,
-        $region,
-        'units.json',
-    ]));
+    $reader->save(join('/', [DATA_OUTPUT_DIR, $region, 'units.json',]));
 
     //
     echo "UoL\n";

@@ -51,7 +51,7 @@
 
     $keys = array_keys($rewards);
     foreach ($keys as $k => $key) {
-        $name = GameHelper::parseReward($key);
+        $name = GameHelper::formatMstItem($key);
 
         $keys[$k] = $name;
     }

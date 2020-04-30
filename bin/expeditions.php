@@ -120,20 +120,20 @@
             ],
         ];
 
-        $relics = parseReward($row['RelicReward']);
+        $relics = \Solaris\FFBE\GameHelper::parseMstItem($row['RelicReward']);
         assert($relics[1] == 1209000808);
 
         $entry['relics'] = (int) $relics[3];
         $entry['reward'] = array_combine(
             ['type', 'id', 'name', 'amount'],
-            array_slice(parseReward($row['DisplayReward']), 0, 4)
+            array_slice(\Solaris\FFBE\GameHelper::parseMstItem($row['DisplayReward']), 0, 4)
         );
 
         if (in_array($row['ConsumableItemList'], ["NULL", null]))
             $entry['item_bonus'] = null;
 
         else {
-            $bonus               = parseReward($row['ConsumableItemList']);
+            $bonus               = \Solaris\FFBE\GameHelper::parseMstItem($row['ConsumableItemList']);
             $entry['item_bonus'] = [[
                                         'id'     => (int) $bonus[1],
                                         'name'   => $bonus[2],

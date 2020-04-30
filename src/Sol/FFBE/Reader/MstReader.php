@@ -7,8 +7,8 @@
 
     namespace Sol\FFBE\Reader;
 
-    ini_set('pcre.backtrack_limit', "520000000") or die('could not set pcre.backtrack_limit');
-    ini_set('pcre.recursion_limit', "520000000") or die('could not set pcre.recursion_limit');
+    ini_set('pcre.backtrack_limit', '520000000') or die('could not set pcre.backtrack_limit');
+    ini_set('pcre.recursion_limit', '520000000') or die('could not set pcre.recursion_limit');
     ini_set('pcre.jit', false) or die('could not set pcre.recursion_limit');
 
     abstract class MstReader {
@@ -29,7 +29,6 @@
          * @return string
          */
         protected function formatOutput(array $entries) {
-            ksort($entries);
             $data = toJSON($entries, false);
 
             // un-indent arrays
@@ -39,7 +38,7 @@
 
             foreach ($keys as $key) {
                 $data = preg_replace_callback('~("(?:' . $key . ')":\s+)\[\s+(?P<values>(?:[-.\d]+|"[^"]*"|\[]|\[\s*(?P>values)\s*])(?:,\s+(?P>values)\s*)*)\s*]~',
-                    function ($match) {
+                    static function ($match) {
                         $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
                         $trimmed = str_replace(',', ', ', $trimmed);
 
@@ -63,7 +62,7 @@
             }
 
             // un-indent objects
-            $data = preg_replace_callback('/("cost":\s*{)([^}]+)(},)/sm', function ($match) {
+            $data = preg_replace_callback('/("cost":\s*{)([^}]+)(},)/m', static function ($match) {
                 $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
                 $trimmed = str_replace(',', ', ', $trimmed);
 

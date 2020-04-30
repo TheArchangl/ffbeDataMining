@@ -5,37 +5,26 @@
      * Time: 22:53
      */
 
-
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
-
-    if ($region == 'jp')
-        require_once dirname(__DIR__) . '/bin/generate_strings.php';
-
+    require_once __DIR__ . '/read_strings.php';
 
     $entries = [];
     foreach (GameFile::loadMst('F_MEDAL_EXCHANGE_MST') as $row) {
         $mog_id      = (int) $row['medal_exchange_id'];
         $currency_id = (int) $row['ak2dhKm3'];
         $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;
-        //        $item_id           = (int)$row['ak2dhKm3'];
-
-        [$reward_type, $reward_id, $name, $num, $rest] = parseReward($row['target_info']);
-
+        [$reward_type, $reward_id, $name, $num, $rest] = \Solaris\FFBE\GameHelper::parseMstItem($row['target_info']);
 
         if ($reward_type == 'UNIT' && isset($rest[3])) {
             $tminfo  = $rest[3] ?? '100000000';
             $stminfo = $rest[5] ?? 0;
             $uname   = getUnitName($tminfo, $stminfo);
             $tmp     = getTmProgress($reward_id, $tminfo, $stminfo);
-
-            $name .= " ({$tmp}% {$uname})";
-
-            #if ($currency == "ふゆうそう")
-            # var_dump([$currency, $name, $row['target_info']]);
+            $name    .= " ({$tmp}% {$uname})";
         }
 
         $entry = [
@@ -49,60 +38,9 @@
         $entries[$currency][] = $entry;
     }
 
-    /*
-        $e2 = [];
-        foreach (readGameFile("03cY9vXe") as $row) {
-            $mog_id     = (int)$row['6uIYE15X'];
-            $comment_id = (int)$row['Z20mNDvL'];
-
-
-            if (!isset($entries[$mog_id]))
-                continue;
-
-            $entry = $entries[$mog_id];
-
-            $row['names']    = $entry['names'];
-            $row['names'][0] = $entry['currency'];
-
-
-            $row['test1'] = Sol\FFBE\Strings::getStrings('MST_TOWNSTORE_COMMENT', $comment_id . '_1')[0];
-            $row['test2'] = Sol\FFBE\Strings::getStrings('MST_TOWNSTORE_COMMENT', $comment_id . '_2')[0];
-            $row['test3'] = Sol\FFBE\Strings::getStrings('MST_TOWNSTORE_COMMENT', $comment_id . '_3')[0];
-
-
-            $e2[] = $row + $entry;
-            continue;
-            $currency_id = (int)$row['ak2dhKm3'];
-    //        $item_id           = (int)$row['ak2dhKm3'];
-
-            $reward = parseReward($row['7iJpH5zZ']);
-            list($reward_type, $reward_id, $reward_str_type, $rest) = $reward;
-            $row['names']       = Sol\FFBE\Strings::getStrings("{$reward_str_type}_NAME", $reward_id);
-            $row['reward_type'] = $reward_type;
-            $row['reward_id']   = $reward_id;
-            $row['price']       = (int)$row['Qy5EvcK1'];
-            $row['amount']      = (int)$row['x0NDnEC9'];
-            $row['currency']    = Sol\FFBE\Strings::getStrings('MST_ITEM_NAME', $currency_id)[0];
-            $row['amount']      = (int)$row['x0NDnEC9'];
-
-            unset($row['ak2dhKm3']);
-            unset($row['7iJpH5zZ']);
-            unset($row['Qy5EvcK1']);
-            unset($row['x0NDnEC9']);
-
-            $entries[] = $row;
-
-        }
-    */
-    //    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/analyze.json", toJSON(arrayGroupValues($e2)));
-
-    // event bonus units
-    // I0SUr3WY
-
-
     // output
     $data = toJSON($entries, true, false);
-    $data = preg_replace_callback('~{\s+([^{]+)\s+}~', function ($match) {
+    $data = preg_replace_callback('~{\s+([^{]+)\s+}~', static function ($match) {
         return '{' . preg_replace('~\s+~', ' ', $match[1] . '}');
     }, $data);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/currency_exchange.json", $data);
@@ -127,9 +65,9 @@
         return $tm_info;
     }
 
-    function getTmProgress($moogle_unit_id, $tm_info, $stm_info) {
+    function getTmProgress(int $moogle_unit_id, int $tm_info, int $stm_info) {
         if ($stm_info > 0)
-            return 'STMR ' . ([5, 25, 50, 100, '??', '??', '??'][$stm_info[-1]] ?? '??');
+            return 'STMR ' . ([5, 25, 50, 100, '??', '??', '??'][((string) $stm_info)[-1]] ?? '??');
 
         // ALL %
         switch ($tm_info) {
@@ -146,7 +84,7 @@
         }
 
         // Specific %
-        switch ($tm_info[-1]) {
+        switch (((string) $tm_info)[-1]) {
             case 201000501:
                 return 5;
             case 201000502:
@@ -156,7 +94,7 @@
         }
 
         // Fallback to moogle rarity
-        switch ($moogle_unit_id[-1]) {
+        switch (((string) $moogle_unit_id)[-1]) {
             case 1:
                 return 1;
 
@@ -167,6 +105,6 @@
                 return 10;
 
             default:
-                throw new UnexpectedValueException($tm_info . '_' . $moogle_unit_id);
+                return -1;
         }
     }

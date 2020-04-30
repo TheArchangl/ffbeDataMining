@@ -4,7 +4,6 @@
     use Sol\FFBE\Strings;
 
     require_once __DIR__ . '/../bootstrap.php';
-
     const BLACKLIST = [
         'F_TEXT_BATTLE_SCRIPT',
         'F_TEXT_MONSTER_SKILL_SET_NAME',
@@ -15,8 +14,12 @@
         'F_TEXT_DESCRIPTION_FORMAT'
         //        'F_TEXT_TEXT_EN.txt',
     ];
+    $full = in_array(realpath($argv[0]), [realpath(__FILE__), realpath(__DIR__ . DIRECTORY_SEPARATOR . 'runAll.php')], true);
 
-    echo "Reading strings\n";
+    if (! $full)
+        return require __DIR__ . '/read_strings.php';
+
+    echo "Parsing strings\n";
 
     switch ($region) {
         case 'gl':
@@ -31,10 +34,15 @@
         case 'jp':
             // fill jp data
             $msts = [
-                'F_MAGIC_MST'   => 'MST_MAGIC_NAME',
-                'F_MISSION_MST' => 'MST_MISSION_NAME',
-                'F_ITEM_MST'    => 'MST_ITEM_NAME',
-                'F_UNIT_MST'    => 'MST_UNIT_NAME',
+                'F_MAGIC_MST'          => 'MST_MAGIC_NAME',
+                'F_MISSION_MST'        => 'MST_MISSION_NAME',
+                'F_ITEM_MST'           => 'MST_ITEM_NAME',
+                'F_MATERIA_MST'        => 'MST_MATERIA_NAME',
+                'F_RECIPE_BOOK_MST'    => 'MST_RECIPEBOOK_NAME',
+                'F_IMPORTANT_ITEM_MST' => 'MST_IMPORTANT_ITEM_NAME',
+                'F_UNIT_MST'           => 'MST_UNIT_NAME',
+                'F_EQUIP_ITEM_MST'     => 'MST_EQUIP_ITEM_NAME',
+                'F_VISION_CARD_MST'    => 'MST_VISION_CARD_NAME',
             ];
 
             foreach ($msts as $mst => $table) {
@@ -53,14 +61,13 @@
             foreach ($files as $file)
                 Strings::readFile($file, 'en');
 
-            return; // no saving for now
             break;
     }
+
     // write to file
     echo "Writing strings\n";
 
-    $file = realpath($argv[0]);
-    if ($file != realpath(__FILE__) && $file != realpath(__DIR__ . DIRECTORY_SEPARATOR . 'runAll.php')) {
+    if (! $full) {
         // ghetto __main__
         echo "\tSkip!\n";
 

@@ -11,10 +11,7 @@
     use Solaris\FFBE\GameHelper;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
-    require_once dirname(__DIR__) . '/helpers.php';
-
-    if (! Strings::hasBeenLoaded('MST_CHALLENGE_NAME') && ! Strings::readTable('MST_CHALLENGE_NAME'))
-        throw new \RuntimeException("Could not load 'MST_CHALLENGE_NAME'");
+    require_once __DIR__ . '/read_strings.php';
 
     function parseRewards($string) {
         if (empty($string))
@@ -23,7 +20,7 @@
         $rewards = [];
 
         foreach (explode(',', $string) as $reward) {
-            $reward    = parseReward($reward);
+            $reward    = \Solaris\FFBE\GameHelper::parseMstItem($reward);
             $rewards[] = [
                 $reward[0], // item type
                 (int) $reward[1], // item id
@@ -92,7 +89,7 @@
         $parsed = ChallengeParser::parse($row['condition'], true);
         $parsed = array_map('utf8_encode', $parsed);
 
-        $reward = parseReward($row['reward']);
+        $reward = \Solaris\FFBE\GameHelper::parseMstItem($row['reward']);
         $reward = [
             $reward[0], // item type
             (int) $reward[1], // item id

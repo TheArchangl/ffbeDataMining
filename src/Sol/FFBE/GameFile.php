@@ -1067,21 +1067,15 @@
 
             // read file
             $file = new \SplFileObject($file);
-            $file->setFlags(\SplFileObject::DROP_NEW_LINE | \SplFileObject::SKIP_EMPTY);
+            $file->setFlags(\SplFileObject::DROP_NEW_LINE | \SplFileObject::READ_AHEAD | \SplFileObject::SKIP_EMPTY);
 
             $entries = [];
             foreach ($file as $line) {
-                if ($line === false)
-                    continue;
-
                 $row = trim($line);
                 $row = mb_convert_encoding($row, 'UTF-8');
                 $row = json_decode($row, true, 512, JSON_THROW_ON_ERROR);
+                $row = self::replaceKeys($row);
 
-                if ($row == null)
-                    continue;
-
-                $row       = self::replaceKeys($row);
                 $entries[] = $row;
             }
 
@@ -1255,31 +1249,20 @@
          * @return array
          */
         private static function replaceKeys(array $row): array {
+            $temp = [];
             foreach ($row as $key => $val) {
-                unset($row[$key]);
-
-                if (! array_key_exists($key, static::$keys)) {
-                    // unknown key
-                    $row[$key] = $val;
-                    continue;
-                }
-
-                $newKey = static::$keys[$key];
-
+                $newKey = static::$keys[$key] ?? $key;
                 if ($newKey == null)
-                    // unset field
+                    // unset ignored keys
                     continue;
 
-                if (isset($row[$newKey]))
+                if (isset($temp[$newKey]))
                     print "Warning: key {$newKey} already exists and data will be overwritten.\n";
 
-                $row[$newKey] = $val;
-
-                //            else
-                //                $row['unknown'][$key] = $val;
+                $temp[$newKey] = $val;
             }
 
-            return $row;
+            return $temp;
         }
 
         /** @var string */
