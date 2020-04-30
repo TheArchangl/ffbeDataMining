@@ -7,6 +7,7 @@
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
 
     const MAGIC_TYPE_EXPED = [
         'UNKNOWN',
@@ -16,11 +17,10 @@
         'Blue',
     ];
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
+    require_once __DIR__ . '/read_strings.php';
 
-    // echo json_encode(GameFile::loadMst('F_EXPEDITION_MST'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    // die();
 
     $difficulties = [];
     foreach (GameFile::loadMst('F_EXPEDITION_DIFFICULTY_MST') as $row) {
@@ -57,7 +57,7 @@
             case 0:
                 // equip
                 $type  = 'equipable';
-                $value = \Solaris\FFBE\GameHelper::EQUIPMENT_TYPE[$value];
+                $value = GameHelper::EQUIPMENT_TYPE[$value];
                 break;
 
             case 5:
@@ -92,14 +92,14 @@
             'units'      => (int) $row['UnitCount'],
             'required'   => $row['RequiredUnitSeriesList'] == 0
                 ? null
-                : \Sol\FFBE\Strings::getString('MST_UNIT_NAME', $row['RequiredUnitSeriesList']),
+                : Strings::getString('MST_UNIT_NAME', $row['RequiredUnitSeriesList']),
 
             'next_id'        => (int) $row['NextExpdId'] ?: null,
 
             // rewards
             'reward'         => null,
             'relics'         => null,
-            'exp_levels'     => array_map("toInt", explode(':', $row['TimeEventFlags'])),
+            'exp_levels'     => array_map('toInt', explode(':', $row['TimeEventFlags'])),
 
             // diff?
             'unit_bonus'     => null,
@@ -115,25 +115,25 @@
             ],
 
             'strings' => [
-                'name' => \Sol\FFBE\Strings::getStrings('MST_EXPN_NAME', $id),
-                'desc' => \Sol\FFBE\Strings::getStrings('MST_EXPN_DESC', $id),
+                'name' => Strings::getStrings('MST_EXPN_NAME', $id),
+                'desc' => Strings::getStrings('MST_EXPN_DESC', $id),
             ],
         ];
 
-        $relics = \Solaris\FFBE\GameHelper::parseMstItem($row['RelicReward']);
+        $relics = GameHelper::parseMstItem($row['RelicReward']);
         assert($relics[1] == 1209000808);
 
         $entry['relics'] = (int) $relics[3];
         $entry['reward'] = array_combine(
             ['type', 'id', 'name', 'amount'],
-            array_slice(\Solaris\FFBE\GameHelper::parseMstItem($row['DisplayReward']), 0, 4)
+            array_slice(GameHelper::parseMstItem($row['DisplayReward']), 0, 4)
         );
 
-        if (in_array($row['ConsumableItemList'], ["NULL", null]))
+        if (in_array($row['ConsumableItemList'], ['NULL', '', null], true))
             $entry['item_bonus'] = null;
 
         else {
-            $bonus               = \Solaris\FFBE\GameHelper::parseMstItem($row['ConsumableItemList']);
+            $bonus               = GameHelper::parseMstItem($row['ConsumableItemList']);
             $entry['item_bonus'] = [[
                                         'id'     => (int) $bonus[1],
                                         'name'   => $bonus[2],
@@ -144,7 +144,6 @@
 
         $entry['unit_bonus'] = parseUnitBonus($row);
 
-        // $entries[] = $row;
         assert(strpos($row['ConsumableItemList'], ',') === false);
         assert(strpos($row['RequiredUnitSeriesList'], ',') === false);
         assert(strpos($row['RelicReward'], ',') === false);
