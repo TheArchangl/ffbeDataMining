@@ -10,8 +10,9 @@
     use Sol\FFBE\Reader\SkillReader;
     use Solaris\FFBE\Mst\SkillMstList;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
+    require_once __DIR__ . '/read_strings.php';
 
     //ini_set('assert.active', 0);
     ini_set('memory_limit', '2G');
@@ -29,5 +30,5 @@
     $reader->save(join('/', [
         DATA_OUTPUT_DIR,
         $region,
-        'limitbursts.json'
+        'limitbursts.json',
     ]));

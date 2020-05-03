@@ -12,7 +12,6 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Helper\Environment;
-    use Solaris\FFBE\Mst\AbilitySkillMst;
     use Solaris\FFBE\Mst\MstList;
     use Solaris\FFBE\Mst\SkillMst;
     use Solaris\FFBE\Mst\SkillMstList;
@@ -44,7 +43,7 @@
 
                 $entry['attack_frames'] = static::flattenFrames($frames, 0);
                 $entry['attack_damage'] = static::flattenFrames($frames, 1);
-                $entry['attack_count']  = array_map("count", $entry['attack_frames']);
+                $entry['attack_count']  = array_map('count', $entry['attack_frames']);
             }
             else {
                 $entry['attack_frames'] = [[]];
@@ -67,7 +66,7 @@
          *
          * @return array
          */
-        static function flattenFrames(array $effects, $index = 0) {
+        public static function flattenFrames(array $effects, $index = 0): array {
             $frames = [];
 
             foreach ($effects as $effect) {
@@ -89,7 +88,7 @@
          *
          * @return array
          */
-        public static function parseEffects(SkillMst $skill, MstList $list) {
+        public static function parseEffects(SkillMst $skill, MstList $list): array {
             $effect_str = SkillFormatter::formatEffects($skill, $list);
 
             $effect_raw = [];
@@ -109,7 +108,7 @@
         /**
          * @param string $file
          */
-        public function saveMagic(string $file) {
+        public function saveMagic(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_MAGIC_MST') as $row) {
                 $id    = current($row);
@@ -126,7 +125,7 @@
         /**
          * @param string $file
          */
-        public function saveAbilities(string $file) {
+        public function saveAbilities(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
                 $id  = current($row);
@@ -148,7 +147,7 @@
         /**
          * @param string $file
          */
-        public function savePassives(string $file) {
+        public function savePassives(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
                 $id  = current($row);
@@ -172,14 +171,14 @@
          *
          * @return array
          */
-        protected function parseMagicRow(array $row) {
+        protected function parseMagicRow(array $row): array {
             $id   = (int) $row['magic_id'];
             $name = GameFile::getRegion() == 'gl'
                 ? Strings::getString('MST_MAGIC_NAME', $id) ?? $row['name']
                 : $row['name'];
 
             $flags    = readIntArray($row['flags']);
-            $use_case = explode(",", $row['use_case']);
+            $use_case = explode(',', $row['use_case']);
             assert($use_case[0] == 1);
 
             $entry = [
@@ -209,7 +208,7 @@
                 'element_inflict' => GameHelper::readElement($row['element_inflict']) ?: null,
 
                 'effects'      => [],
-                'effects_raw'  => "",
+                'effects_raw'  => '',
                 //
                 'requirements' => SkillMstList::readRequirements($row),
             ];
@@ -226,7 +225,7 @@
          *
          * @return array
          */
-        protected function parseAbilityRow(array $row) {
+        protected function parseAbilityRow(array $row): array {
             $id   = (int) $row['ability_id'];
             $name = GameFile::getRegion() == 'gl'
                 ? Strings::getString('MST_ABILITY_NAME', $id) ?? $row['name']
@@ -252,7 +251,7 @@
                 'element_inflict'  => GameHelper::readElement($row['element_inflict']) ?: null,
                 //
                 'effects'          => [],
-                'effects_raw'      => "",
+                'effects_raw'      => '',
                 //
                 'requirements'     => SkillMstList::readRequirements($row),
                 'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
@@ -260,7 +259,7 @@
 
 
             $entry = static::parseFrames($row, $entry);
-            $entry = static::parseSkillCosts($row, $entry);
+            $entry = $this->parseSkillCosts($row, $entry);
             $entry = $this->parseSkillEffects($id, $entry);
 
             return $entry;
@@ -271,14 +270,12 @@
          *
          * @return array
          */
-        protected function parsePassiveRow($row) {
+        protected function parsePassiveRow($row): array {
             $id   = (int) $row['ability_id'];
             $name = GameFile::getRegion() == 'gl'
                 ? Strings::getString('MST_ABILITY_NAME', $id) ?? $row['name']
                 : $row['name'];
 
-            /** @var AbilitySkillMst $mst */
-            $mst   = $this->skill_mst->getEntry($id);
             $entry = [
                 'name'          => $name,
                 'icon'          => IconMstList::getFilename($row['icon_id']),
@@ -292,7 +289,7 @@
 
                 //
                 'effects'          => [],
-                'effects_raw'      => "",
+                'effects_raw'      => '',
                 //
                 'requirements'     => SkillMstList::readRequirements($row),
                 'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
@@ -309,12 +306,12 @@
          *
          * @return array
          */
-        protected function parseSkillEffects($id, array $entry) {
+        protected function parseSkillEffects($id, array $entry): array {
             $skill = $this->skill_mst->getEntry($id);
             if ($skill == null)
                 throw new \LogicException("No skill entry {$id} found?");
 
-            $effects              = $this->parseEffects($skill, $this->skill_mst);
+            $effects              = self::parseEffects($skill, $this->skill_mst);
             $entry['effects']     = $effects[0];
             $entry['effects_raw'] = array_map('array_values', $effects[1]);
 
@@ -327,7 +324,7 @@
          *
          * @return array
          */
-        private function parseSkillCosts(array $row, array $entry) {
+        private function parseSkillCosts(array $row, array $entry): array {
             $costs = $entry['cost'];
 
             if ($row['mp_cost'] > 0)
