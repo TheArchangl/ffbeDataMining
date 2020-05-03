@@ -14,6 +14,10 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
 
+    $region = 'jp';
+    GameFile::setRegion($region);
+    require_once __DIR__ . '/read_strings.php';
+
     // unit data
     $units    = [];
     $unit_map = [];
@@ -22,6 +26,7 @@
     $reader = new UnitReader($region);
     $reader->save(join('/', [DATA_OUTPUT_DIR, $region, 'units.json',]));
 
+    die();
     //
     echo "UoL\n";
     $entries = [];

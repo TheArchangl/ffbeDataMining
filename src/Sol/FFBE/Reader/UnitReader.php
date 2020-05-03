@@ -92,11 +92,12 @@
             $unit_id     = (int) $row['unit_id'];
             $unit_evo_id = (int) $row['unit_evo_id'];
             $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
+            $is_neo      = $nv_id > 0;
 
             // get unit
             $unit = $this->units[$unit_id] ?? $this->readUnitEntry($row);
 
-            $unit['rarity_max'] = ($row['k9GFaWm1'] ?? 0) == 1 ? 'NV' : (int) $row['rarity'];
+            $unit['rarity_max'] = (int) $row['rarity'];
             $unit_evo           = $this->readEvoEntry($row);
             $evo_equip          = readEquip($row['equip']);
             if ($unit['equip'] != $evo_equip)
@@ -123,8 +124,9 @@
          */
         protected function readUnitEntry(array $row): array {
             $unit_evo_id = (int) $row['unit_evo_id'];
-            $is_neo      = ($row['k9GFaWm1'] ?? 0) == 1;
-            $rarity      = $is_neo ? 'NV' : (int) $row['rarity'];
+            $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
+            $is_neo      = $nv_id > 0;
+            $rarity      = (int) $row['rarity'];
             $names       = $this->getLocalization($row['name'], 'MST_UNIT_NAME', $unit_evo_id);
 
             $arr = [
@@ -181,10 +183,12 @@
          */
         protected function readEvoEntry($row): array {
             $unit_evo_id = (int) $row['unit_evo_id'];
-            $rarity      = ($row['k9GFaWm1'] ?? 0) == 1 ? 'NV' : (int) $row['rarity'];
+            $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
+            $rarity      = (int) $row['rarity'];
 
             // per evo
             $evo_entry = [
+                // 'base_id'       => $nv_id ?: null,
                 'compendium_id' => (int) $row['order_index'],
                 'rarity'        => $rarity,
 
@@ -251,7 +255,7 @@
             $unit    = $this->units[$unit_id] ?? [];
 
             $level  = (int) $row['level'];
-            $rarity = (int) max($row['rarity_min'] ?? 10, $unit['rarity_min'] ?? 10); // set rarity to min_rarity instead of 0
+            $rarity = max((int) $row['rarity_min'], $unit['rarity_min']); // set rarity to min_rarity instead of 0
 
             $spells    = array_filter(explode(',', $row['magic_ids']));
             $abilities = array_filter(explode(',', $row['ability_ids']));
