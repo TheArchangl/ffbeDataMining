@@ -10,6 +10,7 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
+    use Solaris\FFBE\Model\Unit;
 
     class UnitReader extends MstReader {
         /** @var array */
