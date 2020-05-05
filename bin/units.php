@@ -10,6 +10,7 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Reader\UnitReader;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
@@ -26,7 +27,29 @@
     $reader = new UnitReader($region);
     $reader->save(join('/', [DATA_OUTPUT_DIR, $region, 'units.json',]));
 
-    die();
+    if ($region === 'jp') {
+        echo "Brave shift\n";
+        $entries = [];
+        foreach (GameFile::loadMst('F_NV_SHIFT_MST') as $row) {
+            ['rZhG3M4b' => $brave_shift_id, 'f7yISEz8' => $info, '4fbM3gWc' => $unk1] = $row;
+            assert($unk1 === '0');
+
+            $info = GameHelper::readIntArray($info, ':');
+            #$frames = parseList($row['effect_frames'], '@&:');
+            #$frames = SkillReader::flattenFrames($frames, 0);
+
+            $entries[$brave_shift_id] = [
+                'ready'    => $info[0] + 1,
+                'duration' => $info[1],
+                'cooldown' => $info[2],
+                'turnback' => (bool) (1 - $info[3]),
+                #'frames'   => $frames,
+            ];
+        }
+    }
+
+    file_put_contents(join('/', [DATA_OUTPUT_DIR, $region, 'unit_brave_shift.json']), toJSON($entries));
+
     //
     echo "UoL\n";
     $entries = [];

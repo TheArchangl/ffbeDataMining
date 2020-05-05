@@ -221,6 +221,8 @@
                 'magical_resist'  => (int) $row['magical_resist'],
                 //
                 'awakening'       => null,
+                'nv_upgrade'      => null,
+                'brave_shift'     => $row['rZhG3M4b'] === '0' ? null : (int) $row['rZhG3M4b'],
                 //
                 'strings'         => null,
             ];
@@ -230,7 +232,7 @@
             if (GameFile::getRegion() == 'jp')
                 unset($evo_entry['strings']);
             else {
-                unset($evo_entry['neo_unit']);
+                unset($evo_entry['brave_shift'], $evo_entry['nv_upgrade']);
                 $evo_entry['strings'] = [
                     'description' => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_DESCRIPTION', $unit_evo_id),
                     'summon'      => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_SUMMON', $unit_evo_id),
@@ -316,25 +318,23 @@
         }
 
         private function readUnitNeoAwakeningRow(array $row): void {
-            ['JPW8Vs40' => $unit_base_id, 'f8vk4JrD' => $rank] = $row;
-            if ($unit_base_id == '1')
+            ['JPW8Vs40' => $nv_id, 'f8vk4JrD' => $rank] = $row;
+            if ($nv_id == '1')
                 return;
 
-            $unit_ids = $this->nv_map[$unit_base_id];
-            foreach ($unit_ids as $unit_id) {
-                $unit_evo =& $this->units[$unit_id]['entries'][$unit_id];
+            $unit_id  = $this->unit_map[$nv_id];
+            $unit_evo =& $this->units[$unit_id]['entries'][$nv_id];
 
-                $mats = [];
-                foreach (readParameters($row['mats'], ',:') as [$type, $item_id, $count])
-                    $mats[$item_id] = $count;
+            $mats = [];
+            foreach (readParameters($row['mats'], ',:') as [$type, $item_id, $count])
+                $mats[$item_id] = $count;
 
-                $unit_evo['awakening'][$rank - 1] = [
-                    'gil'       => (int) $row['gil'],
-                    'materials' => $mats,
-                    'reward'    => GameHelper::parseItemList($row['reward']),
-                    //   'stats'     => GameHelper::array_use_keys(GameHelper::STAT_TYPE, GameHelper::readIntArray($row['3X2V5mxS'])),
-                ];
-            }
+            $unit_evo['nv_upgrade'][$rank - 1] = [
+                'gil'       => (int) $row['gil'],
+                'materials' => $mats,
+                'reward'    => GameHelper::parseItemList($row['reward']),
+                'stats'     => GameHelper::array_use_keys(Unit::STAT_NAMES, GameHelper::readIntArray($row['3X2V5mxS'])),
+            ];
         }
 
         /**
