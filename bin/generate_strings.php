@@ -14,7 +14,7 @@
         'F_TEXT_DESCRIPTION_FORMAT'
         //        'F_TEXT_TEXT_EN.txt',
     ];
-    $full = in_array(realpath($argv[0]), [realpath(__FILE__), realpath(__DIR__ . DIRECTORY_SEPARATOR . 'runAll.php')], true);
+    $full = in_array(strtolower(realpath($argv[0])), array_map(fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/runAll.php']), true);
 
     if (! $full)
         return require __DIR__ . '/read_strings.php';

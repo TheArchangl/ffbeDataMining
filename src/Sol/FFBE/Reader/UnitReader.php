@@ -222,7 +222,7 @@
                 //
                 'awakening'       => null,
                 'nv_upgrade'      => null,
-                'brave_shift'     => $row['rZhG3M4b'] === '0' ? null : (int) $row['rZhG3M4b'],
+                'brave_shift'     => ($row['rZhG3M4b'] ?? '0') === '0' ? null : (int) $row['rZhG3M4b'],
                 //
                 'strings'         => null,
             ];
