@@ -7,13 +7,12 @@
 
     namespace Sol\FFBE;
 
-    use http\Exception\RuntimeException;
     use Solaris\FFBE\GameHelper;
     use Solaris\Formatter\FormatHelper;
 
     class ChallengeParser {
 
-        public static function parse($condition_str, $game_local = false) {
+        public static function parse($condition_str, $game_local = false): array {
             // parse
             $result   = [];
             $callable = $game_local
@@ -241,8 +240,8 @@
          *
          * @return string
          */
-        protected static function getSkillNames(array $names, $skillIDs = false) {
-            $names = array_map(function ($skill_id) use ($skillIDs) {
+        protected static function getSkillNames(array $names, $skillIDs = false): string {
+            $names = array_map(static function ($skill_id) use ($skillIDs) {
                 $name = Strings::getString('MST_ABILITY_NAME', $skill_id)
                     ?? Strings::getString('MST_MAGIC_NAME', $skill_id);
 
@@ -262,7 +261,7 @@
          *
          * @return string
          */
-        private static function parseConditionGame($type, $vals) {
+        private static function parseConditionGame($type, $vals): ?string {
             switch ($type) {
                 case '3':
                     // battle id?
@@ -431,8 +430,6 @@
                         ?? Strings::getString('MST_LIMITBURST_NAME', $vals[3])
                         ?? $vals[3];
 
-                    $skill = ($skill);
-
                     return "Defeat {$name} with {$skill}";
 
                 // Deal damage
@@ -505,9 +502,6 @@
                 case 102:
                     return "Exploit elemental[?] weakness {$vals[0]} times or more";
 
-                case 102:
-                    return "Exploit elemental[?] weakness {$vals[0]} times or more";
-
                 case 122:
                     $chain = $vals[0] + 1;
                     $turns = FormatHelper::formatTurns($vals[1] ?? 1);
@@ -521,7 +515,6 @@
                     return "Activate an element chain {$chain} times or more in {$turns}";
 
                 // Apply rule!
-                /** @noinspection PhpMissingBreakStatementInspection */
                 case '69':
                     switch ($vals[0]) {
                         case '2001':
