@@ -41,6 +41,7 @@
         protected $mission_info;
         protected $related_skills;
         private   $monster_skill_list;
+        private   $monster_break_info       = [];
 
         /**
          * @param string      $region
@@ -70,7 +71,8 @@
         public function readResponse(array $data): void {
             // mission info
             $this->readMonsterGroups($data);
-            $this->readMonsterParts($data['MonsterPartsMst'], $data['BJ6A0KTt'] ?? []);
+            $this->readMonsterParts($data['MonsterPartsMst']);
+            $this->readMonsterBreakInfo($data["7KCkJd1E"] ?? [], $data['BJ6A0KTt'] ?? []);
 
             // summary
             $this->readMissionInfo($data);
@@ -424,7 +426,7 @@
             foreach ($data as $row) {
                 $skillset_id = (int) $row['monster_passive_skill_set_id'];
 
-                if (! empty($ids) && ! in_array($skillset_id, $ids))
+                if (! empty($ids) && ! in_array($skillset_id, $ids, false))
                     continue;
 
                 $skill_ids = readIntArray($row['monster_passive_skill_set_skill_ids']);
@@ -436,13 +438,8 @@
 
         /**
          * @param array $monster_parts
-         * @param array $break_data
          */
-        protected function readMonsterParts(array $monster_parts, array $break_data): void {
-            $breaks = [];
-            foreach ($break_data as $row)
-                $breaks[$row['e56NZY42']] = $row;
-
+        protected function readMonsterParts(array $monster_parts): void {
             foreach ($monster_parts as $row) {
                 $monster_id = "{$row['monster_unit_id']}.{$row['monster_parts_num']}";
 
@@ -468,16 +465,16 @@
 
 
                 if (! empty($row['monster_skill_set_id']))
-                    $entry['skillset_id'][] = $row['monster_skill_set_id'];
+                    $entry['skillset_id'][] = (int) $row['monster_skill_set_id'];
 
                 if (! empty($row['monster_passive_skill_set_id']))
-                    $entry['passive_skillset_id'][] = $row['monster_passive_skill_set_id'];
+                    $entry['passive_skillset_id'][] = (int) $row['monster_passive_skill_set_id'];
 
                 if (! empty($row['ai_id']))
-                    $entry['ai_id'][] = $row['ai_id'];
+                    $entry['ai_id'][] = (int) $row['ai_id'];
 
                 if (! empty($row['e56NZY42']))
-                    $entry['break'] = $breaks[$row['e56NZY42']];
+                    $entry['break'] = (int) $row['e56NZY42'];
             }
         }
 
@@ -659,10 +656,25 @@
 
 
             if ($part['break']) {
+                $info = $this->monster_break_info[$part['break']];
+                print "###\n";
+                print "# Break\n";
+                print "###\n";
+
+                print "#\n";
+                foreach (['Hit points' => $info['health'], 'Duration' => $info['duration']] as $k => $v)
+                    printf("# % -12s  % 4.0f\n", $k, $v);
+
+                print "#\n";
+                print "# Damage\n";
+                foreach ($info['damage'] as $item => $d)
+                    printf("# % 12s  % 4.0f\n", $item, $d);
+
+                print "#\n";
                 print "###\n";
                 print "# Broken Form\n";
                 print "###\n";
-                $this->printMonsterStats($part['break']);
+                $this->printMonsterStats($info['monster']);
             }
 
             print "###\n\n";
@@ -817,5 +829,39 @@
             foreach ($special as $k => $bool)
                 printf("#        %-13s %5s\n", GameHelper::SPECIAL_RESIST[$k] ?? "Unknown ({$k})", $bool ? '+' : '-');
             print "#\n";
+        }
+
+        /**
+         * @param array $break_info
+         * @param array $break_stats
+         */
+        private function readMonsterBreakInfo(array $break_info, array $break_stats): void {
+            if (empty($break_info))
+                return;
+
+            foreach ($break_info as $entry) {
+                assert(false && $entry["JX6mCav4"] === "1"); // duration?
+                assert($entry["zW97Bico"] === "1"); // duration?
+                assert($entry["8HnQR9Wx"] === "0");
+                assert($entry["EwZ40mt3"] === "0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1");
+
+                ["e56NZY42" => $id, "CX5D2V1j" => $health, 'RHe5r72C' => $defenses, "JX6mCav4" => $duration] = $entry;
+
+                $defenses = GameHelper::readIntArray((string) $defenses);
+                $defenses = GameHelper::array_use_keys(GameHelper::EQUIPMENT_TYPE, $defenses, +1);
+                $damages  = array_map(fn(int $d) => 10_000.0 / $d, $defenses);
+
+                $this->monster_break_info[$id] = [
+                    'health'   => $health,
+                    'duration' => 1 + $duration,
+                    'defenses' => $defenses,
+                    'damage'   => $damages,
+                    'monster'  => null,
+                ];
+            }
+
+            // monster stats after break
+            foreach ($break_stats as $row)
+                $this->monster_break_info[$row['e56NZY42']]['monster'] = $row;
         }
     }
