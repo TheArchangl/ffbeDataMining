@@ -184,8 +184,8 @@
          */
         protected function readEvoEntry($row): array {
             $unit_evo_id = (int) $row['unit_evo_id'];
-            $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
             $rarity      = (int) $row['rarity'];
+            // $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
 
             // per evo
             $evo_entry = [
@@ -251,14 +251,16 @@
         }
 
         /**
-         * @param $row
+         * @param array $row
          */
         private function readUnitSkillRow($row): void {
             $unit_id = (int) $row['unit_id'];
             $unit    = $this->units[$unit_id] ?? [];
+            $neo_lv  = (int) $row['qp9yFMh1'];
 
             $level  = (int) $row['level'];
-            $rarity = max((int) $row['rarity_min'], $unit['rarity_min']); // set rarity to min_rarity instead of 0
+            $rarity = max((int) $row['rarity_min'], $unit['rarity_min']);
+            // set rarity to min_rarity instead of 0
 
             $spells    = array_filter(explode(',', $row['magic_ids']));
             $abilities = array_filter(explode(',', $row['ability_ids']));
@@ -267,13 +269,17 @@
             if ($skills == null)
                 $skills = [];
 
+            $brave = $neo_lv
+                ? ['brave_ability' => $neo_lv]
+                : [];
+
             foreach ($abilities as $skill_id)
                 if (! isset($skills[$skill_id]))
-                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id];
+                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id] + $brave;
 
             foreach ($spells as $skill_id)
                 if (! isset($skills[$skill_id]))
-                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id];
+                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id] + $brave;
         }
 
         /**

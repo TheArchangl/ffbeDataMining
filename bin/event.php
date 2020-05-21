@@ -71,24 +71,20 @@
 
         // ALL %
         switch ($tm_info) {
-            case 100000001:
-                return 5;
-            case 100000002:
-                return 10;
-
             case 100000005:
                 return 1;
 
-            case 100000008:
-                return 50;
-        }
-
-        // Specific %
-        switch (((string) $tm_info)[-1]) {
+            case 100000001:
             case 201000501:
                 return 5;
+
+            case 100000002:
+                return 10;
+
             case 201000502:
                 return 25;
+
+            case 100000008:
             case 201000503:
                 return 50;
         }

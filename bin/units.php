@@ -15,10 +15,6 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
 
-    $region = 'jp';
-    GameFile::setRegion($region);
-    require_once __DIR__ . '/read_strings.php';
-
     // unit data
     $units    = [];
     $unit_map = [];
