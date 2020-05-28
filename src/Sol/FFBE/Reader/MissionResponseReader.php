@@ -9,6 +9,7 @@
 
     use Sol\FFBE\AiAction;
     use Sol\FFBE\AiParser;
+    use Sol\FFBE\AiRow;
     use Sol\FFBE\GameFile;
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Helper\Strings;
@@ -21,27 +22,24 @@
     use Solaris\Formatter\SkillFormatter;
 
     class MissionResponseReader {
-        /** @var string */
-        protected $region;
+        protected string $region;
+        protected bool   $isFake;
 
-        /** @var SkillMstList */
-        protected $skill_mst_list;
+        protected MetaMstList  $skill_mst_list;
+        protected SkillMstList $monster_skill_list;
 
-        /** @var bool */
-        protected $isFake;
-
-        protected $monster_ais              = [];
-        protected $monster_groups           = [];
-        protected $monster_parts            = [];
-        protected $monster_skills           = [];
-        protected $monster_skillsets        = [];
-        protected $monster_passives         = [];
-        protected $monster_passive_skillset = [];
-        protected $monsters                 = [];
-        protected $mission_info;
-        protected $related_skills;
-        private   $monster_skill_list;
-        private   $monster_break_info       = [];
+        /** @var AiRow[] */
+        protected array  $monster_ais              = [];
+        protected array  $monster_groups           = [];
+        protected array  $monster_parts            = [];
+        protected array  $monster_skills           = [];
+        protected array  $monster_skillsets        = [];
+        protected array  $monster_passives         = [];
+        protected array  $monster_passive_skillset = [];
+        protected array  $monster_break_info       = [];
+        protected array  $monsters                 = [];
+        protected string $mission_info;
+        protected array  $related_skills;
 
         /**
          * @param string      $region
@@ -513,13 +511,11 @@
             $ais = [];
             foreach ($data as $row) {
                 $id = (int) $row['ai_id'];
-                if (! in_array($id, $ai_ids) || isset($this->monster_ais[$id]))
+                if (isset($this->monster_ais[$id]) || ! in_array($id, $ai_ids))
                     continue;
 
-                //                $name = $row['WhQL5ev9'];
-                //                $step = AiAction::parseRow($row);
-
-                $ais[$id][] = AiAction::parseRow($row);;
+                $row        = AiRow::parseRow($row);
+                $ais[$id][] = AiAction::parseRow($row);
             }
 
             foreach ($ais as $id => $entry)
@@ -840,8 +836,8 @@
                 return;
 
             foreach ($break_info as $entry) {
-                assert(false && $entry["JX6mCav4"] === "1"); // duration?
-                assert($entry["zW97Bico"] === "1"); // duration?
+                assert($entry["JX6mCav4"] === "1");          // duration?
+                assert($entry["zW97Bico"] === "1");          // duration?
                 assert($entry["8HnQR9Wx"] === "0");
                 assert($entry["EwZ40mt3"] === "0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1");
 

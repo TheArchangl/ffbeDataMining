@@ -86,6 +86,7 @@
             'beast'   => 'esper',
             'mg'      => 'magic',
             'lb'      => 'limitburst',
+            'limit'   => 'limitburst',
             'hit'     => 'attack',
         ];
 
@@ -142,7 +143,7 @@
             switch ($range) {
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 1: // ally  (any)
-                    if (!static::$isFake && count(static::$monsters) === 1)
+                    if (! static::$isFake && count(static::$monsters) === 1)
                         return 'self';
 
                 case 4: // enemy (any)
@@ -249,10 +250,9 @@
 
                 // flags
                 case 'limited_act':
-                    /*
                     if ($value == 1)
                         return 'once()';
-*/
+
                     return "timesExecuted() < {$value}";
 
                 case 'flg_on':
@@ -312,36 +312,31 @@
                     return ($value == 1 ? '' : 'not ') . "{$unit}.hasReflect()";
 
 
-                case 'before_turn_guard':
-                case 'before_turn_lb':
-                case 'before_turn_attack':
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 'before_turn_limit_attack':
+                    $value = 1 - $value;
                 case 'before_turn_hit_attack':
                 case 'before_turn_item_attack':
-
-                case 'before_turn_sm':
                 case 'before_turn_beast_attack':
-
-                case 'before_turn_mg':
                 case 'before_turn_magic_attack':
                 case 'before_turn_magic_heal':
                 case 'before_turn_magic_support':
-
-                case 'before_turn_ab':
                 case 'before_turn_special_attack':
                 case 'before_turn_special_heal':
                 case 'before_turn_special_support':
+
+                case 'before_turn_attack':
+                case 'before_turn_guard':
+                case 'before_turn_lb':
+                case 'before_turn_ab': // ability
+                case 'before_turn_sm': // summon
+                case 'before_turn_mg': // magic
                     // Reactions
                     $negate = ($value == 1 ? '' : 'not ');
 
-                    $type = substr($type, 12);
-                    if (($pos = strrpos($type, '_')) !== false) {
-                        $skill_type  = substr($type, 0, $pos);
-                        $action_type = substr($type, $pos + 1);
-                    }
-                    else {
-                        $action_type = null;
-                        $skill_type  = $type;
-                    }
+                    $type = substr($type, 12); // clip before_turn_
+                    $type = explode('_', $type);
+                    [$skill_type, $action_type] = $type + [null, null];
 
                     $skill_type = self::SKILL_TYPES[$skill_type] ?? $skill_type;
 
@@ -359,11 +354,6 @@
                             return "{$negate}{$unit}.supportedWithLastTurn('{$skill_type}')";
                     }
                     break;
-
-                case 'before_turn_limit_attack':
-                    $negate = ($value == 0 ? '' : 'not ');
-
-                    return "{$negate}unit('any').usedLastTurn('limitburst')";
 
                 case 'magic_aero':
                 case 'magic_dark':
@@ -487,7 +477,7 @@
          */
         protected static function formatFlags(array $flags): string {
             // sort by var num
-            uasort($flags, function ($a, $b) { return $b[0] <=> $a[0]; });
+            uasort($flags, static function ($a, $b) { return $b[0] <=> $a[0]; });
 
             // format
             $code = '';
@@ -523,7 +513,7 @@
                         break;
 
                     case 'volatile':
-                        if (!in_array($value, [0, 1])) {
+                        if (! in_array($value, [0, 1])) {
                             $action = "{$letter}  = {$value}";
                             $note   = '# reset next turn [?]';
                             break;
@@ -534,7 +524,7 @@
                         break;
 
                     case 'flag':
-                        if (!in_array($value, [0, 1]))
+                        if (! in_array($value, [0, 1], false))
                             die("WEEE WOOO 2: $value");
 
                         $note   = '# persistent';
@@ -542,7 +532,7 @@
                         break;
 
                     case 'timer':
-                        if (!in_array($value, [0, 1]))
+                        if (! in_array($value, [0, 1], false))
                             die("WEEE WOOO 3: $value");
 
                         if ($value) {
@@ -573,7 +563,6 @@
             $code  = '';
 
             foreach ($steps as $step) {
-                /** @var string[] $conditions */
                 // conditions
                 if (empty($step->conditions))
                     $code .= $first
@@ -712,7 +701,7 @@
          * @return string
          */
         public static function insertMonsterNames(string $code): string {
-            $code = preg_replace_callback("~Summon ally #(\d+)~", function ($match) {
+            $code = preg_replace_callback("~Summon ally #(\d+)~", static function ($match) {
                 $monster = static::getMonsterByIndex($match[1] - 1);
                 if ($monster === null)
                     return $match[0];
