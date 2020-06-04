@@ -14,7 +14,7 @@
 
     class AiParser {
         /** @var string[] */
-        const VAR_NAMES = [
+        public const VAR_NAMES = [
             // persistant flags
             1  => 'honey',
             'ramen',
@@ -67,7 +67,7 @@
         ];
 
         /** @var string[] */
-        const CONDITION_TARGET = [
+        public const CONDITION_TARGET = [
             1 => '1:ally',  // Intangir2
             2 => '2:ally',  // Robo
             3 => '3:ally',  // Moon
@@ -79,7 +79,7 @@
         ];
 
         /** @var string[] */
-        const SKILL_TYPES = [
+        public const SKILL_TYPES = [
             'ab'      => 'ability',
             'special' => 'ability',
             'sm'      => 'summon',
@@ -90,10 +90,10 @@
             'hit'     => 'attack',
         ];
 
-        public static  $monsters = [];
-        private static $skillset;
-        private static $skills;
-        private static $isFake;
+        public static array  $monsters = [];
+        private static array $skillset;
+        private static array $skills;
+        private static bool  $isFake   = false;
 
         public static function parseSteps(array $steps): void {
 
@@ -108,7 +108,7 @@
          *
          * @return string
          */
-        public static function parseAI(array $actions, array $skillset, array $skills, array $monsters, $isFake = false): string {
+        public static function parseAI(array $actions, array $skillset, array $skills, array $monsters, bool $isFake = false): string {
             static::$skillset = $skillset;
             static::$skills   = $skills;
             static::$monsters = $monsters;
@@ -489,12 +489,12 @@
                 switch ($type) {
                     default:
                     case 'unknown':
-                        if (in_array($value, [0, 1])) {
-                            $note   = '# unknown flag type';
+                        if (in_array($value, [0, 1], false)) {
+                            $note   = "# unknown flag type ({$var_num})";
                             $action = "{$letter} = " . ($value ? 'True' : 'False');
                         }
                         else {
-                            $note   = '# unknown flag type 2';
+                            $note   = "# unknown value type  ({$var_num})";
                             $action = "{$letter} = {$value}";
                         }
                         break;
@@ -513,7 +513,7 @@
                         break;
 
                     case 'volatile':
-                        if (! in_array($value, [0, 1])) {
+                        if (! in_array($value, [0, 1], false)) {
                             $action = "{$letter}  = {$value}";
                             $note   = '# reset next turn [?]';
                             break;
@@ -622,6 +622,9 @@
                 return 'counter';
 
             if ($num < 36)
+                return 'flag';
+
+            if ($num > 60 && $num < 66)
                 return 'volatile';
 
             return 'unknown';

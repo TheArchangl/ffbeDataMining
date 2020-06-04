@@ -256,10 +256,10 @@
         private function readUnitSkillRow($row): void {
             $unit_id = (int) $row['unit_id'];
             $unit    = $this->units[$unit_id] ?? [];
-            $neo_lv  = (int) $row['qp9yFMh1'];
+            $neo_lv  = (int) ($row['qp9yFMh1'] ?? 0);
 
             $level  = (int) $row['level'];
-            $rarity = max((int) $row['rarity_min'], $unit['rarity_min']);
+            $rarity = max((int) $row['rarity_min'], $unit['rarity_min'] ?? 0);
             // set rarity to min_rarity instead of 0
 
             $spells    = array_filter(explode(',', $row['magic_ids']));

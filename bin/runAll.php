@@ -7,11 +7,8 @@
 
     require_once dirname(__DIR__) . '/bootstrap.php';
 
-    // "update" client files
+    // "update" client files & read strings
     require_once 'client_update.php';
-
-    // read strings
-    require_once 'generate_strings.php';
 
     // mogking
     require_once 'event.php';

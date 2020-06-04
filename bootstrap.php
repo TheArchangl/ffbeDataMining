@@ -79,10 +79,14 @@
         $skill_mst->addList($limitburst_mst);
 
         print "Reading Skills\n";
+        print "\tAbilities\n";
         $ability_mst->readFile();
+        print "\tMagic\n";
         $magic_mst->readFile();
+        print "\tLimitbursts\n";
         $limitburst_mst->readFile();
 
+        print "\tPostprocessing\n";
         SkillMstList::processEffects($skill_mst);
 
         print "\tDone\n";

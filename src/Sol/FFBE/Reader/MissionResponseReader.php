@@ -447,10 +447,10 @@
 
                 // create monster part entry
                 if (isset($this->monster_parts[$monster_id]))
-                    $entry =& $this->monster_parts[$monster_id];
+                    $entry = $this->monster_parts[$monster_id];
 
-                else {
-                    $entry                            = [
+                else
+                    $entry = [
                         'monster_id'          => $monster_id,
                         'name'                => $row['name'],
                         'skillset_id'         => [],
@@ -458,8 +458,6 @@
                         'ai_id'               => [],
                         'break'               => null,
                     ];
-                    $this->monster_parts[$monster_id] =& $entry;
-                }
 
 
                 if (! empty($row['monster_skill_set_id']))
@@ -471,8 +469,10 @@
                 if (! empty($row['ai_id']))
                     $entry['ai_id'][] = (int) $row['ai_id'];
 
-                if (! empty($row['e56NZY42']))
+                if (! empty($row['e56NZY42']) && $row['e56NZY42'] !== '0')
                     $entry['break'] = (int) $row['e56NZY42'];
+
+                $this->monster_parts[$monster_id] = $entry;
             }
         }
 
@@ -800,8 +800,8 @@
                 printf("#\n# NEW DAMAGE FORMULA! (%d, %d, %d)\n", 5, 25, 185);
 
             vprintf("#\n#\n# Stats\n#        HP  %15d\n#        MP  %15d\n#        ATK %15d\n#        DEF %15d\n#        MAG %15d\n#        SPR %15d\n#", [
-                $row['bonus_hp'],
-                $row['bonus_mp'],
+                $row['bonus_hp'] ?? 0,
+                $row['bonus_mp'] ?? 0,
                 $row['bonus_atk'],
                 $row['bonus_def'],
                 $row['bonus_mag'],

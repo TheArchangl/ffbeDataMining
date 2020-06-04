@@ -6,12 +6,12 @@
 
     const OVERWRITE = false;
     $client_dir = CLIENT_DIR . "files/{$region}";
+    $changes    = false;
     // $code       = ['en', 'cn', 'ko', 'fr', 'de', 'es', 'id', 'th',];
 
     //
     echo "Updating from {$region} client files\n";
 
-    $updated = [];
     $files = file_get_contents("{$client_dir}/versions.json") or die('File not found');
     $files = json_decode($files, true, 512, JSON_THROW_ON_ERROR);
     foreach ($files as $k => $entry) {
@@ -20,6 +20,7 @@
 
         $name    = $entry['Name'];
         $ver     = $entry['Version'];
+        $lang    = $entry['LanguageCode'] ?? '__';
         $path_in = isset($entry['Language'])
             ? "{$client_dir}/{$entry['LanguageCode']}/{$name}.txt"
             : "{$client_dir}/{$name}.txt";
@@ -29,14 +30,13 @@
             continue;
         }
 
-
+        // Missing GameFile entry
         $file_entry = GameFile::getEntry($name);
         if ($file_entry == null) {
             echo "\tSkipping {$name}\n";
             continue;
         }
 
-        $lang = $entry['LanguageCode'] ?? '__';
         // update most recent file
         $mod_time = filemtime($path_in);
         $max_ver  = max(GameFile::getFileVersions($file_entry, $region, $entry['LanguageCode'] ?? '') ?: [0]);
@@ -48,6 +48,7 @@
             throw new RuntimeException("Could not create directory '{$dir}'");
 
         if (OVERWRITE || $ver > $max_ver || ! file_exists($path_out) || $mod_time > filemtime($path_out)) {
+            $changes = true;
             echo "\t{$file_entry->getName()} {$lang} -> v{$ver}\n";
             copy($path_in, $path_out);
             touch($path_out, $mod_time);
@@ -66,3 +67,10 @@
             touch($path_out, $mod_time);
         }
     }
+
+    // update or read strings
+    if ($changes)
+        require_once __DIR__ . '/generate_strings.php';
+
+    else
+        require_once __DIR__ . '/read_strings.php';

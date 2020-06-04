@@ -21,8 +21,8 @@
     // setup
     $max_num = 50;
 
-    require_once __DIR__ . "/client_update.php";
-    require_once __DIR__ . "/generate_strings.php";
+    // update files & read strings
+    require_once __DIR__ . '/client_update.php';
 
     // read data
     GameFile::setRegion($region);
@@ -63,7 +63,7 @@
         if (strpos($file, 'MONSTER_SKILL_SET_NAME') !== false)
             continue;
 
-        Strings::readFile($file);
+        Strings::readFile($file, 'en');
     }
 
     // output

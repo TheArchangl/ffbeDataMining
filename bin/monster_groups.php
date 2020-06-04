@@ -20,7 +20,7 @@
 
     // JP workaround
     if ($region == 'jp')
-        require_once __DIR__ . '/generate_strings.php';
+        require_once __DIR__ . '/read_strings.php';
 
 
     // get data
