@@ -300,7 +300,7 @@
         }
 
         /**
-         * @param $row
+         * @param string[] $row
          */
         private function readUnitAwakeningRow(array $row): void {
             $unit_evo_id = $row['unit_evo_id'];
