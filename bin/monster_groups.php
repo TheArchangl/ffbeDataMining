@@ -5,22 +5,18 @@
      * Time: 17:15
      */
 
+    use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
 
     require_once '../bootstrap.php';
-    require_once '../../ffbe-discord/tmp/request_helper.php';
-    // require_once "../../ffbe-discord/tmp/init_strings.php";
-
+    require_once __DIR__ . '/read_strings.php';
     ini_set('assert.active', 1);
+
     // setup
     $region     = 'gl';
-    $dungeon_id = '96101';
-    $mission_id = '961010*';
-
-    // JP workaround
-    if ($region == 'jp')
-        require_once __DIR__ . '/read_strings.php';
+    $dungeon_id = '*';
+    $mission_id = '30700101';
 
 
     // get data
@@ -29,24 +25,57 @@
     $reader->readFiles($files);
     $reader->printOutput();
 
+    class GroupContainer {
+        /** @var MonsterGroup[] */
+        public array $groups = [];
+
+        public function readRow(array $row): self {
+            $id = $row['battle_group_id'];
+
+            if (isset($this->groups[$id]))
+                $this->groups[$id]->monsters[$row['order_index'] - 1] = $row['monster_unit_id'];
+
+            else
+                $this->groups[$id] = MonsterGroup::readRow($row);
+
+
+            return $this;
+        }
+    }
+
+    class MonsterGroup {
+        public int    $group_id;
+        public int    $order_index;
+        public array  $monsters = [];
+
+        public static function readRow(array $row): self {
+            $new                                    = new static();
+            $new->order_index                       = $row['order_index'];
+            $new->group_id                          = $row['battle_group_id'];
+            $new->monsters[$row['order_index'] - 1] = $row['monster_unit_id'];
+
+            return $new;
+        }
+    }
+
     class MonsterGroupReader {
         // input
-        protected $monsters      = [];
-        protected $missions      = [];
-        protected $battle_groups = [];
-        protected $mission_runs  = [];
-        private   $waves         = [];
+        protected bool             $is_exploration = false;
+        protected array            $monster_loot   = [];
+        protected array            $missions       = [];
+        protected GroupContainer   $battle_groups;
+        protected array            $mission_runs   = [];
+        protected array            $waves          = [];
+
+        public function __construct() {
+            $this->battle_groups = new GroupContainer();
+        }
 
         public function readFiles(array $files): void {
             foreach ($files as $file) {
                 $data = file_get_contents($file);
-                $data = json_decode($data, true);
-                if (! is_array($data)) {
-                    var_dump(['error', $file]);
-                    continue;
-                }
-
-                $data = replaceRequestKeys($data);
+                $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+                $data = GameFile::replaceKeysRecursive($data);
                 $data = $data['body']['data'] ?? null;
 
                 if ($data == null)
@@ -59,29 +88,11 @@
                 // ScenarioBattleGroupMst
                 // BattleGroupMst
                 // EncountInfo?
-
                 @$this->mission_runs[$mission_id]++;
 
                 // read groups
-                /** @var Monster[][] $groups */
-                $groups = [];
-                foreach ($data['BattleGroupMst'] as $entry) {
-                    $group_id            = $entry['battle_group_id'];
-                    $groups[$group_id][] = $entry['monster_unit_id'];
-                }
-
-
-                foreach ($groups as $group_id => $monster_ids) {
-                    if (isset($this->battle_groups[$group_id])) {
-                        if ($this->battle_groups[$group_id] != $monster_ids) {
-                            var_dump($this->battle_groups[$group_id], $monster_ids);
-                            die();
-                        }
-                    }
-                    else {
-                        $this->battle_groups[$group_id] = $monster_ids;
-                    }
-                }
+                foreach ($data['BattleGroupMst'] as $entry)
+                    $this->battle_groups->readRow($entry);
 
                 // read loot
                 foreach ($data['MonsterPartsMst'] as $entry) {
@@ -101,12 +112,12 @@
                         'drop_gil'     => $entry['gil'],
                     ];
 
-                    if (isset($this->monsters[$id][$part]) && $this->monsters[$id][$part] != $entry) {
-                        var_dump(['old' => $this->monsters[$id][$part], 'new' => $entry]);
+                    if (isset($this->monster_loot[$id][$part]) && $this->monster_loot[$id][$part] != $entry) {
+                        var_dump(['old' => $this->monster_loot[$id][$part], 'new' => $entry]);
                         die();
                     }
 
-                    $this->monsters[$id][$part] = $entry;
+                    $this->monster_loot[$id][$part] = $entry;
                 }
 
                 // wavebattle
@@ -125,11 +136,14 @@
 
                 // exploration
                 foreach ($data['EncountInfo'] ?? [] as $entry) {
-                    $fight_id        = $entry['EncountFieldID'];
+                    #var_dump($entry);
+                    #die();
+
+                    $fight_id        = $entry['EncountFieldID']; #"{$entry['EncountFieldID']}.{$entry['EncountNum']}";
                     $battle_group_id = $entry['battle_group_id'];
 
-                    $i = $entry['order_index'] - 1;
-                    if ($i > 0 || $battle_group_id == '')
+                    #$i = $entry['order_index'] - 1;
+                    if ($battle_group_id == '')
                         continue;
 
                     $this->missions[$mission_id][$fight_id]['exploration'] = true;
@@ -151,7 +165,7 @@
             ksort($this->waves);
         }
 
-        function parseTable($string) {
+        public function parseTable($string): array {
             if (empty($string))
                 return [];
 
@@ -171,7 +185,7 @@
             return $array;
         }
 
-        public function printOutput() {
+        public function printOutput(): void {
             foreach ($this->missions as $mission_id => $waves) {
                 $sum          = $this->mission_runs[$mission_id];
                 $mission_name = Strings::getString('MST_MISSION_NAME', $mission_id) ?? "Mission {$mission_id}";
@@ -202,10 +216,10 @@
 
                         print("\n");
 
-                        foreach ($this->battle_groups[$group_id] as $monster_id) {
+                        foreach ($this->battle_groups->groups[$group_id]->monsters as $monster_id) {
                             // $loot         = $this->monsters[$monster_id] ?? [];
                             // $loot         = printTable($loot, true);
-                            foreach ($this->monsters[$monster_id] as $part => $monster)
+                            foreach ($this->monster_loot[$monster_id] as $part => $monster)
                                 print "            ({$monster_id}.{$part}) {$monster['name']}\n";
                         }
                     }
@@ -226,8 +240,7 @@
 
         }
 
-        protected
-        function printTable($loot) {
+        protected function printTable($loot): string {
             $loot = array_filter($loot);
 
             $string = '';

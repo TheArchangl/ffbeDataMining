@@ -5,22 +5,18 @@
      * Time: 14:24
      */
 
+    use Sol\FFBE\GameFile;
     use Solaris\FFBE\Helper\Strings;
 
-    require "../bootstrap.php";
-    require_once "../../heroku/tmp/request_helper.php";
-    require "../../ffbe/vendor/autoload.php";
+    require_once __DIR__ . "/../bootstrap.php";
+    require_once __DIR__ . "/read_strings.php";
 
     ini_set('memory_limit', '2G');
 
-    // strings
-    $files = glob(ROOT_DIR . "/tmp/client/gl/*.txt");
-    foreach ($files as $file)
-        Strings::readFile($file);
 
     // import all requests
     $region     = 'gl';
-    $mission_id = "11430201";
+    $mission_id = 30700102;
 
     $files = glob(CLIENT_DIR . "missions\\{$region}\\*\\{$mission_id}\\*.json");
     natsort($files);
@@ -28,8 +24,8 @@
     $rewards = [];
     foreach ($files as $file) {
         $data = file_get_contents($file);
-        $data = json_decode($data, true);
-        $data = replaceRequestKeys($data);
+        $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        $data = GameFile::replaceKeysRecursive($data);
 
         $data = $data['body']['data'];
 
@@ -53,7 +49,7 @@
             // foreach ($data['BattleGroupMst'] as $entry) {
             $battle_group_id = $entry['battle_group_id'];
             $monster_unit_id = $entry['monster_unit_id'];
-            $compendium_id   = $entry['compendium_id'];
+            $compendium_id   = $entry['order_index']; // monster_parts_num
 
             // $loot_tables = join('#', [
             //     $entry['loot_table'],
@@ -76,7 +72,7 @@
             // foreach ($data['BattleGroupMst'] as $entry) {
             $battle_group_id = $entry['battle_group_id'];
             $monster_unit_id = $entry['monster_unit_id'];
-            $compendium_id   = $entry['compendium_id'];
+            $compendium_id   = $entry['order_index'];
 
             $loot_tables = join('#', [
                 $entry['loot_table'],
