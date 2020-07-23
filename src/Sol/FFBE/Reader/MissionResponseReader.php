@@ -66,14 +66,14 @@
          *
          * @throws \Exception
          */
-        public function readResponse(array $data): void {
+        public function readResponse(array $data): string {
             // mission info
             $this->readMonsterGroups($data);
             $this->readMonsterParts($data['MonsterPartsMst']);
             $this->readMonsterBreakInfo($data["7KCkJd1E"] ?? [], $data['BJ6A0KTt'] ?? []);
 
             // summary
-            $this->readMissionInfo($data);
+            $name = $this->readMissionInfo($data);
 
             // skillsets
             $skillsets = array_column($this->monster_parts, "skillset_id");
@@ -103,6 +103,7 @@
 
             $this->readAi(GameFile::loadMst('F_AI_MST'), $monster_ais);
 
+            return $name;
         }
 
         /**
@@ -263,8 +264,10 @@
 
         /**
          * @param array $data
+         *
+         * @return string
          */
-        protected function readMissionInfo(array $data): void {
+        protected function readMissionInfo(array $data): string {
             ob_start();
 
             if (! empty($data['MissionPhaseMst'])) {
@@ -330,6 +333,8 @@
 
             if (! empty($this->mission_info))
                 $this->mission_info .= "##\n\n";
+
+            return $name;
         }
 
         /**

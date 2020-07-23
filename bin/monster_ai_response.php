@@ -80,7 +80,7 @@
     foreach ($missions as $mission_id => $entries) {
         $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
         foreach ($entries as $data)
-            $reader->readResponse($data);
+            print($reader->readResponse($data) . PHP_EOL);
 
         $reader->saveOutput($outfile, true, true);
     }

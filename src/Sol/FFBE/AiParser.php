@@ -16,7 +16,7 @@
         /** @var string[] */
         public const VAR_NAMES = [
             // persistant flags
-            1  => 'honey',
+            1   => 'honey',
             'ramen',
             'sushi',
             'bacon',
@@ -28,7 +28,7 @@
             'pasta',
 
             // volatile flags
-            11 => 'apple',
+            11  => 'apple',
             'berry',
             'peach',
             'olive',
@@ -40,21 +40,21 @@
             'gourd',
 
             // timers
-            21 => 'manta',
+            21  => 'manta',
             'whale',
             'squid',
             'shark',
             'guppy',
 
             // counters
-            26 => 'green',
+            26  => 'green',
             'white',
             'black',
             'mauve',
             'azure',
 
             // unk
-            31 => 'otter',
+            31  => 'otter',
             'tiger',
             'mouse',
             'goose',
@@ -64,6 +64,13 @@
             'unk_8',
             'unk_9',
             'unk_0',
+
+            // second counters?
+            121 => 'cnt_1',
+            'cnt_2',
+            'cnt_3',
+            'cnt_4',
+            'cnt_5',
         ];
 
         /** @var string[] */
@@ -219,6 +226,11 @@
                     [$var_num, $value] = explode(',', $value);
 
                     return static::getVarName($var_num + 25) . " >= {$value}";
+
+                case 'flg2_cntup_over':
+                    [$var_num, $value] = explode(',', $value, 2);
+
+                    return static::getVarName($var_num + 120) . " >= {$value}";
 
                 case 'flg_cntup_under':
                     [$var_num, $value] = explode(',', $value);
@@ -626,6 +638,9 @@
 
             if ($num > 60 && $num < 66)
                 return 'volatile';
+
+            if ($num > 120)
+                return 'counter';
 
             return 'unknown';
         }
