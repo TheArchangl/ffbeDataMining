@@ -78,8 +78,7 @@
     uksort($strings, 'strnatcmp');
 
     $output = [];
-    $base   = ['en' => null, 'zh' => null, 'ko' => null, 'fr' => null, 'de' => null, 'es' => null];
-    $base   = array_fill(0, Strings::LANGUAGES, null);
+    $base   = array_fill(0, count(\Solaris\FFBE\Helper\Strings::LANGUAGE_ID), null);
     foreach ($strings as $k => $strs) {
         if ($region !== 'gl')
             $strs = $strs[0];

@@ -8,7 +8,6 @@
      * Time: 19:53
      */
     class Strings extends \Solaris\FFBE\Helper\Strings {
-        public const LANGUAGES = 6;
         public const FILE_MAP  = [
             'BAD_STATE_DESC'                            => ['F_TEXT_TEXT_EN'],
             'BUFF_DESC'                                 => ['F_TEXT_TEXT_EN'],
