@@ -115,13 +115,9 @@
     foreach ($output as $file => $strings) {
         ksort($strings);
         foreach ($strings as $k => $strs)
-            ksort($strings[$k]);
+            if (is_array($strs))
+                ksort($strings[$k]);
 
         $data = json_encode((object) $strings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT, 512);
-        if (! $data) {
-            print_r($strings);
-            throw new Exception(json_last_error() . ': ' . json_last_error_msg());
-        }
-
         file_put_contents("{$dir}/{$file}.json", $data);
     }
