@@ -13,7 +13,7 @@
         $data = file_get_contents($file);
         $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
 
-        if ($name === 'misc')
+        if (in_array($name, ['manual', 'misc']))
             foreach ($data as $k => $row)
                 Strings::setEntry($k, (array) $row);
 

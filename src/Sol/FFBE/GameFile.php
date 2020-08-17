@@ -13,15 +13,15 @@
 
     class GameFile {
         /** @var  GameFile[] */
-        protected static $files;
+        protected static array $files;
 
         /** @var  GameFile[] */
-        protected static $names;
+        protected static array $names;
 
         /** @var string */
-        protected static $region = 'gl';
+        protected static string $region = 'gl';
         /** @var string[] */
-        protected static $keys = [
+        protected static array $keys = [
             // UnitMst
             '5A8SmwyC' => 'effect_frames',
             'a9DvZ70c' => 'attack_frames',
@@ -1060,6 +1060,21 @@
         /**
          * @param string $input File name or identifier
          *
+         * @return bool
+         */
+        public static function hasMst($input): bool {
+            try {
+                self::getFilePath($input);
+                return true;
+            }
+            catch (\RuntimeException $e) {
+                return false;
+            }
+        }
+
+        /**
+         * @param string $input File name or identifier
+         *
          * @return array
          */
         public static function loadMst($input): array {
@@ -1215,7 +1230,7 @@
             // find file
             $input = static::$files[$input] ?? static::$names[$input] ?? null;
             if (! $input instanceof self)
-                throw new \LogicException("Invalid file name or id '{$input}'.");
+                throw new \RuntimeException("Invalid file name or id '{$input}'.");
 
             // override region for localization data
             if (strpos($input->getName(), 'F_TEXT') === 0)
@@ -1226,7 +1241,7 @@
             $file = DATA_INPUT_DIR . "/{$region}/{$lang}/{$input->getName()}.txt";
 
             if (! file_exists($file))
-                throw new \LogicException("File {$file} for {$input->name} missing!");
+                throw new \RuntimeException("File {$file} for {$input->name} missing!");
 
             return $file;
         }
@@ -1266,15 +1281,15 @@
         }
 
         /** @var string */
-        protected $name;
+        protected string $name;
         /** @var string */
-        protected $file;
+        protected string $file;
         /** @var string */
-        protected $key;
+        protected string $key;
         /** @var string */
-        protected $class;
+        protected ?string $class;
         /** @var string[] */
-        protected $notes;
+        protected array $notes;
 
         /**
          * GameFile constructor.

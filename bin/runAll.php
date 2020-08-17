@@ -26,7 +26,6 @@
     // items
     require_once 'items.php';
     require_once 'recipes.php';
-    if ($region == 'jp')
         require_once 'vision_cards.php';
 
     // world -> missions

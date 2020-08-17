@@ -23,31 +23,8 @@
     $reader = new UnitReader($region);
     $reader->save(join('/', [DATA_OUTPUT_DIR, $region, 'units.json',]));
 
-    if ($region === 'jp') {
-        echo "Brave shift\n";
-        $entries = [];
-        foreach (GameFile::loadMst('F_NV_SHIFT_MST') as $row) {
-            ['rZhG3M4b' => $brave_shift_id, 'f7yISEz8' => $info, '4fbM3gWc' => $unk1] = $row;
-            assert($unk1 === '0');
-
-            $info = GameHelper::readIntArray($info, ':');
-            #$frames = parseList($row['effect_frames'], '@&:');
-            #$frames = SkillReader::flattenFrames($frames, 0);
-
-            $entries[$brave_shift_id] = [
-                'ready'    => $info[0] + 1,
-                'duration' => $info[1],
-                'cooldown' => $info[2],
-                'turnback' => (bool) (1 - $info[3]),
-                #'frames'   => $frames,
-            ];
-        }
-    }
-
-    file_put_contents(join('/', [DATA_OUTPUT_DIR, $region, 'unit_brave_shift.json']), toJSON($entries));
-
     //
-    echo "UoL\n";
+    echo "\tUoL\n";
     $entries = [];
     foreach (GameFile::loadMst('F_GACHA_SELECT_UNIT_MST') as $row) {
         assert($row['e4mG8jTc'] == 10) or die ('UoC: cost');
@@ -68,3 +45,28 @@
 
     $file = join('/', [DATA_OUTPUT_DIR, $region, 'unit_selection.json']);
     file_put_contents($file, json_encode($entries, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE, 512));
+
+
+    if (GameFile::hasMst('F_NV_SHIFT_MST')) {
+        echo "\tBrave shift\n";
+
+        $entries = [];
+        foreach (GameFile::loadMst('F_NV_SHIFT_MST') as $row) {
+            ['rZhG3M4b' => $brave_shift_id, 'f7yISEz8' => $info, '4fbM3gWc' => $unk1] = $row;
+            assert($unk1 === '0');
+
+            $info = GameHelper::readIntArray($info, ':');
+            #$frames = parseList($row['effect_frames'], '@&:');
+            #$frames = SkillReader::flattenFrames($frames, 0);
+
+            $entries[$brave_shift_id] = [
+                'ready'    => $info[0] + 1,
+                'duration' => $info[1],
+                'cooldown' => $info[2],
+                'turnback' => (bool) (1 - $info[3]),
+                #'frames'   => $frames,
+            ];
+        }
+
+        file_put_contents(join('/', [DATA_OUTPUT_DIR, $region, 'unit_brave_shift.json']), toJSON($entries));
+    }

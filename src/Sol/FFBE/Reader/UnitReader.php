@@ -35,24 +35,24 @@
             $this->unit_map = [];
             $this->nv_map   = [];
 
-            echo "\t Units\n";
+            echo "\tUnits\n";
             foreach (GameFile::loadMst('F_UNIT_MST') as $k => $row)
                 $this->readUnitRow($row);
 
-            echo "\t Skills\n";
+            echo "\tSkills\n";
             foreach (GameFile::loadMst('F_UNIT_SERIES_LV_ACQUIRE_MST') as $row)
                 $this->readUnitSkillRow($row);
 
             $this->units = array_map([$this, 'sortSkills'], $this->units);
 
-            echo "\t Awakenings\n";
+            echo "\tAwakenings\n";
             foreach (GameFile::loadMst('F_UNIT_CLASS_UP_MST') as $row)
                 $this->readUnitAwakeningRow($row);
 
-            if (GameFile::getRegion() != 'jp')
+            if (! GameFile::hasMst('F_NV_EX_CLASS_UP_MST'))
                 return $this->units;
 
-            echo "\t NV awakening\n";
+            echo "\tNV awakening\n";
             foreach (GameFile::loadMst('F_NV_EX_CLASS_UP_MST') as $row)
                 $this->readUnitNeoAwakeningRow($row);
 

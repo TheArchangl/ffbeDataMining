@@ -14,6 +14,9 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
 
+    if (!GameFile::hasMst('F_VISION_CARD_EXP_PATTERN_MST'))
+        return;
+
     // patterns
     $entries = [];
     foreach (GameFile::loadMst('F_VISION_CARD_EXP_PATTERN_MST') as $row)
