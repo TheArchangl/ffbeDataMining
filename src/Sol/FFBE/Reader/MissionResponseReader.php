@@ -269,6 +269,7 @@
          */
         protected function readMissionInfo(array $data): string {
             ob_start();
+            $name = 'Unknown';
 
             if (! empty($data['MissionPhaseMst'])) {
                 print "##\n";
@@ -594,7 +595,7 @@
                     $this->printMonsterInfo($row);
 
                 else
-                    print "###\n# {$row['name']}\n";
+                    print "###\n# {$row['name']} ({$row['monster_unit_id']})\n";
 
                 $ai = $this->printAI($row);
                 ob_start();

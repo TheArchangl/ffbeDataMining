@@ -69,16 +69,17 @@
         case 'jp':
             // fill jp data
             $msts = [
-                'F_GAME_TITLE_MST'     => 'MST_GAME_TITLE_NAME',
-                'F_MAGIC_MST'          => 'MST_MAGIC_NAME',
-                'F_MISSION_MST'        => 'MST_MISSION_NAME',
-                'F_ITEM_MST'           => 'MST_ITEM_NAME',
-                'F_MATERIA_MST'        => 'MST_MATERIA_NAME',
-                'F_RECIPE_BOOK_MST'    => 'MST_RECIPEBOOK_NAME',
-                'F_IMPORTANT_ITEM_MST' => 'MST_IMPORTANT_ITEM_NAME',
-                'F_UNIT_MST'           => 'MST_UNIT_NAME',
-                'F_EQUIP_ITEM_MST'     => 'MST_EQUIP_ITEM_NAME',
-                'F_VISION_CARD_MST'    => 'MST_VISION_CARD_NAME',
+                'F_GAME_TITLE_MST'         => 'MST_GAME_TITLE_NAME',
+                'F_MAGIC_MST'              => 'MST_MAGIC_NAME',
+                'F_MISSION_MST'            => 'MST_MISSION_NAME',
+                'F_ITEM_MST'               => 'MST_ITEM_NAME',
+                'F_MATERIA_MST'            => 'MST_MATERIA_NAME',
+                'F_RECIPE_BOOK_MST'        => 'MST_RECIPEBOOK_NAME',
+                'F_IMPORTANT_ITEM_MST'     => 'MST_IMPORTANT_ITEM_NAME',
+                'F_UNIT_MST'               => 'MST_UNIT_NAME',
+                'F_EQUIP_ITEM_MST'         => 'MST_EQUIP_ITEM_NAME',
+                'F_VISION_CARD_MST'        => 'MST_VISION_CARD_NAME',
+                'F_MONSTER_DICTIONARY_MST' => 'MST_MONSTER_NAME',
             ];
 
             foreach ($msts as $mst => $table) {

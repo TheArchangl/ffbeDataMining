@@ -13,21 +13,75 @@
     require_once dirname(__DIR__) . "/helpers.php";
 
     GameFile::setRegion('jp');
+    $region = 'jp';
+    require_once __DIR__ . '/read_strings.php';
+
     // input
     $monsters = [
         // temp
         [
-            'monster_id'  => 900010780 ,
-            'skillset_id' => 900010780 ,
-            'ai_id'       => 900010780 ,
+            'monster_id'  => 101023025,
+            'skillset_id' => 101023025,
+            'ai_id'       => 101023025,
         ],
+        [
+            'monster_id'  => 105013024,
+            'skillset_id' => 105013024,
+            'ai_id'       => 105013024,
+        ],
+        [
+            'monster_id'  => 110001031,
+            'skillset_id' => 110001031,
+            'ai_id'       => 110001031,
+        ],
+        [
+            'monster_id'  => 201021025,
+            'skillset_id' => 201021025,
+            'ai_id'       => 201021025,
+        ],
+        // Gargoyle
+        [
+          'monster_id'  => 210031008,
+          'skillset_id' => 210031008,
+          'ai_id'       => 210031008,
+        ],
+        [ // Black Lizard
+            'monster_id'  => 204024005,
+            'skillset_id' => 204024005,
+            'ai_id'       => 204024005,
+        ],
+        [
+            'monster_id'  => 205018002,
+            'skillset_id' => 205018002,
+            'ai_id'       => 205018002,
+        ],
+        [
+            'monster_id'  => 210001038,
+            'skillset_id' => 210001038,
+            'ai_id'       => 210001038,
+        ],
+        [
+            'monster_id'  => 210041018,
+            'skillset_id' => 210041018,
+            'ai_id'       => 210041018,
+        ],
+        [
+            'monster_id'  => 308121001,
+            'skillset_id' => 308121001,
+            'ai_id'       => 308121001,
+        ],
+        [
+            'monster_id'  => 510001400,
+            'skillset_id' => 510001400,
+            'ai_id'       => 510001400,
+        ]
         // 3* Levi?
-//        [
-//            'monster_id'  => 503001102,
-//            'skillset_id' => 503001102,
-//            'ai_id'       => 503001102,
-//            'name'        => 'Leviathan'
-//        ]
+        //        [
+        //            'monster_id'  => 503001102,
+        //            'skillset_id' => 503001102,
+        //            'ai_id'       => 503001102,
+        //            'name'        => 'Leviathan'
+        //        ]
         // // xmas Gingerbread
         // [
         //     'monster_id'  => 900010382,
@@ -320,13 +374,13 @@
         //     'ai_id'       => 505111100,
         //     'name'        => Strings::getString('MST_MONSTER_NAME', 505111100, 0),
         // ],
-//         // 2* Levi JP
-//         [
-//             'monster_id'  => 503001101,
-//             'skillset_id' => 503001101,
-//             'ai_id'       => 503001101,
-////             'name'        => 'Levi 2*',//Strings::getString('MST_MONSTER_NAME', 505111004, 0),
-//         ],
+        //         // 2* Levi JP
+        //         [
+        //             'monster_id'  => 503001101,
+        //             'skillset_id' => 503001101,
+        //             'ai_id'       => 503001101,
+        ////             'name'        => 'Levi 2*',//Strings::getString('MST_MONSTER_NAME', 505111004, 0),
+        //         ],
         // // Orthros
         // [
         //     'monster_id'  => 303021001,
@@ -390,27 +444,20 @@
         #endregion
     ];
 
-    // load strings
-    foreach (glob('C:\Users\aEnigma\Desktop\client\files\gl\F_TEXT_*.txt') as $file)
-        Strings::readFile($file);
-
-    foreach (glob(DATA_INPUT_DIR . "gl/F_TEXT_*.txt") as $file)
-        Strings::readFile($file);
-
     // output
     $data = [
         'MonsterPartsMst' => array_map(
             function ($arr) {
                 return [
-                    'name'                 => $arr['name']
-                        ?? Strings::getString('MST_MONSTER_NAME', $arr['monster_id'])
-                        ?? 'Unknown Monster',
+                    'name'                 => (string) ($arr['name'] ?? Strings::getString('MST_MONSTER_NAME', $arr['monster_id'])
+                                                                        ?? Strings::getString('MST_MONSTER_NAME', substr($arr['monster_id'], 0, -2) . "00")
+                                                                           ?? 'Unknown Monster'),
                     'monster_unit_id'      => $arr['monster_id'],
                     'monster_parts_num'    => 0,
                     'monster_skill_set_id' => $arr['skillset_id'],
                     'ai_id'                => $arr['ai_id'],
                 ];
-            }, $monsters)
+            }, $monsters),
     ];
 
     $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
