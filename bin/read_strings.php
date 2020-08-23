@@ -5,7 +5,15 @@
 
     require_once __DIR__ . '/../bootstrap.php';
 
+
     echo "Reading strings\n";
+
+    // skip if already read or generated
+    $files = get_included_files();
+    if (in_array(__DIR__ . '/generate_strings.php', $files)) {
+        print "\tskipped\n";
+        return;
+    }
 
     $files = glob(ROOT_DIR . "/strings/{$region}/*.json");
     foreach ($files as $file) {

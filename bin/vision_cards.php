@@ -8,13 +8,15 @@
     // $region = 'jp';
 
     use Sol\FFBE\GameFile;
+    use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
     use Solaris\FFBE\Mst\EquipItemMstList;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
+    require_once __DIR__ . '/read_strings.php';
 
-    if (!GameFile::hasMst('F_VISION_CARD_EXP_PATTERN_MST'))
+    if (! GameFile::hasMst('F_VISION_CARD_EXP_PATTERN_MST'))
         return;
 
     // patterns
@@ -38,7 +40,7 @@
         $id    = $row['5giCMUd2'];
         $entry = [
             // id => $id,
-            'name'             => $row['name'],
+            'name'             => Strings::getString('MST_VISION_CARD_NAME', $id) ?? $row['name'],
             'compendium_id'    => (int) $row['not_dex_no'],
             // 'compendium_id2' => (int)$row['order_index'],
             'compendium_shown' => (bool) $row['DispDict'],
@@ -124,10 +126,10 @@
                 throw new LogicException($k);
 
         $entries[$id]['details'] = [
-            'desc'     => $row['explain_short'],
-            'info'     => $row['J5QKLzW7'],
-            'shop'     => $row['explain_shop'],
-            'music'    => $row['1ux5sP4L'],
+            'desc'     => Strings::getString('MST_VISION_CARD_EXPLAIN_SHORT', $id) ?? $row['explain_short'],
+            'info'     => Strings::getString('MST_VISION_CARD_DICTIONARY', $id) ?? $row['J5QKLzW7'],
+            'shop'     => Strings::getString('MST_VISION_CARD_SHOP', $id) ?? $row['explain_shop'],
+            'music'    => Strings::getString('MST_VISION_CARD_BGM_NAME', $id) ?? $row['1ux5sP4L'],
             'music_id' => $row['Y4PER0gB'],
         ];
     }

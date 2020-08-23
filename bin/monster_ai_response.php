@@ -8,7 +8,7 @@
     namespace Sol\FFBE;
 
     assert_options(ASSERT_ACTIVE, true);
-    assert_options(ASSERT_EXCEPTION, true);
+    assert_options(ASSERT_EXCEPTION, false);
 
     use Sol\FFBE\Reader\MissionResponseReader;
     use Solaris\FFBE\Helper\Strings;

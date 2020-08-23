@@ -207,7 +207,7 @@
                 ? 'self'
                 : "unit('{$target}')";
 
-
+            $offset = null;
             switch ($type) {
                 // hp
                 case 'hp_pr_under':
@@ -217,25 +217,29 @@
                     return "{$unit}.HP > " . ($value / 100);
 
                 // counters
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 'flg2_cntup_act':
+                    $offset = 120;
                 case 'flg_cntup_act':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 25) . " == {$value}";
+                    return static::getVarName($var_num + $offset ?? 25) . " == {$value}";
 
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 'flg2_cntup_over':
+                    $offset = 120;
                 case 'flg_cntup_over':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 25) . " >= {$value}";
+                    return static::getVarName($var_num + $offset ?? 25) . " >= {$value}";
 
-                case 'flg2_cntup_over':
-                    [$var_num, $value] = explode(',', $value, 2);
-
-                    return static::getVarName($var_num + 120) . " >= {$value}";
-
+                /** @noinspection PhpMissingBreakStatementInspection */
+                case 'flg2_cntup_under':
+                    $offset = 120;
                 case 'flg_cntup_under':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 25) . " < {$value}";
+                    return static::getVarName($var_num + $offset ?? 25) . " < {$value}";
 
                 // timers
                 case 'flg_timer_act':

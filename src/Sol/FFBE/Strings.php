@@ -8,7 +8,7 @@
      * Time: 19:53
      */
     class Strings extends \Solaris\FFBE\Helper\Strings {
-        public const FILE_MAP  = [
+        public const FILE_MAP = [
             'BAD_STATE_DESC'                            => ['F_TEXT_TEXT_EN'],
             'BUFF_DESC'                                 => ['F_TEXT_TEXT_EN'],
             'CASH_BUNDLE_PACK_DESC'                     => ['F_TEXT_TEXT_EN'],
@@ -128,6 +128,7 @@
             'MST_UNIT_EXPLAIN_SUMMON'                   => ['F_TEXT_UNIT_SUMMON'],
             'MST_UNIT_NAME'                             => ['F_TEXT_UNITS_NAME'],
             'SERVER_MSG'                                => ['F_TEXT_TEXT_EN'],
+            'MST_VISION_CARD_BGM_NAME'                  => ['F_TEXT_VISION_CARD_BGM'],
         ];
 
         protected static $loaded = [];

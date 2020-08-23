@@ -1023,7 +1023,7 @@
         }
 
         public static function save(): void {
-            $file = ROOT_DIR . '/files2.tsv';
+            $file = ROOT_DIR . '/files.tsv';
 
             uasort(static::$files, static function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
 
@@ -1223,12 +1223,12 @@
          *
          * @return string
          */
-        public static function getFilePath($input, $lang = ''): string {
+        public static function getFilePath(string $input, $lang = ''): string {
             if (self::$files == null)
                 self::init();
 
             // find file
-            $input = static::$files[$input] ?? static::$names[$input] ?? null;
+            $input = static::$files[$input] ?? static::$names[$input] ?? $input;
             if (! $input instanceof self)
                 throw new \RuntimeException("Invalid file name or id '{$input}'.");
 

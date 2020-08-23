@@ -664,8 +664,12 @@
                 print "###\n";
 
                 print "#\n";
-                foreach (['Hit points' => $info['health'], 'Duration' => $info['duration']] as $k => $v)
-                    printf("# % -12s  % 4.0f\n", $k, $v);
+                if ($info['bonus'] === 0)
+                    printf("# % -12s  % 4.0f\n", 'Hit points', $info['health']);
+                else
+                    printf("# % -12s  % 4.0f (+%d after first BREAK)\n", 'Hit points', $info['health'], $info['bonus']);
+
+                printf("# % -12s  % 4.0f\n", 'Duration', $info['duration']);
 
                 print "#\n";
                 print "# Damage\n";
@@ -841,13 +845,13 @@
             if (empty($break_info))
                 return;
 
+            var_dump($break_info);
             foreach ($break_info as $entry) {
-                assert($entry["JX6mCav4"] === "1");          // duration?
-                assert($entry["zW97Bico"] === "1");          // duration?
-                assert($entry["8HnQR9Wx"] === "0");
-                assert($entry["EwZ40mt3"] === "0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1");
+                #assert($entry["JX6mCav4"] === "1");          // duration?
+                #assert($entry["zW97Bico"] === "1");          // duration?
+                #assert($entry["EwZ40mt3"] === "0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1");
 
-                ["e56NZY42" => $id, "CX5D2V1j" => $health, 'RHe5r72C' => $defenses, "JX6mCav4" => $duration] = $entry;
+                ["e56NZY42" => $id, "CX5D2V1j" => $health, "8HnQR9Wx" => $bonus_health, 'RHe5r72C' => $defenses, "JX6mCav4" => $duration] = $entry;
 
                 $defenses = GameHelper::readIntArray((string) $defenses);
                 $defenses = GameHelper::array_use_keys(GameHelper::EQUIPMENT_TYPE, $defenses, +1);
@@ -855,6 +859,7 @@
 
                 $this->monster_break_info[$id] = [
                     'health'   => $health,
+                    'bonus'    => $bonus_health,
                     'duration' => 1 + $duration,
                     'defenses' => $defenses,
                     'damage'   => $damages,
