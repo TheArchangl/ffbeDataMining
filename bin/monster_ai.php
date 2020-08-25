@@ -20,61 +20,20 @@
     $monsters = [
         // temp
         [
-            'monster_id'  => 101023025,
-            'skillset_id' => 101023025,
-            'ai_id'       => 101023025,
+            'monster_id'  => 406151004,
+            'skillset_id' => 406151004,
+            'ai_id'       => 406151000,
         ],
         [
-            'monster_id'  => 105013024,
-            'skillset_id' => 105013024,
-            'ai_id'       => 105013024,
+            'monster_id'  => 106002052,
+            'skillset_id' => 106002052,
+            'ai_id'       => 106002052,
         ],
         [
-            'monster_id'  => 110001031,
-            'skillset_id' => 110001031,
-            'ai_id'       => 110001031,
+            'monster_id'  => 406151003,
+            'skillset_id' => 406151003,
+            'ai_id'       => 406151000,
         ],
-        [
-            'monster_id'  => 201021025,
-            'skillset_id' => 201021025,
-            'ai_id'       => 201021025,
-        ],
-        // Gargoyle
-        [
-          'monster_id'  => 210031008,
-          'skillset_id' => 210031008,
-          'ai_id'       => 210031008,
-        ],
-        [ // Black Lizard
-            'monster_id'  => 204024005,
-            'skillset_id' => 204024005,
-            'ai_id'       => 204024005,
-        ],
-        [
-            'monster_id'  => 205018002,
-            'skillset_id' => 205018002,
-            'ai_id'       => 205018002,
-        ],
-        [
-            'monster_id'  => 210001038,
-            'skillset_id' => 210001038,
-            'ai_id'       => 210001038,
-        ],
-        [
-            'monster_id'  => 210041018,
-            'skillset_id' => 210041018,
-            'ai_id'       => 210041018,
-        ],
-        [
-            'monster_id'  => 308121001,
-            'skillset_id' => 308121001,
-            'ai_id'       => 308121001,
-        ],
-        [
-            'monster_id'  => 510001400,
-            'skillset_id' => 510001400,
-            'ai_id'       => 510001400,
-        ]
         // 3* Levi?
         //        [
         //            'monster_id'  => 503001102,

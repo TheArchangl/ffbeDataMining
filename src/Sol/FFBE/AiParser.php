@@ -65,7 +65,7 @@
             'unk_9',
             'unk_0',
 
-            // second counters?
+            // second counters
             121 => 'cnt_1',
             'cnt_2',
             'cnt_3',
@@ -203,11 +203,11 @@
          */
         public static function parseCondition($target, $type, $value): ?string {
             // $target = static::formatTargetPriority($target);
-            $unit = ($target == 'self')
+            $offset = null;
+            $unit   = ($target == 'self')
                 ? 'self'
                 : "unit('{$target}')";
 
-            $offset = null;
             switch ($type) {
                 // hp
                 case 'hp_pr_under':
@@ -223,7 +223,7 @@
                 case 'flg_cntup_act':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + $offset ?? 25) . " == {$value}";
+                    return static::getVarName($var_num + ($offset ?? 25)) . " == {$value}";
 
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 'flg2_cntup_over':
@@ -231,7 +231,7 @@
                 case 'flg_cntup_over':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + $offset ?? 25) . " >= {$value}";
+                    return static::getVarName($var_num + ($offset ?? 25)) . " >= {$value}";
 
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 'flg2_cntup_under':
@@ -239,7 +239,7 @@
                 case 'flg_cntup_under':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + $offset ?? 25) . " < {$value}";
+                    return static::getVarName($var_num + ($offset ?? 25)) . " < {$value}";
 
                 // timers
                 case 'flg_timer_act':
