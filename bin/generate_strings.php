@@ -120,7 +120,7 @@
         if ($region !== 'gl')
             $strs = $strs[0];
 
-        if (preg_match('~^(.*?)_(\d+(?:_\d+)*)$~', $k, $match)) {
+        if (preg_match('~^(.*?)_(\d+(?:[,_]\d+)*)$~', $k, $match)) {
             $output[$match[1]][$match[2]] = $strs;
         }
         else {
@@ -134,7 +134,7 @@
     }
 
     foreach ($output as $file => $strings) {
-        if (count($strings) > 20)
+        if (count($strings) > 10)
             continue;
 
         foreach ($strings as $k => $string)
