@@ -46,7 +46,7 @@
             ? Strings::getString('MST_MISSION_NAME', $mission_id, 0) ?? $row['name']
             : $row['name'];
 
-        $flags = readIntArray($row['flags'], ':');
+        $flags = GameHelper::readIntArray($row['flags'], ':');
         $flags = array_map('boolval', $flags);
         $flags = array_slice($flags, 1, 2); // todo all flags?
         $flags = GameHelper::array_use_keys(MISSION_FLAGS, $flags);

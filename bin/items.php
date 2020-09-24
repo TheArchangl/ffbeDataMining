@@ -5,14 +5,14 @@
      * Time: 16:13
      */
 
-use Sol\FFBE\GameFile;
-use Sol\FFBE\MstList\IconMstList;
-use Sol\FFBE\Strings;
-use Solaris\FFBE\GameHelper;
-use Solaris\FFBE\Mst\MateriaMstList;
-use Solaris\Formatter\SkillFormatter;
+    use Sol\FFBE\GameFile;
+    use Sol\FFBE\MstList\IconMstList;
+    use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
+    use Solaris\FFBE\Mst\MateriaMstList;
+    use Solaris\Formatter\SkillFormatter;
 
-require_once dirname(__DIR__) . "/bootstrap.php";
+    require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
     IconMstList::init();
@@ -132,24 +132,21 @@ require_once dirname(__DIR__) . "/bootstrap.php";
                 printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance']), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]));
 
                 $entry['dmg_variance'] = explode(',', $row['atk_variance']);
-                $entry['dmg_variance'] = array_map(
-                    function ($val) { return $val / 100; },
-                    $entry['dmg_variance']
-                );
+                $entry['dmg_variance'] = array_map(static fn($val) => is_numeric($val) ? $val / 100 : $val, $entry['dmg_variance']);
             }
         }
 
         // requirements
         $reqs = $row['equip_requirements'];
-        if (!empty($reqs)) {
+        if (! empty($reqs)) {
             static $req_types = [1 => 'SEX', 3 => 'UNIT_ID'];
 
             $reqs = GameHelper::readParameters($reqs, '@');
 
-            if (!isset($req_types[$reqs[0]]))
+            if (! isset($req_types[$reqs[0]]))
                 throw new \LogicException("no type");
 
-            $reqs[0] = $req_types[$reqs[0]];
+            $reqs[0]               = $req_types[$reqs[0]];
             $entry['requirements'] = $reqs;
         }
 
@@ -215,7 +212,7 @@ require_once dirname(__DIR__) . "/bootstrap.php";
         if ($firstSkill != null) {
             /** @var \Solaris\FFBE\Mst\SkillMst $skill */
             $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($firstSkill);
-            if (!empty($skill->requirements['unit']))
+            if (! empty($skill->requirements['unit']))
                 $entry['unit_restriction'] = GameHelper::readIntArray($skill->requirements['unit']);
         }
 

@@ -17,7 +17,7 @@
         //        'F_TEXT_TEXT_EN.txt',
     ];
 
-    $full = in_array(strtolower(realpath($argv[0])), array_map(fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/runAll.php']), true);
+    $full = in_array(strtolower(realpath($argv[0])), array_map(static fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/runAll.php']), true);
     if (! $full)
         return require __DIR__ . '/read_strings.php';
 
@@ -25,30 +25,6 @@
 
     switch ($region) {
         case 'gl':
-            /*
-            // fill jp data
-            $msts = [
-                'F_GAME_TITLE_MST'     => 'MST_GAME_TITLE_NAME',
-                'F_MAGIC_MST'          => 'MST_MAGIC_NAME',
-                'F_MISSION_MST'        => 'MST_MISSION_NAME',
-                'F_ITEM_MST'           => 'MST_ITEM_NAME',
-                'F_MATERIA_MST'        => 'MST_MATERIA_NAME',
-                'F_RECIPE_BOOK_MST'    => 'MST_RECIPEBOOK_NAME',
-                'F_IMPORTANT_ITEM_MST' => 'MST_IMPORTANT_ITEM_NAME',
-                'F_UNIT_MST'           => 'MST_UNIT_NAME',
-                'F_EQUIP_ITEM_MST'     => 'MST_EQUIP_ITEM_NAME',
-            ];
-
-            foreach ($msts as $mst => $table) {
-                foreach (GameFile::loadMst($mst) as $row) {
-                    $id   = current($row);
-                    $name = $row['name'];
-
-                    Strings::setString($table, $id, $name);
-                }
-            }
-            */
-
             // overwrite
             $files = glob(CLIENT_DIR . 'files/gl/*/F_TEXT_*.txt');
             $files = array_filter($files, static function ($file) { return ! in_array(basename($file, '.txt'), BLACKLIST, true); });
@@ -61,8 +37,12 @@
             $data = file_get_contents($file);
             $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
 
-            foreach ($data as $k => $row)
-                Strings::setEntry($k, (array) $row);
+            foreach ($data as $k => $row) {
+                $row = (array) $row;
+                ksort($row);
+
+                Strings::setEntry($k, $row);
+            }
             break;
 
 
@@ -103,14 +83,6 @@
 
     // write to file
     echo "Writing strings\n";
-
-    if (! $full) {
-        // ghetto __main__
-        echo "\tSkip!\n";
-
-        return;
-    }
-
     $strings = Strings::getEntries();
     uksort($strings, 'strnatcmp');
 
@@ -146,8 +118,8 @@
     //            ksort($output);
 
     $dir = ROOT_DIR . "/strings/{$region}";
-    if (! is_dir($dir))
-        mkdir($dir, 0777, true);
+    if (! is_dir($dir) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
 
     foreach ($output as $file => $strings) {
         ksort($strings);
