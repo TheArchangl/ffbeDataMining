@@ -11,25 +11,22 @@
     assert_options(ASSERT_EXCEPTION, false);
 
     use Sol\FFBE\Reader\MissionResponseReader;
-    use Solaris\FFBE\Helper\Strings;
+    use Solaris\FFBE\Mst\SkillMstList;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once __DIR__ . "/../helpers.php";
-    $region     = 'jp';
-    $mission_id = "9091109";
+    $region     = 'gl';
+    $mission_id = "8993103";
 
     // setup
     $max_num = 50;
 
-    // update files & read strings
-    require_once __DIR__ . '/client_update.php';
-
     // read data
-    GameFile::setRegion($region);
-
-    $files = glob(CLIENT_DIR . "missions\\{$region}\\*\\{$mission_id}\\*");
+    $files = glob(CLIENT_DIR . "missions/{$region}/*/{$mission_id}/*");
     if (empty($files))
         die ("No file found");
+
+    GameFile::setRegion($region);
 
     // newest first
     natsort($files);
@@ -39,6 +36,8 @@
     shuffle($files);
     if (count($files) > $max_num)
         $files = array_slice($files, 0, $max_num);
+
+    echo "Reading files\n";
 
     $missions = [];
     foreach ($files as $file) {
@@ -55,16 +54,10 @@
         $missions[$id][] = $data;
     }
 
-    // update ai etc
-    require_once __DIR__ . "/client_update.php";
+    echo "\tDone.\n\n";
 
-    // load strings
-    foreach (glob(CLIENT_DIR . '\files\gl\F_TEXT_*.txt') as $file) {
-        if (strpos($file, 'MONSTER_SKILL_SET_NAME') !== false)
-            continue;
-
-        Strings::readFile($file, 'en');
-    }
+    // update files & read strings
+    require_once __DIR__ . '/read_strings.php';
 
     // output
     $reader  = null;
@@ -76,14 +69,18 @@
         unset($fh);
     }
 
+    echo "\nParsing files\n";
+
     uksort($missions, 'strnatcmp');
     foreach ($missions as $mission_id => $entries) {
-        $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
+        $reader = new MissionResponseReader($region, $container[SkillMstList::class]);
         foreach ($entries as $data)
             print($reader->readResponse($data) . PHP_EOL);
 
         $reader->saveOutput($outfile, true, true);
     }
 
-    if ($reader instanceof MissionResponseReader)
-        $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');
+    #if ($reader instanceof MissionResponseReader)
+    #    $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');
+
+    echo "\tDone.\n";

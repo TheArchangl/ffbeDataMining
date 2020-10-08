@@ -12,27 +12,28 @@
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
 
-    GameFile::setRegion('jp');
     $region = 'jp';
+    GameFile::setRegion($region);
+
     require_once __DIR__ . '/read_strings.php';
 
     // input
     $monsters = [
         // temp
         [
-            'monster_id'  => 406151004,
-            'skillset_id' => 406151004,
-            'ai_id'       => 406151000,
+            'monster_id'  => 2020200,
+            'skillset_id' => 202020002,
+            'ai_id'       => 0,
         ],
         [
-            'monster_id'  => 106002052,
-            'skillset_id' => 106002052,
-            'ai_id'       => 106002052,
+            'monster_id'  => 3090900,
+            'skillset_id' => 309090000,
+            'ai_id'       => 0,
         ],
         [
-            'monster_id'  => 406151003,
-            'skillset_id' => 406151003,
-            'ai_id'       => 406151000,
+            'monster_id'  => 407260000,
+            'skillset_id' => 407260002,
+            'ai_id'       => 407260002,
         ],
         // 3* Levi?
         //        [

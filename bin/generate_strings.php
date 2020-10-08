@@ -39,7 +39,6 @@
 
             foreach ($data as $k => $row) {
                 $row = (array) $row;
-                ksort($row);
 
                 Strings::setEntry($k, $row);
             }

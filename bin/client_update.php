@@ -25,7 +25,7 @@
             ? "{$client_dir}/{$entry['LanguageCode']}/{$name}.txt"
             : "{$client_dir}/{$name}.txt";
 
-        if (! file_exists($path_in)) {
+        if (! file_exists($path_in) && ! in_array($name, ['F_RSC_VERSION', ''], true)) {
             echo "\tCould not find file for {$name} v{$ver}\n";
             continue;
         }
