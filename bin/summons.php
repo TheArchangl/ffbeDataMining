@@ -1,10 +1,12 @@
-<?php
+<?php /** @noinspection AutoloadingIssuesInspection */
+
     /**
      * User: aEnigma
      * Date: 25.02.2017
      * Time: 15:14
      */
 
+    use Pimple\Container;
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Reader\MstReader;
     use Sol\FFBE\Reader\SkillReader;
@@ -26,32 +28,32 @@
         private $skills;
 
         /** @var array */
-        private $boards = [];
+        private array $boards = [];
 
         /** @var array */
-        private $stat_patterns = [];
+        private array $stat_patterns = [];
         /** @var array */
-        private $exp_patterns = [];
+        private array $exp_patterns = [];
 
         /**
          * @param MstList $skills
          */
         public function __construct(MstList $skills) { $this->skills = $skills; }
 
-        public function saveBoards(string $path) {
+        public function saveBoards(string $path): void {
             file_put_contents($path, $this->formatOutput($this->boards));
         }
 
-        public function saveExpPatterns(string $path) {
+        public function saveExpPatterns(string $path): void {
             file_put_contents($path, $this->formatOutput($this->exp_patterns));
         }
 
-        public function saveStatPatterns(string $path) {
+        public function saveStatPatterns(string $path): void {
             file_put_contents($path, $this->formatOutput($this->stat_patterns));
         }
 
 
-        protected function parseData() {
+        protected function parseData():array {
             $this->entries = [];
             $this->parseBeasts();
             $this->parseBeastStats();
@@ -63,7 +65,7 @@
             return $this->entries;
         }
 
-        private function parseBeasts() {
+        private function parseBeasts(): void {
             foreach (GameFile::loadMst('F_BEAST_MST') as $row) {
                 $beast_id = (int) $row['beast_id'];
 
@@ -82,7 +84,7 @@
             }
         }
 
-        private function parseBeastStats() {
+        private function parseBeastStats(): void {
             foreach (GameFile::loadMst('F_BEAST_STATUS_MST') as $row) {
                 $beast_id = (int) $row['beast_id'];
                 $entry    = [
@@ -103,7 +105,7 @@
             }
         }
 
-        private function parseBeastSkills() {
+        private function parseBeastSkills(): void {
             foreach (GameFile::loadMst('F_BEAST_SKILL_MST') as $row) {
                 $skill_id = (int) $row['beast_skill_id'];
                 $beast_id = (int) substr($skill_id, 1, 2);
@@ -155,7 +157,7 @@
             }
         }
 
-        private function parseBeastColors() {
+        private function parseBeastColors(): void {
             foreach (GameFile::loadMst('F_ITEM_EXT_BEAST_MST') as $row) {
                 if (!isset($row['item_id']))
                     continue;
@@ -168,12 +170,12 @@
                 $color = explode(" ", $name, 2)[0];
                 $bonus = readParameters($bonus, ":,");
 
-                foreach ($bonus as list($beast_id, $factor))
+                foreach ($bonus as [$beast_id, $factor])
                     $this->entries[$beast_id]['color'][$color] = $factor / 100;
             }
         }
 
-        private function parseBeastGrowth() {
+        private function parseBeastGrowth(): void {
             foreach (GameFile::loadMst('F_BEAST_CP_MST') as $row) {
                 $beast_evo_id = (int) $row['5hqFc4ey'];
                 [$beast_id, $rarity] = [substr($beast_evo_id, 0, -1), substr($beast_evo_id, -1)];
@@ -201,7 +203,7 @@
             }
         }
 
-        private function parseBeastBoards() {
+        private function parseBeastBoards(): void {
             // build parent map
             $parent_map = [];
             foreach (GameFile::loadMst('F_BEAST_BOARD_PIECE_MST') as $row) {
@@ -243,6 +245,8 @@
         }
     }
 
+    /** @var Container $container */
+    /** @var string $region */
 
     $reader = new BeastReader($container[SkillMstList::class]);
     $reader->save(DATA_OUTPUT_DIR . "/{$region}/summons.json");

@@ -22,12 +22,12 @@
         protected $skill_mst;
 
         /**
-         * @param string  $region
-         * @param MstList $skill_mst
+         * @param string       $region
+         * @param MstList|null $skill_mst
          */
-        public function __construct($region, MstList $skill_mst = null) {
+        public function __construct(string $region, MstList $skill_mst = null) {
             GameFile::setRegion($region);
-            $this->skill_mst = $skill_mst ?? Environment::getInstance($region);
+            $this->skill_mst = $skill_mst ?? Environment::getSkills([$region]);
         }
 
         /**
@@ -36,9 +36,9 @@
          *
          * @return mixed
          */
-        public static function parseFrames($data, $entry) {
+        public static function parseFrames(array $data, array $entry) {
             // attack frames
-            if (!empty($data['attack_frames'])) {
+            if (! empty($data['attack_frames'])) {
                 $frames = parseList($data['attack_frames'], '@-:');
 
                 $entry['attack_frames'] = static::flattenFrames($frames, 0);
@@ -99,10 +99,10 @@
         }
 
         /**
-         * @return void
+         * @return array
          */
-        public function parseData() {
-            throw new \LogicException();
+        public function parseData(): array {
+            throw new \LogicException("Dummy class");
         }
 
         /**
@@ -130,7 +130,7 @@
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
                 $id  = current($row);
                 $mst = $this->skill_mst->getEntry($id);
-                if ($mst == null || !$mst->isActive())
+                if ($mst == null || ! $mst->isActive())
                     continue;
 
                 $entry = $this->parseAbilityRow($row);

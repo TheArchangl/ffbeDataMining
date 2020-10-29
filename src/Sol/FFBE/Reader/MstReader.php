@@ -12,23 +12,23 @@
     ini_set('pcre.jit', false) or die('could not set pcre.recursion_limit');
 
     abstract class MstReader {
-        protected $entries;
+        protected array $entries;
 
-        public function save($file) {
+        public function save($file): void {
             $data = $this->parseData();
             $data = $this->formatOutput($data);
 
             file_put_contents($file, $data);
         }
 
-        abstract protected function parseData();
+        abstract protected function parseData():array;
 
         /**
          * @param array $entries
          *
          * @return string
          */
-        protected function formatOutput(array $entries) {
+        protected function formatOutput(array $entries):string {
             $data = toJSON($entries, false);
 
             // un-indent arrays

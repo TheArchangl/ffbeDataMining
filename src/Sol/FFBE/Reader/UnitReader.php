@@ -23,14 +23,14 @@
         /**
          * @param string $region
          */
-        public function __construct($region) {
+        public function __construct(string $region) {
             GameFile::setRegion($region);
         }
 
         /**
          * @return array
          */
-        public function parseData() {
+        public function parseData(): array {
             $this->units    = [];
             $this->unit_map = [];
             $this->nv_map   = [];
@@ -60,40 +60,13 @@
         }
 
         /**
-         * @param array $entries
-         *
-         * @return string
-         */
-        protected function formatOutput(array $entries) {
-            $data = toJSON($entries, false);
-            $data = preg_replace_callback(
-                '~"skills": \[([^]]+)]~',
-                static function ($match) {
-                    $padding     = str_pad("\n", strpos($match[1], '{'), ' ', STR_PAD_RIGHT);
-                    $padding_end = "\n" . substr($padding, 5);
-
-                    $data = preg_replace('~\s+~', ' ', $match[1]);
-                    $data = explode('},', $data);
-                    $data = array_map(static function ($str) { return trim($str, ' {}'); }, $data);
-                    $data = array_map(static function ($str) { return "{{$str}}"; }, $data);
-                    $data = implode(",{$padding}", $data);
-
-                    return "\"skills\": [{$padding}{$data}{$padding_end}]";
-                },
-                $data
-            );
-
-            return $data;
-        }
-
-        /**
          * @param array $row
          */
         public function readUnitRow(array $row): void {
             $unit_id     = (int) $row['unit_id'];
             $unit_evo_id = (int) $row['unit_evo_id'];
             $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
-            $is_neo      = $nv_id > 0;
+            // $is_neo      = $nv_id > 0;
 
             // get unit
             $unit = $this->units[$unit_id] ?? $this->readUnitEntry($row);
@@ -112,10 +85,6 @@
 
             if ($nv_id > 0)
                 $this->nv_map[$nv_id][] = $unit_id;
-        }
-
-        public function getUnit(int $id) {
-            return $this->units[$id] ?? null;
         }
 
         /**
@@ -178,13 +147,40 @@
         }
 
         /**
+         * @param string $jp_val
+         * @param string $table
+         * @param string $id
+         *
+         * @return array|string
+         */
+        private function getLocalization(string $jp_val, string $table, string $id) {
+            if (GameFile::getRegion() == 'gl')
+                return Strings::getStrings($table, $id) ?? [];
+
+            return [$jp_val];
+        }
+
+        /**
+         * @param string $row
+         *
+         * @return string[]
+         */
+        private function formatRoles(string $row): array {
+            $row = GameHelper::readIntArray($row);
+            foreach ($row as $k => $key)
+                $row[$k] = GameHelper::UNIT_ROLE[$key] ?? "UNKNOWN ROLE {$key}";
+
+            return $row;
+        }
+
+        /**
          * @param $row
          *
          * @return array
          */
         protected function readEvoEntry($row): array {
-            $unit_evo_id = (int) $row['unit_evo_id'];
-            $rarity      = (int) $row['rarity'];
+            // $unit_evo_id = (int) $row['unit_evo_id'];
+            $rarity = (int) $row['rarity'];
             // $nv_id       = (int) ($row['JPW8Vs40'] ?? 0);
 
             // per evo
@@ -223,24 +219,9 @@
                 'awakening'       => null,
                 'nv_upgrade'      => null,
                 'brave_shift'     => ($row['rZhG3M4b'] ?? '0') === '0' ? null : (int) $row['rZhG3M4b'],
-                //
-                'strings'         => null,
             ];
 
             // $is_enhancer = $unit['job'] == "Enhancer"/* || $row['lb_cost'] == 0*/;
-
-            if (GameFile::getRegion() == 'jp')
-                unset($evo_entry['strings']);
-            else {
-                unset($evo_entry['brave_shift'], $evo_entry['nv_upgrade']);
-                $evo_entry['strings'] = [
-                    'description' => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_DESCRIPTION', $unit_evo_id),
-                    'summon'      => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_SUMMON', $unit_evo_id),
-                    'evolution'   => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_EVOLUTION', $unit_evo_id),
-                    'affinity'    => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_AFFINITY', $unit_evo_id),
-                    'fusion'      => $this->getLocalization($row['name'], 'MST_UNIT_EXPLAIN_FUSION', $unit_evo_id),
-                ];
-            }
 
             $evo_entry                  = SkillReader::parseFrames($row, $evo_entry);
             $evo_entry['attack_count']  = count($evo_entry['attack_frames'][0]);
@@ -253,10 +234,11 @@
         /**
          * @param array $row
          */
-        private function readUnitSkillRow($row): void {
-            $unit_id = (int) $row['unit_id'];
-            $unit    = $this->units[$unit_id] ?? [];
-            $neo_lv  = (int) ($row['qp9yFMh1'] ?? 0);
+        private function readUnitSkillRow(array $row): void {
+            $unit_id  = (int) $row['unit_id'];
+            $unit     = $this->units[$unit_id] ?? [];
+            $is_brave = (bool) ($row['qp9yFMh1'] ?? 0);
+            $neo_lv   = (int) ($row["f8vk4JrD"] ?? 0);
 
             $level  = (int) $row['level'];
             $rarity = max((int) $row['rarity_min'], $unit['rarity_min'] ?? 0);
@@ -269,34 +251,18 @@
             if ($skills == null)
                 $skills = [];
 
-            $brave = $neo_lv
-                ? ['brave_ability' => $neo_lv]
+            $entry = ['rarity' => $is_brave ? 'NV' : $rarity, 'level' => $level];
+            $brave = $is_brave
+                ? ['ex_level' => $neo_lv]
                 : [];
 
             foreach ($abilities as $skill_id)
                 if (! isset($skills[$skill_id]))
-                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'ABILITY', 'id' => (int) $skill_id] + $brave;
+                    $skills[$skill_id] = array_merge($entry, ['type' => 'ABILITY', 'id' => (int) $skill_id], $brave);
 
             foreach ($spells as $skill_id)
                 if (! isset($skills[$skill_id]))
-                    $skills[$skill_id] = ['rarity' => $rarity, 'level' => $level, 'type' => 'MAGIC', 'id' => (int) $skill_id] + $brave;
-        }
-
-        /**
-         * @param $unit
-         *
-         * @return mixed
-         */
-        private function sortSkills($unit) {
-            if (empty($unit['skills']))
-                return $unit;
-
-            usort($unit['skills'], static function ($a, $b) {
-                return $a['rarity'] <=> $b['rarity']    // sort by rarity
-                    ?: $a['level'] <=> $b['level'];     // sort by level
-            });
-
-            return $unit;
+                    $skills[$skill_id] = array_merge($entry, ['type' => 'MAGIC', 'id' => (int) $skill_id], $brave);
         }
 
         /**
@@ -343,30 +309,71 @@
             ];
         }
 
-        /**
-         * @param string $jp_val
-         * @param string $table
-         * @param string $id
-         *
-         * @return array|string
-         */
-        private function getLocalization($jp_val, $table, $id) {
-            if (GameFile::getRegion() == 'gl')
-                return Strings::getStrings($table, $id) ?? [];
-
-            return [$jp_val];
+        public function getUnit(int $id) {
+            return $this->units[$id] ?? null;
         }
 
         /**
-         * @param string $row
+         * @param array $entries
          *
-         * @return string[]
+         * @return string
          */
-        private function formatRoles(string $row): array {
-            $row = GameHelper::readIntArray($row);
-            foreach ($row as $k => $key)
-                $row[$k] = GameHelper::UNIT_ROLE[$key] ?? "UNKNOWN ROLE {$key}";
+        protected function formatOutput(array $entries): string {
+            $data = toJSON($entries, false);
+            $data = preg_replace_callback(
+                '~"(skills|s?TM|reward)": \[([^[\]]*(?:\[(?2)])?[^[\]]*)]~u',
+                static function ($match) {
+                    $count = count(json_decode("[{$match[2]}]", true, 512, JSON_THROW_ON_ERROR));
 
-            return $row;
+                    if ($count > 1) {
+                        $padding     = str_pad("\n", strpos($match[2], '{'), ' ', STR_PAD_RIGHT);
+                        $padding_end = "\n" . substr($padding, 5);
+                    }
+                    else {
+                        $padding     = "";
+                        $padding_end = "";
+                    }
+
+                    $data = preg_replace('~\s+~', ' ', $match[2]);
+                    $data = preg_split('~(?<=}),~', $data);
+                    $data = array_map(static fn($str) => trim(preg_replace('~^\s*[{]\s*(.*?)\s*[}]~u', '{$1}', $str)), $data);
+                    $data = implode(",{$padding}", $data);
+
+                    return "\"{$match[1]}\": [{$padding}{$data}{$padding_end}]";
+                },
+                $data
+            );
+
+            return $data;
+        }
+
+        /**
+         * @param array $unit
+         *
+         * @return array
+         */
+        private function sortSkills(array $unit): array {
+            if (empty($unit['skills']))
+                return $unit;
+
+
+            usort($unit['skills'], static function ($a, $b) {
+                if ($a['rarity'] === 'NV') {
+                    if ($b['rarity'] === 'NV')
+                        return $a['level'] <=> $b['level'];
+
+                    else
+                        return 1;
+                }
+
+                elseif ($b['rarity'] === 'NV')
+                    return 0;
+
+                else
+                    return $a['rarity'] <=> $b['rarity']    // sort by rarity
+                        ?: $a['level'] <=> $b['level'];     // sort by level
+            });
+
+            return $unit;
         }
     }

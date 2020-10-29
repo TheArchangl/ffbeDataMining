@@ -21,21 +21,21 @@
         /** @var MstList */
         protected $skill_mst;
         /** @var array */
-        protected $lb_map;
+        protected array $lb_map;
 
         /**
-         * @param string  $region
-         * @param MstList $skill_mst
+         * @param string       $region
+         * @param MstList|null $skill_mst
          */
-        public function __construct($region, MstList $skill_mst = null) {
+        public function __construct(string $region, MstList $skill_mst = null) {
             GameFile::setRegion($region);
-            $this->skill_mst = $skill_mst ?? Environment::getInstance($region);
+            $this->skill_mst = $skill_mst ?? Environment::getSkills([$region]);
         }
 
         /**
          * @return array
          */
-        public function parseData() {
+        public function parseData():array {
             $this->entries = [];
             $this->lb_map  = [];
 
@@ -57,7 +57,7 @@
         /**
          * @param array $row
          */
-        public function readLimitburstRow(array $row) {
+        public function readLimitburstRow(array $row): void {
             $lb_id = (int) $row['lb_id'];
             $names = GameFile::getRegion() == 'jp'
                 ? []
@@ -94,7 +94,7 @@
         /**
          * @param array $row
          */
-        protected function readLimitburstLevelRow(array $row) {
+        protected function readLimitburstLevelRow(array $row): void {
             $lb_id  = (int) $row['lb_id'];
             $lb_row = $this->lb_map[$lb_id] ?? null;
             if ($lb_row == null)
