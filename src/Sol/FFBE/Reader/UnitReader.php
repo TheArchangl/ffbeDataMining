@@ -321,23 +321,25 @@
         protected function formatOutput(array $entries): string {
             $data = toJSON($entries, false);
             $data = preg_replace_callback(
-                '~"(skills|s?TM|reward)": \[([^[\]]*(?:\[(?2)])?[^[\]]*)]~u',
+                '~"(skills|s?TM|reward)":\s*\[((?:[^][]*(\[(?2)*])?[^][]*)+)]~u',
                 static function ($match) {
-                    $count = count(json_decode("[{$match[2]}]", true, 512, JSON_THROW_ON_ERROR));
+                    $data  = json_decode("[{$match[2]}]", true, 512, JSON_THROW_ON_ERROR);
+                    // $count = count($data);
 
-                    if ($count > 1) {
-                        $padding     = str_pad("\n", strpos($match[2], '{'), ' ', STR_PAD_RIGHT);
+                    // if ($count > 1) {
+                        $padding     = min(strpos($match[2], '{') ?: 999, strpos($match[2], '[') ?: 999);
+                        $padding     = str_pad("\n", $padding, ' ', STR_PAD_RIGHT);
                         $padding_end = "\n" . substr($padding, 5);
-                    }
-                    else {
-                        $padding     = "";
-                        $padding_end = "";
-                    }
+                    // }
+                    // else {
+                    //     $padding     = "";
+                    //     $padding_end = "";
+                    // }
 
-                    $data = preg_replace('~\s+~', ' ', $match[2]);
-                    $data = preg_split('~(?<=}),~', $data);
-                    $data = array_map(static fn($str) => trim(preg_replace('~^\s*[{]\s*(.*?)\s*[}]~u', '{$1}', $str)), $data);
-                    $data = implode(",{$padding}", $data);
+                    $data = array_map(static fn($arr) => json_encode($arr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $data);
+                    $data = array_map(static fn($str) => preg_replace('~(["}\]0-9],|":)~', '$1 ', $str), $data);
+                    // $data = array_map(static fn($str) => preg_replace('~\s+~', ' ', $str), $data);
+                    $data = join(",{$padding}", $data);
 
                     return "\"{$match[1]}\": [{$padding}{$data}{$padding_end}]";
                 },
