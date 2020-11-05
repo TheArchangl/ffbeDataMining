@@ -14,6 +14,7 @@
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
+    require_once dirname(__DIR__) . '/bin/read_strings.php';
 
     // unit data
     $units    = [];

@@ -9,7 +9,13 @@
     use Sol\FFBE\MstList\IconMstList;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
+    use Solaris\FFBE\Mst\EquipItemMstList;
+    use Solaris\FFBE\Mst\LimitBurstMst;
+    use Solaris\FFBE\Mst\MagicSkillMst;
     use Solaris\FFBE\Mst\MateriaMstList;
+    use Solaris\FFBE\Mst\SkillMst;
+    use Solaris\FFBE\Mst\SkillMstList;
+    use Solaris\FFBE\MstKey;
     use Solaris\Formatter\SkillFormatter;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
@@ -34,8 +40,8 @@
         foreach ($skill_ids as $skill_id) {
             $skills[] = $skill_id;
 
-            /** @var \Solaris\FFBE\Mst\SkillMst $skill */
-            $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($skill_id);
+            /** @var SkillMst $skill */
+            $skill = $container[SkillMstList::class]->getEntry($skill_id);
             if ($skill == null) {
                 $effects[] = "Unknown skill ({$skill_id})";
                 continue;
@@ -43,7 +49,7 @@
 
             $type = $skill->isActive() == false
                 ? 'passive'
-                : ($skill instanceof \Solaris\FFBE\Mst\MagicSkillMst
+                : ($skill instanceof MagicSkillMst
                     ? 'magic'
                     : 'ability');
 
@@ -117,7 +123,7 @@
             ],
         ];
 
-        $special = \Solaris\FFBE\Mst\EquipItemMstList::parseSpecialResists($row['special_resist']);;
+        $special = EquipItemMstList::parseSpecialResists($row['special_resist']);
         if ($special)
             $entry['stats']['status_resist'] = array_merge($entry['stats']['status_resist'] ?? [], $special);
 
@@ -208,8 +214,8 @@
         // restriction
         $firstSkill = $entry['skills'][count($entry['skills']) - 1] ?? null;
         if ($firstSkill != null) {
-            /** @var \Solaris\FFBE\Mst\SkillMst $skill */
-            $skill = $container[\Solaris\FFBE\Mst\SkillMstList::class]->getEntry($firstSkill);
+            /** @var SkillMst $skill */
+            $skill = $container[SkillMstList::class]->getEntry($firstSkill);
             if (! empty($skill->requirements['unit']))
                 $entry['unit_restriction'] = GameHelper::readIntArray($skill->requirements['unit']);
         }
@@ -333,19 +339,19 @@
 
         if (strlen($row['effect_type']) > 0) {
             $_row = [
-                \Solaris\FFBE\MstKey::TARGET_RANGE => $row['target_range'],
-                \Solaris\FFBE\MstKey::TARGET       => $row['target'],
-                \Solaris\FFBE\MstKey::EFFECT_TYPE  => $row['effect_type'],
-                \Solaris\FFBE\MstKey::EFFECT_PARAM => $row['effect_param'],
+                MstKey::TARGET_RANGE => $row['target_range'],
+                MstKey::TARGET       => $row['target'],
+                MstKey::EFFECT_TYPE  => $row['effect_type'],
+                MstKey::EFFECT_PARAM => $row['effect_param'],
             ];
 
-            $skill              = new \Solaris\FFBE\Mst\LimitBurstMst();
+            $skill              = new LimitBurstMst();
             $skill->id          = $id;
             $skill->attack_type = 0;
             $skill->elements    = [];
-            $skill->effects     = \Solaris\FFBE\Mst\SkillMstList::parseEffects($_row, true);
+            $skill->effects     = SkillMstList::parseEffects($_row, true);
 
-            $entry['effects']     = SkillFormatter::formatEffects($skill, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
+            $entry['effects']     = SkillFormatter::formatEffects($skill, $container[SkillMstList::class]);
             $entry['effects_raw'] = SkillFormatter::formatEffectsRaw($skill);
         }
         // tL6G9egd item id? icon id?

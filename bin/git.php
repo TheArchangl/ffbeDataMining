@@ -5,6 +5,9 @@
      * Time: 17:11
      */
 
+    use Sol\FFBE\AES;
+    use Sol\FFBE\GameFile;
+
     require_once dirname(__DIR__) . "/bootstrap.php";
     chdir(__DIR__ . "/dat_dec/gl") or die("chdir");
 
@@ -285,15 +288,15 @@
         if ($version > 0)
             continue;
 
-        $entry    = \Sol\FFBE\GameFile::getEntry($file);
-        $versions = \Sol\FFBE\GameFile::getFileVersions($entry);
+        $entry    = GameFile::getEntry($file);
+        $versions = GameFile::getFileVersions($entry);
         rsort($versions);
 
         $current = file_get_contents(__DIR__ . "/dat_dec/gl/{$file}.txt");
 
         foreach ($versions as $v) {
             $decoded = file_get_contents(__DIR__ . "/dat_enc/gl/{$file}_v{$v}.txt");
-            $decoded = \Sol\FFBE\AES::decode($decoded, $entry->getKey());
+            $decoded = AES::decode($decoded, $entry->getKey());
 
             if ($decoded == $current) {
                 $version = $v;

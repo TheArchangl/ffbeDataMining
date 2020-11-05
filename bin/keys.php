@@ -567,7 +567,7 @@ EOF
                         continue 2;
 
                     $path = ROOT_DIR . "/../ffbe-discord/src/Solaris/FFBE/Request/{$class}.php";
-                    $url = preg_replace('~/actionSymbol/(.*?).php~', '$1', $url);
+                    $url  = preg_replace('~/actionSymbol/(.*?).php~', '$1', $url);
 
                     file_put_contents($path, <<<EOF
 <?php

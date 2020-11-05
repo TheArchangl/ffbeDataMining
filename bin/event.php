@@ -7,6 +7,7 @@
 
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
+    use Solaris\FFBE\GameHelper;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
@@ -17,7 +18,7 @@
         $mog_id      = (int) $row['medal_exchange_id'];
         $currency_id = (int) $row['ak2dhKm3'];
         $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;
-        [$reward_type, $reward_id, $name, $num, $rest] = \Solaris\FFBE\GameHelper::parseMstItem($row['target_info']);
+        [$reward_type, $reward_id, $name, $num, $rest] = GameHelper::parseMstItem($row['target_info']);
 
         if ($reward_type == 'UNIT' && isset($rest[3])) {
             $tminfo  = $rest[3] ?? '100000000';
