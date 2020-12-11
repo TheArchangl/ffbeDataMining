@@ -13,10 +13,10 @@
     use Sol\FFBE\Reader\MissionResponseReader;
     use Solaris\FFBE\Mst\SkillMstList;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once __DIR__ . "/../helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once __DIR__ . '/../helpers.php';
     $region     = 'gl';
-    $mission_id = "9280???";
+    $mission_id = '9290?0*';
 
     // setup
     $max_num = 50;
@@ -24,7 +24,7 @@
     // read data
     $files = glob(CLIENT_DIR . "missions/{$region}/*/{$mission_id}/*");
     if (empty($files))
-        die ("No file found");
+        die ('No file found');
 
     GameFile::setRegion($region);
 
@@ -61,7 +61,7 @@
 
     // output
     $reader  = null;
-    $outfile = DATA_OUTPUT_DIR . "/monster_ai_response_result.txt";
+    $outfile = DATA_OUTPUT_DIR . '/monster_ai_response_result.txt';
 
     if (is_file($outfile)) {
         $fh = new \SplFileObject($outfile, 'w');
