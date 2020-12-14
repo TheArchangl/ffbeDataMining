@@ -16,6 +16,7 @@
         }
     },
     "require":           {
+        "php":                        "^8.0",
         "ext-json":                   "*",
         "ext-openssl":                "*",
         "mdurrant/php-binary-reader": "^1.0",
