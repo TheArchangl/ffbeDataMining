@@ -20,8 +20,8 @@
     use Solaris\FFBE\MstKey;
     use Solaris\Formatter\SkillFormatter;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
     class BeastReader extends MstReader {
         /** @var SkillMstList|MetaMstList */
@@ -69,7 +69,7 @@
             foreach (GameFile::loadMst('F_BEAST_MST') as $row) {
                 $beast_id = (int) $row['beast_id'];
 
-                $names = GameFile::getRegion() == 'gl'
+                $names = GameFile::getRegion() === 'gl'
                     ? Strings::getStrings('MST_BEAST_NAME', $beast_id)
                     : [$row['name']];
 
@@ -101,7 +101,7 @@
                 assert($row['magical_resist'] == 0);
                 assert($row['physical_resist'] == 0);
                 assert($row['special_resist'] == '');
-                assert($row['5hqFc4ey'] == "{$beast_id}{$row['rarity']}");
+                assert($row['5hqFc4ey'] === "{$beast_id}{$row['rarity']}");
             }
         }
 
@@ -110,11 +110,11 @@
                 $skill_id = (int) $row['beast_skill_id'];
                 $beast_id = (int) substr($skill_id, 1, 2);
 
-                $name = GameFile::getRegion() == 'gl'
+                $name = GameFile::getRegion() === 'gl'
                     ? Strings::getStrings('MST_BEASTSKILL_NAME', $skill_id)
                     : $row['name'];
 
-                $desc = GameFile::getRegion() == 'gl'
+                $desc = GameFile::getRegion() === 'gl'
                     ? Strings::getStrings('MST_BEASTSKILL_DESCRIPTION', $skill_id)
                     : $row['desc'];
 
@@ -129,10 +129,7 @@
                     'attack_frames' => [],
                     'effect_frames' => [],
 
-                    'strings' => [
-                        'name' => $name,
-                        'desc' => $desc,
-                    ],
+                    'strings' => compact('name', 'desc'),
                 ];
 
                 $_row = [
@@ -159,16 +156,16 @@
 
         private function parseBeastColors(): void {
             foreach (GameFile::loadMst('F_ITEM_EXT_BEAST_MST') as $row) {
-                if (!isset($row['item_id']))
+                if (! isset($row['item_id']))
                     continue;
 
                 $bonus = $row['beast_exp_bonus'];
-                if ($bonus == '')
+                if ($bonus === '')
                     continue;
 
-                $name  = Strings::getString('MST_ITEM_NAME', $row['item_id'], 0);
-                $color = explode(" ", $name, 2)[0];
-                $bonus = readParameters($bonus, ":,");
+                $name  = Strings::getString('MST_ITEM_NAME', $row['item_id']);
+                $color = explode(' ', $name, 2)[0];
+                $bonus = readParameters($bonus, ':,');
 
                 foreach ($bonus as [$beast_id, $factor])
                     $this->entries[$beast_id]['color'][$color] = $factor / 100;
