@@ -456,7 +456,7 @@
                     return 'Clear without an ally being KO\'d';
 
                 case '34':
-                    $num = $vals[0] + 1;
+                    $num = ($vals[0] ?? 0) + 1;
 
                     return "Party of {$num} or more (Companion included)";
 

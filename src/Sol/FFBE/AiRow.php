@@ -72,7 +72,7 @@
             $conditions = [];
 
             // RNG
-            if ($this->weight != 100)
+            if ($this->weight !== 100)
                 $conditions[] = sprintf('random() <= %.2f', $this->weight / 100);
 
             // states

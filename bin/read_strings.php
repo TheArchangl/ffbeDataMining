@@ -17,6 +17,7 @@
 
     $files = glob(ROOT_DIR . "/strings/{$region}/*.json");
     foreach ($files as $file) {
+        try {
         $name = basename($file, '.json');
         $data = file_get_contents($file);
         $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
@@ -30,6 +31,9 @@
             foreach ($data as $k => $row) {
                 Strings::setEntry("{$name}_{$k}", (array) $row);
             }
+        } catch (Throwable $t) {
+            print "Error reading {$file}\n";
+        }
     }
 
     echo "\tDone.\n";
