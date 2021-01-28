@@ -136,12 +136,12 @@
         }
 
         /**
-         * @param int $range
-         * @param int $num
+         * @param int        $range
+         * @param int|string $num
          *
          * @return string|null
          */
-        public static function formatTarget(int $range, int $num): ?string {
+        public static function formatTarget(int $range, int|string $num): ?string {
             $str = static::CONDITION_TARGET[$range] ?? "unknown:{$range}";
 
             switch ($range) {
@@ -393,15 +393,14 @@
                 case 'party_alive_num':
                     $negate = ((int) $value === 1 ? '' : 'not ');
                     $value  = (array) explode(',', $value);
-                    $name   = ['monsters', 'player', 'unknown'][$value[0]];
+                    $name   = ['unknown', 'monsters', 'monsters', 'unknown'][(int) $value[0]];
 
-                    return "{$negate} party('{$name}').unitsAlive({$value[1]})";
+                    return "{$negate} party('{$value[0]}:{$name}').unitsAlive() == {$value[1]}";
 
                 case 'normal_state':
                     $negate = ((int) $value === 1 ? '' : 'not ');
 
                     return "{$negate}{$unit}.is('{$type}:{$value}')";
-
 
                 case 'outside_field':
                     $negate = ((int) $value === 0 ? 'not ' : '');

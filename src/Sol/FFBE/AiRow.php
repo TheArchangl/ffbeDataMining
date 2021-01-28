@@ -16,12 +16,12 @@
             $flags = explode('@', $flags);
             $flags = array_filter($flags, static fn($val): bool => $val !== 'non:0');
 
-            $o           = new static();
-            $o->priority = $row['priority'];
-            $o->weight   = $row['weight'];
-            $o->target   = $row['AI_SEARCH_COND'];
-            $o->states   = $states;
-            $o->flags    = $flags;
+            $o             = new static();
+            $o->priority   = $row['priority'];
+            $o->weight     = $row['weight'];
+            $o->target     = $row['AI_SEARCH_COND'];
+            $o->states     = $states;
+            $o->flags      = $flags;
             $o->action_str = $row['action'];
 
             /* unused
@@ -36,12 +36,12 @@
             return $o;
         }
 
-        public int      $priority;
-        public float    $weight;
-        public string   $target;
-        public array    $states;
-        public array    $flags;
-        public string   $action_str;
+        public int    $priority;
+        public float  $weight;
+        public string $target;
+        public array  $states;
+        public array  $flags;
+        public string $action_str;
 
         /*
          * unused
@@ -78,7 +78,7 @@
             // states
             foreach ($this->states as $val) {
                 [$target_range, $num, $type, $value] = explode(':', $val);
-                $target = AiParser::formatTarget($target_range, $num);
+                $target = AiParser::formatTarget($target_range, (int) $num);
 
                 $conditions[] = AiParser::parseCondition($target, $type, $value);
             }
