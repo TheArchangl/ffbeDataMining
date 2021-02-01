@@ -15,8 +15,8 @@
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once __DIR__ . '/../helpers.php';
-    $region     = 'jp';
-    $mission_id = '8997303';
+    $region     = 'gl';
+    $mission_id = '935*';
 
     // setup
     $max_num = 50;
@@ -78,6 +78,7 @@
             print($reader->readResponse($data) . PHP_EOL);
 
         $reader->saveOutput($outfile, true, true);
+        $reader->saveOutput(ROOT_DIR . "/ai/{$reader->getMissionID()}.{$region}.py");
     }
 
     #if ($reader instanceof MissionResponseReader)
