@@ -45,7 +45,7 @@
         $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         $data = GameFile::replaceKeysRecursive($data);
         $data = $data['body']['data'] ?? null;
-        if ($data == null)
+        if ($data === null)
             continue;
 
         $row = $data['MissionStartRequest'][0];
