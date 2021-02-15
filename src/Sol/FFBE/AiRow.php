@@ -18,7 +18,7 @@
 
             $o             = new static();
             $o->priority   = $row['priority'];
-            $o->weight     = $row['weight'];
+            $o->weight     = (float) $row['weight'];
             $o->target     = $row['AI_SEARCH_COND'];
             $o->states     = $states;
             $o->flags      = $flags;
@@ -72,7 +72,7 @@
             $conditions = [];
 
             // RNG
-            if ($this->weight !== 100)
+            if ($this->weight < 100)
                 $conditions[] = sprintf('random() <= %.2f', $this->weight / 100);
 
             // states

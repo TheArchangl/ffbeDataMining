@@ -11,12 +11,14 @@
     assert_options(ASSERT_EXCEPTION, false);
 
     use Sol\FFBE\Reader\MissionResponseReader;
+    use Solaris\Discord\Helper\StringHelper;
+    use Solaris\FFBE\Helper\Strings;
     use Solaris\FFBE\Mst\SkillMstList;
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once __DIR__ . '/../helpers.php';
     $region     = 'gl';
-    $mission_id = '935*';
+    $mission_id = '899780*';
 
     // setup
     $max_num = 50;
@@ -70,6 +72,7 @@
     }
 
     echo "\nParsing files\n";
+    $dump_dir = ROOT_DIR . '/ai';
 
     uksort($missions, 'strnatcmp');
     foreach ($missions as $mission_id => $entries) {
@@ -78,10 +81,23 @@
             print($reader->readResponse($data) . PHP_EOL);
 
         $reader->saveOutput($outfile, true, true);
-        $reader->saveOutput(ROOT_DIR . "/ai/{$reader->getMissionID()}.{$region}.py");
+        $reader->saveOutput("{$dump_dir}/{$reader->getMissionID()}.{$region}.py");
     }
 
     #if ($reader instanceof MissionResponseReader)
     #    $reader->saveMonsterSkills(DATA_OUTPUT_DIR . '/monster_skills.json');
 
     echo "\tDone.\n";
+
+    // gist upload
+    $files    = array_map(static fn($id) => "{$id}.{$region}.py", array_keys($missions));
+    $files    = join(' ', $files);
+    $names    = array_map(static fn($id) => Strings::getString('MST_MISSION_NAME', $id)
+                                            ?? $missions[$id]['MissionPhaseMst'][0]['name']
+                                               ?? $missions[$id]['MissionStartRequest'][0]['name']
+                                                  ?? 'UNKNOWN'
+        , array_keys($missions));
+    $title    = StringHelper::getLongestCommonPrefix($names);
+    $filename = rtrim(StringHelper::getLongestCommonPrefix(array_keys($missions)), '0');
+
+    print "\n\t(cd {$dump_dir} && gist -s -d '{$title}' -f '{$filename}.gl.py' {$files})\n";
