@@ -34,7 +34,7 @@
 
     // region
     $region = $region ?? 'gl';
-    if (strtolower($argv[1] ?? $region) == 'jp')
+    if (strtolower($argv[1] ?? $region) === 'jp')
         $region = 'jp';
 
     GameFile::setRegion($region);

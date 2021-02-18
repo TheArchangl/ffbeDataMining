@@ -20,7 +20,7 @@
         $currency    = Strings::getString('MST_ITEM_NAME', $currency_id) ?? $currency_id;
         [$reward_type, $reward_id, $name, $num, $rest] = GameHelper::parseMstItem($row['target_info']);
 
-        if ($reward_type == 'UNIT' && isset($rest[3])) {
+        if ($reward_type === 'UNIT' && isset($rest[3])) {
             $tminfo  = $rest[3] ?? '100000000';
             $stminfo = $rest[5] ?? 0;
             $uname   = getUnitName($tminfo, $stminfo);
@@ -47,11 +47,11 @@
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/currency_exchange.json", $data);
 
 
-    function getUnitName($tm_info, $stm_info) {
-        if ($stm_info != 0)
+    function getUnitName(string $tm_info, string $stm_info): string {
+        if ((int) $stm_info > 0)
             $tm_info = substr($stm_info, 1);
 
-        elseif ($tm_info < 100000100)
+        elseif ((int) $tm_info < 100000100)
             return 'ALL';
 
         $str = Strings::getString('MST_UNIT_NAME', $tm_info);
@@ -66,42 +66,32 @@
         return $tm_info;
     }
 
-    function getTmProgress(int $moogle_unit_id, int $tm_info, int $stm_info) {
+    function lastDigit(int|string $value) {
+        return $value[-1];
+    }
+
+    function getTmProgress(int $moogle_unit_id, int $tm_info, int $stm_info): string {
         if ($stm_info > 0)
-            return 'STMR ' . ([5, 25, 50, 100, '??', '??', '??'][((string) $stm_info)[-1]] ?? '??');
+            return 'STMR ' . ([5, 25, 50, 100, '??', '??', '??'][lastDigit($stm_info)] ?? '??');
 
         // ALL %
-        switch ($tm_info) {
-            case 100000005:
-                return 1;
+        return match ($tm_info) {
+            100000005 => 1,
 
-            case 100000001:
-            case 201000501:
-                return 5;
+            100000001,
+            201000501 => 5,
 
-            case 100000002:
-                return 10;
+            100000002 => 10,
+            201000502 => 25,
 
-            case 201000502:
-                return 25;
+            100000008,
+            201000503 => 50,
 
-            case 100000008:
-            case 201000503:
-                return 50;
-        }
-
-        // Fallback to moogle rarity
-        switch (((string) $moogle_unit_id)[-1]) {
-            case 1:
-                return 1;
-
-            case 3:
-                return 5;
-
-            case 5:
-                return 10;
-
-            default:
-                return -1;
-        }
+            default => match (lastDigit($moogle_unit_id)) {
+                1 => 1,
+                3 => 5,
+                5 => 10,
+                default => -1,
+            },
+        };
     }
