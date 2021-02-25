@@ -17,8 +17,8 @@
 
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once __DIR__ . '/../helpers.php';
-    $region     = 'gl';
-    $mission_id = '899780*';
+    $region     = 'jp';
+    $mission_id = '899840*';
 
     // setup
     $max_num = 50;

@@ -66,11 +66,11 @@
         return $tm_info;
     }
 
-    function lastDigit(int|string $value) {
-        return $value[-1];
+    function lastDigit(int|string $value): int {
+        return (int) $value[-1];
     }
 
-    function getTmProgress(int $moogle_unit_id, int $tm_info, int $stm_info): string {
+    function getTmProgress(string $moogle_unit_id, int $tm_info, string $stm_info): string {
         if ($stm_info > 0)
             return 'STMR ' . ([5, 25, 50, 100, '??', '??', '??'][lastDigit($stm_info)] ?? '??');
 
