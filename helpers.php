@@ -56,7 +56,7 @@
     function arrayGroupValues(array $array, $array_fields = [], $use_names = true) {
         $vals = [];
 
-        $addVal = function ($path, $name, $val) use (&$vals, &$addVal, $array_fields) {
+        $addVal = static function ($path, $name, $val) use (&$vals, &$addVal, $array_fields) {
             if (is_array($val) && in_array($path, $array_fields))
                 foreach ($val as $k => $v)
                     $addVal($path . '_' . $k, $name, $v);
@@ -79,7 +79,7 @@
             if (count($arr) == 1)
                 unset($vals[$key]);
 
-        $vals = array_map(function ($arr) {
+        $vals = array_map(static function ($arr) {
             ksort($arr);
 
             return $arr;
@@ -192,7 +192,7 @@
         $frames = parseList($data['attack_frames'], '@-:');
         $frames = flattenFrames($frames);
 
-        $entry['attack_count']  = array_map(function ($frames) { return count($frames); }, $frames);
+        $entry['attack_count']  = array_map(static function ($frames) { return count($frames); }, $frames);
         $entry['attack_frames'] = $frames;
 
         $frames = parseList($data['effect_frames'], '@&:');
@@ -270,7 +270,7 @@
      *
      * @return string
      */
-    function toJSON(array $entries, $trimStringArrays = true, $sort = true) {
+    function toJSON(array $entries, bool $trimStringArrays = true, bool $sort = true): string {
         if ($sort)
             ksort($entries);
 
@@ -278,7 +278,7 @@
         $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
 
         if ($trimStringArrays)
-            $data = preg_replace_callback('/\[([^{[]+?)\]/sm', function ($match) {
+            $data = preg_replace_callback('/\[\s*("[^"]*"|[^{[]+?)+]/m', static function ($match) {
                 $string = $match[1];
                 $string = explode(",\n", $string);
                 $string = array_map('trim', $string);
@@ -288,7 +288,7 @@
             }, $data);
         else
             // trim only single string arrays
-            $data = preg_replace_callback('/\[\s*("?[^"{[]+?"?)\s*\]/sm', function ($match) {
+            $data = preg_replace_callback('/\[\s*("[^"]*"|[^"{[]+?)\s*]/m', static function ($match) {
                 $string = $match[1];
                 $string = explode(",\n", $string);
                 $string = array_map('trim', $string);
