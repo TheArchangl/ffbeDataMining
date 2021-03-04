@@ -277,72 +277,17 @@
         $entries = utf8($entries);
         $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
 
-        if ($trimStringArrays)
-            $data = preg_replace_callback('/\[\s*("[^"]*"|[^{[]+?)+]/m', static function ($match) {
-                $string = $match[1];
-                $string = explode(",\n", $string);
-                $string = array_map('trim', $string);
-                $string = implode(', ', $string);
+        $data = preg_replace_callback('/\[\s*([^{\]\[:]+)\s*]/u', static function ($match) {
+            $string = $match[1];
+            $string = explode(",\n", $string);
+            $string = array_map('trim', $string);
+            $string = implode(', ', $string);
 
-                return "[{$string}]";
-            }, $data);
-        else
-            // trim only single string arrays
-            $data = preg_replace_callback('/\[\s*("[^"]*"|[^"{[]+?)\s*]/m', static function ($match) {
-                $string = $match[1];
-                $string = explode(",\n", $string);
-                $string = array_map('trim', $string);
-                $string = implode(', ', $string);
+            return "[{$string}]";
+        }, $data);
 
-                return "[{$string}]";
-            }, $data);
-        //        $data = preg_replace('/([\[\{])\s+([\[\{])/sm', '$1$2', $data);
-        //        $data = preg_replace('/([\]\}])\s+([\]\}])/sm', '$1$2', $data);
-        //        $data = preg_replace('/([\]\}]),\s+([\[\{])/sm', '$1,$2', $data);
-
-        //        $data = preg_replace_callback('/^.+$/m', function ($match) {
-        //            $string = $match[0];
-        //
-        //            if (strlen($string) < 20)
-        //                return $string;
-        //
-        //            $delim_count = substr_count($string, '[')
-        //                           + substr_count($string, '{')
-        //                           + substr_count($string, '}')
-        //                           + substr_count($string, ']');
-        //
-        //
-        //            if (strlen($string) < 120 && $delim_count < 4)
-        //                return $string;
-        //
-        //            $lines = preg_split('~((?<!\\\\)"?[\]\}]+,)~', $string, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-        //            if (count($lines) == 1)
-        //                return $string;
-        //
-        //            $lines   = array_chunk($lines, 2);
-        //            $string  = $lines[0][0] . $lines[0][1];
-        //            $pos     = strrpos($lines[0][0], "[") + 1;
-        //            $padding = str_pad("\n", $pos, ' ', STR_PAD_RIGHT);
-        //            unset($lines[0]);
-        //
-        //
-        //            foreach ($lines as $line) {
-        //                $delim = $line[1] ?? '';
-        //                $line  = $line[0];
-        //
-        //                if (strlen($delim) > 3)
-        //                    $delim = $delim[0] . $padding . substr($delim, 1);
-        //
-        //                $string .= $padding . $line . $delim;
-        //
-        //            }
-        //
-        //            return $string;
-        //        }, $data);
-        //
-        //        $data = preg_replace('~},(\s+)([{"])~', '$1},$1$2', $data);
-
-        // trim inner padding of int only arrays
+        if ($data === null)
+            throw new RuntimeException("Regex failed with '" . preg_last_error() . "': " . preg_last_error_msg());
 
         return $data;
     }
