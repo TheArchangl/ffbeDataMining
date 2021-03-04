@@ -212,7 +212,7 @@
                     'name'        => $mst->getName(),
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatFlatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $mst->attack_type,
@@ -257,7 +257,7 @@
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatFlatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'] ?? 99,
@@ -394,7 +394,7 @@
                     'name'        => Strings::getString('MST_MONSTER_SKILL_NAME', $id) ?? $row['name'],
                     //
                     'mst'         => $mst,
-                    'effects'     => SkillFormatter::formatArray($mst, $this->skill_mst_list),
+                    'effects'     => SkillFormatter::formatFlatArray($mst, $this->skill_mst_list),
                     'effects_raw' => SkillFormatter::formatEffectsRaw($mst),
                     //
                     'attack_type' => $row['attack_type'],
