@@ -39,7 +39,7 @@
         );
 
         $mats = [];
-        foreach (readParameters($row['mats'], ',:') as list($type, $item_id, $count)) {
+        foreach (readParameters($row['mats'], ',:') as [$type, $item_id, $count]) {
             assert($type == 20);
             $mats[$item_id] = $count;
         }
@@ -70,5 +70,5 @@
     }
 
     ksort($entries);
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/enhancements.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/enhancements.json", toJSON($entries));
 //    file_put_contents(DATA_OUTPUT_DIR . "/analyze.json", toJSON(arrayGroupValues(GameFile::loadMst('F_SUBLIMATION_RECIPE_MST'))));

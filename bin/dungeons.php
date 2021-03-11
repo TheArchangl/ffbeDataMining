@@ -52,7 +52,7 @@
             // ],
         ];
     }
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/towns.json", toJSON($towns, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/towns.json", toJSON($towns));
 
     $entries = [];
     foreach (GameFile::loadMst('F_DUNGEON_MST') as $row) {
@@ -115,4 +115,4 @@
             )),
         false));
      */
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/dungeons.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/dungeons.json", toJSON($entries));

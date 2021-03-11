@@ -7,18 +7,19 @@
 
     use Solaris\FFBE\GameHelper;
 
-    function readArray($input, $delim, $force) {
-        if (is_int($input) || is_string($input))
-            if (strpos($input, $delim) === false)
-                if ($force)
-                    return [$input];
-                else
-                    return $input;
-            else
+    function readArray(string|array $input, string $delim, bool $force = true): array|string|int {
+        if (is_scalar($input))
+            if (str_contains($input, $delim))
                 return explode($delim, $input);
 
+            elseif ($force)
+                return [$input];
+
+            else
+                return $input;
+
         if (! is_array($input))
-            throw new \LogicException();
+            throw new \LogicException('Input type must be a string or an array of strings');
 
         foreach ($input as $k => $val)
             $input[$k] = readArray($val, $delim, $force);
@@ -26,21 +27,27 @@
         return $input;
     }
 
-    function toInt($val) {
+    /**
+     * @param string|int|string[]|int[] $val
+     *
+     * @return int|int[]
+     */
+    function toInt(array|int|string $val): array|int {
         if (is_array($val))
             return array_map('toInt', $val);
 
-        if (is_string($val) && ctype_digit($val))
-            return intval($val);
+        elseif (is_string($val) && ctype_digit($val))
+            return (int) $val;
 
-        return $val;
+        else
+            return $val;
     }
 
-    function readParameters($string, $force_delim = ',') {
+    function readParameters(string $string, string $force_delim = ','): array|int {
         $values = $string;
 
         foreach (['@', ',', '&', ':'] as $k => $delim) {
-            $values = readArray($values, $delim, strpos($force_delim, $delim) !== false);
+            $values = readArray($values, $delim, str_contains($force_delim, $delim));
         }
 
         return toInt($values);
@@ -53,11 +60,11 @@
      *
      * @return array
      */
-    function arrayGroupValues(array $array, $array_fields = [], $use_names = true) {
+    function arrayGroupValues(array $array, array $array_fields = [], bool $use_names = true): array {
         $vals = [];
 
         $addVal = static function ($path, $name, $val) use (&$vals, &$addVal, $array_fields) {
-            if (is_array($val) && in_array($path, $array_fields))
+            if (is_array($val) && in_array($path, $array_fields, true))
                 foreach ($val as $k => $v)
                     $addVal($path . '_' . $k, $name, $v);
 
@@ -76,7 +83,7 @@
 
         // remove fields with no info
         foreach ($vals as $key => $arr)
-            if (count($arr) == 1)
+            if (count($arr) === 1)
                 unset($vals[$key]);
 
         $vals = array_map(static function ($arr) {
@@ -89,7 +96,7 @@
         return $vals;
     }
 
-    function groupValues(array $array) {
+    function groupValues(array $array): array {
         $vals = [];
 
         foreach ($array as $k => $v) {
@@ -100,15 +107,15 @@
         return $vals;
     }
 
-    function readTM($string) {
-        if ($string == '')
+    function readTM(string $string): ?array {
+        if ($string === '')
             return null;
 
         [$type, $id] = GameHelper::parseMstItem($string);
         return [$type, (int) $id];
     }
 
-    function formatStats($entry) {
+    function formatStats($entry): array {
         $vals = [];
         $keys = [
             'hp',
@@ -125,8 +132,8 @@
         return $vals;
     }
 
-    function readIntArray($str, $delim = ',') {
-        if (trim($str) == '')
+    function readIntArray(string $str, string $delim = ','): array {
+        if (trim($str) === '')
             return [];
 
         $str = explode($delim, $str);
@@ -141,7 +148,7 @@
      *
      * @return string[][]
      */
-    function parseListStep(array $data, $char) {
+    function parseListStep(array $data, string $char): array {
         foreach ($data as $k => $val)
             if (is_array($val))
                 $data[$k] = parseListStep($val, $char);
@@ -152,7 +159,13 @@
         return $data;
     }
 
-    function parseList($string, $chars) {
+    /**
+     * @param string $string
+     * @param string $chars
+     *
+     * @return string[]|string
+     */
+    function parseList(string $string, string $chars): array|string {
         $string = [$string];
 
         $chars = str_split($chars);
@@ -167,7 +180,7 @@
      *
      * @return array
      */
-    function flattenFrames(array $effects) {
+    function flattenFrames(array $effects): array {
         $frames = [];
 
         foreach ($effects as $effect) {
@@ -186,9 +199,9 @@
      * @param array $data
      * @param array $entry
      *
-     * @return mixed
+     * @return array
      */
-    function parseFrames($data, $entry) {
+    function parseFrames(array $data, array $entry): array {
         $frames = parseList($data['attack_frames'], '@-:');
         $frames = flattenFrames($frames);
 
@@ -203,7 +216,7 @@
         return $entry;
     }
 
-    function readEquip($str) {
+    function readEquip($str): array {
         $str = explode(',', $str);
         $str = array_map('intval', $str);
         //        $str = array_map(function ($id) use ($equipment_id) {
@@ -213,7 +226,7 @@
         return $str;
     }
 
-    function recursiveUTF(array $input) {
+    function recursiveUTF(array $input): array {
         foreach ($input as $k => $val)
             if (is_array($val))
                 $input[$k] = mb_convert_encoding($val, 'UTF-8', 'UTF-8');
@@ -224,53 +237,23 @@
         return $input;
     }
 
-    function utf8($data) {
-        if (is_array($data)) {
-            foreach ($data as $k => $v)
-                $data[$k] = utf8($v);
-
-            return $data;
-        }
-
+    function utf8(mixed $data): array|string {
         if (is_string($data))
             return mb_convert_encoding($data, 'utf-8');
+
+        if (is_array($data))
+            return array_map('utf8', $data);
 
         return $data;
     }
 
-    function arrayRecursiveDiff($aArray1, $aArray2) {
-        $aReturn = [];
-
-        foreach ($aArray1 as $mKey => $mValue) {
-            if (array_key_exists($mKey, $aArray2)) {
-                if (is_array($mValue)) {
-                    $aRecursiveDiff = arrayRecursiveDiff($mValue, $aArray2[$mKey]);
-                    if (count($aRecursiveDiff)) {
-                        $aReturn[$mKey] = $aRecursiveDiff;
-                    }
-                }
-                else {
-                    if ($mValue != $aArray2[$mKey]) {
-                        $aReturn[$mKey] = $mValue;
-                    }
-                }
-            }
-            else {
-                $aReturn[$mKey] = $mValue;
-            }
-        }
-
-        return $aReturn;
-    }
-
     /**
      * @param array $entries
-     * @param bool  $trimStringArrays
      * @param bool  $sort
      *
      * @return string
      */
-    function toJSON(array $entries, bool $trimStringArrays = true, bool $sort = true): string {
+    function toJSON(array $entries, bool $sort = true): string {
         if ($sort)
             ksort($entries);
 

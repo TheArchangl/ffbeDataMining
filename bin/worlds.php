@@ -71,4 +71,4 @@
         $entries[$world_id]['regions'][$region_id]['subregions'][$subregion_id]['dungeons'][$dungeon_id] = $name;
     }
 
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/worlds.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/worlds.json", toJSON($entries));

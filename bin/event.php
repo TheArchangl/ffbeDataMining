@@ -40,7 +40,7 @@
     }
 
     // output
-    $data = toJSON($entries, true, false);
+    $data = toJSON($entries, false);
     $data = preg_replace_callback('~{\s+([^{]+)\s+}~', static function ($match) {
         return '{' . preg_replace('~\s+~', ' ', $match[1] . '}');
     }, $data);

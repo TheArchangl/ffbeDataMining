@@ -25,7 +25,7 @@
         ];
     }
 
-    $data = toJSON($entries, true, true);
+    $data = toJSON($entries, true);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monster_skillsets.json", $data);
 
 

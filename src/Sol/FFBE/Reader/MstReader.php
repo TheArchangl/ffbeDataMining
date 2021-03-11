@@ -29,7 +29,7 @@
          * @return string
          */
         protected function formatOutput(array $entries):string {
-            $data = toJSON($entries, false);
+            $data = toJSON($entries);
 
             // un-indent arrays
             $keys = ['effect_frames', 'attack_damage', 'attack_frames', 'effects_raw', 'levels', 'requirements', 'roles'];

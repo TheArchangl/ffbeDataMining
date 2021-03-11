@@ -141,7 +141,7 @@
                     unset($data[$k]['strings']);
 
             // json encode
-            $data = toJSON($data, false);
+            $data = toJSON($data);
             foreach (['effect_frames', 'attack_frames', 'effects_raw', 'flags'] as $x)
                 $data = preg_replace_callback('/(\"(?:' . $x . ')":\s+)([^:}]+?)((?:\s*})?,\s+"[^"]+":)/sm', static function ($match) {
                     $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);

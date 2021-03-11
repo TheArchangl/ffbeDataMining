@@ -164,7 +164,7 @@
         $entries[$id] = $entry;
     }
 
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/equipment.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/equipment.json", toJSON($entries));
 
     #region Materia
     echo "Reading Materia\n";
@@ -261,7 +261,7 @@
     }
 
     //    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/materia.json", toJSON($entries));
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/materia.json", toJSON($entries, false));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/materia.json", toJSON($entries));
     #endregion
 
     #region Consumables
@@ -366,7 +366,7 @@
     }
 
     // trim effects_raw
-    $data = toJSON($entries, false);
+    $data = toJSON($entries);
     $data = preg_replace_callback('/(\"effects_raw":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
         $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
         $trimmed = str_replace(',', ', ', $trimmed);

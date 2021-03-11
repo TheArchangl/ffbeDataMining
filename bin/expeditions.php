@@ -152,5 +152,5 @@
         $entries[$id] = $entry;
     }
 
-    $data = toJSON($entries, false);
+    $data = toJSON($entries);
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/expeditions.json", $data);

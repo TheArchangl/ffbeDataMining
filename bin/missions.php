@@ -108,7 +108,7 @@
     }
 
 
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/missions.json", toJSON($entries, true));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/missions.json", toJSON($entries));
 
     /*
     // debug

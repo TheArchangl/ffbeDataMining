@@ -8,9 +8,6 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
-    use Solaris\FFBE\Mst\MetaMstList;
-    use Solaris\FFBE\Mst\MonsterSkillMstList;
-    use Solaris\Formatter\SkillFormatter;
 
     require_once dirname(__DIR__) . "/bootstrap.php";
     require_once dirname(__DIR__) . "/helpers.php";
@@ -48,5 +45,5 @@
         ];
     }
 
-    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monster_dict.json", toJSON($entries, true));
+    file_put_contents(DATA_OUTPUT_DIR . "/{$region}/monster_dict.json", toJSON($entries));
 

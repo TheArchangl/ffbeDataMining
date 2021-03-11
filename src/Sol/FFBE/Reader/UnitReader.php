@@ -319,7 +319,7 @@
          * @return string
          */
         protected function formatOutput(array $entries): string {
-            $data = toJSON($entries, false);
+            $data = toJSON($entries);
             $data = preg_replace_callback(
                 '~"(skills|s?TM|reward)":\s*\[((?:[^][]*(\[(?2)*])?[^][]*)+)]~u',
                 static function ($match) {

@@ -25,14 +25,14 @@
         $entries[$row['exp_pattern']][$row['level'] - 1] = (int) $row['93fnYUJG'];
 
     file_put_contents(join('/', [DATA_OUTPUT_DIR, $region, 'vision_cards_exp_patterns.json']),
-                      toJSON($entries, false));
+                      toJSON($entries));
 
     $entries = [];
     foreach (GameFile::loadMst('F_VISION_CARD_GROW_MST') as $row)
         $entries[$row['stat_pattern']][$row['max_level']][$row['level'] - 1] = (int) $row['UjKF93ok'];
 
     file_put_contents(join('/', [DATA_OUTPUT_DIR, $region, 'vision_cards_stat_patterns.json']),
-                      toJSON($entries, false));
+                      toJSON($entries));
 
     // cards
     $entries = [];
