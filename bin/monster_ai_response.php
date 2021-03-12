@@ -18,7 +18,7 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once __DIR__ . '/../helpers.php';
     $region     = 'gl';
-    $mission_id = '93605*';
+    $mission_id = '3242010*';
 
     // setup
     $max_num = 50;
@@ -97,7 +97,7 @@
                                                ?? $missions[$id]['MissionStartRequest'][0]['name']
                                                   ?? 'UNKNOWN'
         , array_keys($missions));
-    $title    = StringHelper::getLongestCommonPrefix($names);
+    $title    = rtrim(StringHelper::getLongestCommonPrefix($names), ' -');
     $filename = rtrim(StringHelper::getLongestCommonPrefix(array_keys($missions)), '0');
 
     print "\n\t(cd {$dump_dir} && gist -s -d '{$title}' -f '{$filename}.gl.py' {$files})\n";
