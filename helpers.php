@@ -30,9 +30,9 @@
     /**
      * @param string|int|string[]|int[] $val
      *
-     * @return int|int[]
+     * @return array|int|string
      */
-    function toInt(array|int|string $val): array|int {
+    function toInt(array|int|string $val): array|int|string {
         if (is_array($val))
             return array_map('toInt', $val);
 
@@ -237,7 +237,12 @@
         return $input;
     }
 
-    function utf8(mixed $data): array|string {
+    /**
+     * @param mixed $data
+     *
+     * @return mixed
+     */
+    function utf8(mixed $data): mixed {
         if (is_string($data))
             return mb_convert_encoding($data, 'utf-8');
 
