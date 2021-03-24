@@ -17,7 +17,7 @@
         //        'F_TEXT_TEXT_EN.txt',
     ];
 
-    $full = in_array(strtolower(realpath($argv[0])), array_map(static fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/runAll.php']), true);
+    $full = in_array(strtolower(realpath($argv[0])), array_map(static fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/run_all.php']), true);
     if (! $full)
         return require __DIR__ . '/read_strings.php';
 
