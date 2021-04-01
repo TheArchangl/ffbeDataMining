@@ -18,13 +18,13 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once __DIR__ . '/../helpers.php';
     $region     = 'gl';
-    $mission_id = '3242010*';
+    $mission_id = '9380{1,2,3,4,5}*';
 
     // setup
     $max_num = 50;
 
     // read data
-    $files = glob(CLIENT_DIR . "missions/{$region}/*/{$mission_id}/*");
+    $files = glob(CLIENT_DIR . "missions/{$region}/*/{$mission_id}/*", GLOB_BRACE);
     if (empty($files))
         die ('No file found');
 
