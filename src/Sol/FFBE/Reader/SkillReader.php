@@ -18,8 +18,7 @@
     use Solaris\Formatter\SkillFormatter;
 
     class SkillReader extends MstReader {
-        /** @var SkillMstList */
-        protected $skill_mst;
+        protected MstList|SkillMstList $skill_mst;
 
         /**
          * @param string       $region
@@ -34,14 +33,14 @@
          * @param array $data
          * @param array $entry
          *
-         * @return mixed
+         * @return array
          */
-        public static function parseFrames(array $data, array $entry) {
+        public static function parseFrames(array $data, array $entry): array {
             // attack frames
             if (! empty($data['attack_frames'])) {
                 $frames = parseList($data['attack_frames'], '@-:');
 
-                $entry['attack_frames'] = static::flattenFrames($frames, 0);
+                $entry['attack_frames'] = static::flattenFrames($frames);
                 $entry['attack_damage'] = static::flattenFrames($frames, 1);
                 $entry['attack_count']  = array_map('count', $entry['attack_frames']);
             }
@@ -53,7 +52,7 @@
 
             // effect frames
             $frames = parseList($data['effect_frames'], '@&:');
-            $frames = static::flattenFrames($frames, 0);
+            $frames = static::flattenFrames($frames);
             // $frames   = $data['effect_frames'];
             $entry['effect_frames'] = $frames;
 
@@ -66,14 +65,14 @@
          *
          * @return array
          */
-        public static function flattenFrames(array $effects, $index = 0): array {
+        public static function flattenFrames(array $effects, int $index = 0): array {
             $frames = [];
 
             foreach ($effects as $effect) {
                 $array = [];
 
                 foreach ($effect as $hit)
-                    if (isset($hit[$index]) && $hit[$index] != '')
+                    if (isset($hit[$index]) && $hit[$index] !== '')
                         $array[] = (int) $hit[$index];
 
                 $frames[] = $array;
@@ -102,7 +101,7 @@
          * @return array
          */
         public function parseData(): array {
-            throw new \LogicException("Dummy class");
+            throw new \LogicException('Dummy class');
         }
 
         /**
@@ -111,7 +110,7 @@
         public function saveMagic(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_MAGIC_MST') as $row) {
-                $id    = current($row);
+                $id    = (int) current($row);
                 $entry = $this->parseMagicRow($row);
 
                 $data[$id] = $entry;
@@ -128,9 +127,9 @@
         public function saveAbilities(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
-                $id  = current($row);
+                $id  = (int) current($row);
                 $mst = $this->skill_mst->getEntry($id);
-                if ($mst == null || ! $mst->isActive())
+                if ($mst === null || ! $mst->isActive())
                     continue;
 
                 $entry = $this->parseAbilityRow($row);
@@ -150,15 +149,12 @@
         public function savePassives(string $file): void {
             $data = [];
             foreach (GameFile::loadMst('F_ABILITY_MST') as $row) {
-                $id  = current($row);
+                $id  = (int) current($row);
                 $mst = $this->skill_mst->getEntry($id);
-                if ($mst == null || $mst->isActive())
+                if ($mst === null || $mst->isActive())
                     continue;
 
-                $id    = current($row);
-                $entry = $this->parsePassiveRow($row);
-
-                $data[$id] = $entry;
+                $data[$id] = $this->parsePassiveRow($row);
             }
 
             $data = $this->formatOutput($data);
@@ -173,13 +169,13 @@
          */
         protected function parseMagicRow(array $row): array {
             $id   = (int) $row['magic_id'];
-            $name = GameFile::getRegion() == 'gl'
+            $name = GameFile::getRegion() === 'gl'
                 ? Strings::getString('MST_MAGIC_NAME', $id) ?? $row['name']
                 : $row['name'];
 
             $flags    = readIntArray($row['flags']);
             $use_case = explode(',', $row['use_case']);
-            assert($use_case[0] == 1);
+            assert($use_case[0] === 1);
 
             $entry = [
                 'name'            => $name,
@@ -227,7 +223,7 @@
          */
         protected function parseAbilityRow(array $row): array {
             $id   = (int) $row['ability_id'];
-            $name = GameFile::getRegion() == 'gl'
+            $name = GameFile::getRegion() === 'gl'
                 ? Strings::getString('MST_ABILITY_NAME', $id) ?? $row['name']
                 : $row['name'];
 
@@ -254,7 +250,7 @@
                 'effects_raw'      => '',
                 //
                 'requirements'     => SkillMstList::readRequirements($row),
-                'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
+                'unit_restriction' => $row['unit_restriction'] === '' ? null : readIntArray($row['unit_restriction']),
             ];
 
 
@@ -272,7 +268,7 @@
          */
         protected function parsePassiveRow($row): array {
             $id   = (int) $row['ability_id'];
-            $name = GameFile::getRegion() == 'gl'
+            $name = GameFile::getRegion() === 'gl'
                 ? Strings::getString('MST_ABILITY_NAME', $id) ?? $row['name']
                 : $row['name'];
 
@@ -308,7 +304,7 @@
          */
         protected function parseSkillEffects($id, array $entry): array {
             $skill = $this->skill_mst->getEntry($id);
-            if ($skill == null)
+            if ($skill === null)
                 throw new \LogicException("No skill entry {$id} found?");
 
             $effects              = self::parseEffects($skill, $this->skill_mst);
