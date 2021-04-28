@@ -15,6 +15,7 @@
     use Solaris\FFBE\Client\ClientGL;
     use Solaris\FFBE\Client\ClientJP;
     use Solaris\FFBE\Mst\AbilityMstList;
+    use Solaris\FFBE\Mst\FieldEffectMstList;
     use Solaris\FFBE\Mst\LimitBurstMstList;
     use Solaris\FFBE\Mst\MagicMstList;
     use Solaris\FFBE\Mst\MetaMstList;
@@ -68,6 +69,7 @@
         $ability_mst    = new AbilityMstList();
         $magic_mst      = new MagicMstList();
         $limitburst_mst = new LimitBurstMstList();
+        $fieldeffects_mst   = new FieldEffectMstList();
 
         $client = $region === 'gl'
             ? new ClientGL('', false)
@@ -77,6 +79,7 @@
         $skill_mst->addList($ability_mst);
         $skill_mst->addList($magic_mst);
         $skill_mst->addList($limitburst_mst);
+        $skill_mst->addList($fieldeffects_mst);
 
         print "Reading Skills\n";
         print "\tAbilities\n";
@@ -88,6 +91,9 @@
 
         print "\tPostprocessing\n";
         SkillMstList::processEffects($skill_mst);
+
+        print "\tField effects\n";
+        $fieldeffects_mst->readFile();
 
         print "\tDone\n";
 
