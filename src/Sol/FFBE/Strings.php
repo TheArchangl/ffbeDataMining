@@ -132,7 +132,7 @@
             'MST_VISION_CARD_BGM_NAME'                  => ['F_TEXT_VISION_CARD_BGM'],
         ];
 
-        protected static $loaded = [];
+        protected static array $loaded = [];
 
         /**
          * Read all files in the file map
@@ -149,7 +149,7 @@
          *
          * @return bool
          */
-        public static function hasBeenLoaded($type): bool {
+        public static function hasBeenLoaded(string $type): bool {
             return static::$loaded[$type] ?? false;
         }
 
@@ -160,7 +160,7 @@
          *
          * @return string[]
          */
-        public static function getStrings($table, $id): array {
+        public static function getStrings(string $table, int $id): array {
             if (static::hasBeenLoaded($table) !== true)
                 static::readTable($table);
 
@@ -191,7 +191,7 @@
          *
          * @return bool
          */
-        public static function readTable($type): bool {
+        public static function readTable(string $type): bool {
             $files = static::FILE_MAP[$type] ?? [str_replace('MST_', 'F_TEXT_', $type)];
             if (empty($files))
                 return false;
@@ -208,7 +208,7 @@
                             static::readFile(GameFile::getFilePath($filename, $lang), $lang);
                             $loaded = true;
                         }
-                        catch (\LogicException $e) {
+                        catch (\LogicException) {
                             // File not found
                         }
                     }

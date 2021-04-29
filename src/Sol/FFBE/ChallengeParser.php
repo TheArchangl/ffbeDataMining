@@ -12,27 +12,27 @@
 
     class ChallengeParser {
 
-        public static function parse($condition_str, $game_local = false): array {
+        public static function parse(string $condition_str): array {
             // parse
-            $result   = [];
-            $callable = $game_local
-                ? [static::class, 'parseConditionGame']
-                : [static::class, 'parseCondition'];
+            $result = [];
 
             $conditions = GameHelper::readParameters($condition_str, ':,');
             foreach ($conditions as $condition)
-                $result[] = $callable($condition[0], array_slice($condition, 1));
+                $result[] = static::parseConditionGame($condition[0], array_slice($condition, 1));
 
             return $result;
         }
 
         /**
          * @param int   $type
-         * @param int[] $vals
+         * @param array $vals
          *
          * @return string
+         *
+         * @deprecated
+         * @noinspection PhpUnused
          */
-        protected static function parseCondition($type, $vals): string {
+        protected static function parseCondition(int $type, array $vals): string {
             switch ($type) {
                 // (Don't) use
                 case '0':
@@ -42,7 +42,7 @@
                     return 'No items';
 
                 case '2':
-                    assert(count($vals) == 1);
+                    assert(count($vals) === 1);
                     $name = Strings::getString('MST_ITEM_NAME', $vals[0]);
 
                     return "Use {$name}";
@@ -51,49 +51,45 @@
                     return "Use <= {$vals[0]} items";
 
                 case '6':
-                    return "No magic";
+                    return 'No magic';
 
                 case '5':
-                    return "Use magic";
+                    return 'Use magic';
 
                 case '41':
                     return "Use >= {$vals[0]} magic";
 
                 case '12':
-                    assert($vals[0] == '3');
+                    assert($vals[0] === 3);
 
                     return 'No recovery magic';
 
                 case '13':
-                    assert(count($vals) == 1);
+                    assert(count($vals) === 1);
                     $type = GameHelper::MAGIC_TYPE[$vals[0]];
 
                     return "Use {$type} magic";
 
                 case '14':
-                    assert(count($vals) == 1);
+                    assert(count($vals) === 1);
                     $type = GameHelper::MAGIC_TYPE[$vals[0]];
 
                     return "No {$type} magic";
 
                 case '16':
-                    return "Use a limitburst";
+                    return 'Use a limitburst';
 
                 case '49':
                     return "Use {$vals[0]} limitbursts";
 
                 case '17':
-                    return "No limitbursts";
+                    return 'No limitbursts';
 
                 case '20':
-                    return "No abilities";
-
-                case '7':
-                    $names = self::getSkillNames($vals, true);
-
-                    return "Use {$names}";
+                    return 'No abilities';
 
                 case '21':
+                case '7':
                     $names = self::getSkillNames($vals, true);
 
                     return "Use {$names}";
@@ -120,25 +116,25 @@
                 // Defeat with
                 case '4':
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an item";
 
                 case '15':
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with magic";
 
                 case '18':
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with a limit burst";
 
                 case '23':
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an ability";
 
@@ -149,7 +145,7 @@
 
                 case '32':
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an esper";
 
@@ -192,7 +188,7 @@
 
                 // Turn counts
                 case '75':
-                    $turns = $vals[0] == $vals[1]
+                    $turns = $vals[0] === $vals[1]
                         ? $vals[0]
                         : join('-', $vals);
 
@@ -240,262 +236,252 @@
          *
          * @return string
          */
-        protected static function getSkillNames(array $names, $skillIDs = false): string {
+        protected static function getSkillNames(array $names, bool $skillIDs = false): string {
             $names = array_map(static function ($skill_id) use ($skillIDs) {
                 $name = Strings::getString('MST_ABILITY_NAME', $skill_id)
-                    ?? Strings::getString('MST_MAGIC_NAME', $skill_id);
+                        ?? Strings::getString('MST_MAGIC_NAME', $skill_id);
 
                 return $skillIDs
                     ? "{$name} ({$skill_id})"
                     : $name;
             }, $names);
 
-            $names = join(' / ', $names);
-
-            return $names;
+            return join(' / ', $names);
         }
 
         /**
-         * @param int   $type
-         * @param int[] $vals
+         * @param string $type
+         * @param array  $vals
          *
-         * @return string
+         * @return string|null
          */
-        private static function parseConditionGame($type, $vals): ?string {
-            switch ($type) {
-                case '3':
+        private static function parseConditionGame(string $type, array $vals): ?string {
+            if (trim($type) === '')
+                return 'Broken entry';
+
+            switch ((int) $type) {
+                case 3:
                     // battle id?
                     return 'No escapes';
-                case '71':
+                case 71:
                     // 51?
                     return 'No escapes';
 
                 // (Don't) use
-                case '0':
+                case 0:
                     return 'Use an item';
 
-                case '1':
+                case 1:
                     return 'No items';
 
-                case '2':
-                    assert(count($vals) == 1);
+                case 2:
+                    assert(count($vals) === 1);
                     $name = (Strings::getString('MST_ITEM_NAME', $vals[0]));
 
                     return "Use {$name}";
 
-                case '40':
+                case 40:
                     return "Use no more than {$vals[0]} items";
 
-                case '6':
-                    return "No magic";
+                case 6:
+                    return 'No magic';
 
-                case '5':
-                    return "Use magic";
+                case 5:
+                    return 'Use magic';
 
-                case '41':
+                case 41:
                     $num = $vals[0] + 1;
 
                     return "Use magic {$num} or more times";
 
-                case '12':
-                    assert($vals[0] == '3');
+                case 12:
+                    assert($vals[0] === 3);
 
                     return 'No recovery magic';
 
-                case '13':
-                    assert(count($vals) == 1);
-                    if (count($vals) == 0)
-                        return "Use any[?] magic";
+                case 13:
+                    assert(count($vals) === 1);
+                    if (count($vals) === 0)
+                        return 'Use any[?] magic';
 
                     $type = GameHelper::MAGIC_TYPE[$vals[0]];
 
                     return "Use {$type} magic";
 
-                case '14':
-                    assert(count($vals) == 1);
+                case 14:
+                    assert(count($vals) === 1);
                     $type = (GameHelper::MAGIC_TYPE[$vals[0]]);
 
                     return "No {$type} magic";
 
-                case '16':
-                    return "Use a limit burst";
+                case 16:
+                    return 'Use a limit burst';
 
-                case '49':
+                case 49:
                     $num = $vals[0] + 1;
 
                     return "Use {$num} or more limit bursts";
 
-                case '17':
-                    return "No limit bursts";
+                case 50:
+                    return "Use no more than {$vals[0]} limit bursts";
 
-                case '20':
-                    return "No abilities";
+                case 17:
+                    return 'No limit bursts';
 
-                case '7':
+                case 20:
+                    return 'No abilities';
+
+                case 21:
+                case 7:
                     $names = self::getSkillNames($vals);
 
                     return "Use {$names}";
 
-                case '8':
-                    $names = self::getSkillNames($vals);
-
-                    return "Don't use {$names}";
-
-                case '21':
-                    $names = self::getSkillNames($vals);
-
-                    return "Use {$names}";
-
-                case '22':
+                case 22:
+                case 8:
                     $names = self::getSkillNames($vals);
 
                     return "Don't use {$names}";
 
 
-                case '29':
+                case 29:
                     return 'No espers';
 
-                case '28':
+                case 28:
                     return 'Evoke an esper';
 
-                case '30':
+                case 30:
                     $name = Strings::getString('MST_BEAST_NAME', $vals[0])
-                        ?? "Esper #{$vals[0]}";
+                            ?? "Esper #{$vals[0]}";
 
                     return "Evoke {$name}";
 
-                case '45':
+                case 45:
                     $num = $vals[0] + 1;
 
                     return "Evoke {$num} or more espers";
 
                 // Defeat with
-                case '4':
+                case 4:
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an item";
 
-                case '15':
+                case 15:
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with magic";
 
-                case '18':
+                case 18:
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with a limit burst";
 
-                case '23':
+                case 23:
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an ability";
 
-                case '32':
+                case 32:
                     $name = Strings::getString('MST_MONSTER_NAME', $vals[1]) ?? $vals[1];
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     return "Defeat {$name} with an esper";
 
                 case 63:
                     // Defeat with specific skill
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     $name  = Strings::getString('MST_MONSTER_NAME', $vals[1]);
                     $skill = Strings::getString('MST_ABILITY_NAME', $vals[3])
-                        ?? $vals[3];
+                             ?? (string) $vals[3];
 
                     return "Defeat {$name} with {$skill}";
 
                 case 65:
                     // Defeat with specific esper
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     $name  = Strings::getString('MST_MONSTER_NAME', $vals[1]);
                     $skill = Strings::getString('MST_BEAST_NAME', $vals[3])
-                        ?? "Esper #{$vals[3]}";
+                             ?? "Esper #{$vals[3]}";
 
                     return "Defeat {$name} with {$skill}";
 
                 case 67:
                     // Defeat with specific limitburst?
-                    assert($vals[2] == 1);
+                    assert($vals[2] === 1);
 
                     $name  = (Strings::getString('MST_MONSTER_NAME', $vals[1]));
                     $skill = Strings::getString('MST_ABILITY_NAME', $vals[3])
-                        ?? Strings::getString('MST_MAGIC_NAME', $vals[3])
-                        ?? Strings::getString('MST_LIMITBURST_NAME', $vals[3])
-                        ?? $vals[3];
+                             ?? Strings::getString('MST_MAGIC_NAME', $vals[3])
+                                ?? Strings::getString('MST_LIMITBURST_NAME', $vals[3])
+                                   ?? $vals[3];
 
                     return "Defeat {$name} with {$skill}";
 
                 // Deal damage
-                case '26':
+                case 26:
                     $type = (GameHelper::ELEMENT_TYPE[$vals[0] - 1]);
 
                     return "Deal {$type} damage";
 
-                case '59':
+                case 59:
                     $type = $vals[0] - 1;
                     $type = (GameHelper::ELEMENT_TYPE[$type]);
                     $num  = $vals[1] + 1;
 
                     return "Deal {$type} damage {$num} times or more";
 
-                case '47':
+                case 47:
                     $type = $vals[1] - 1;
                     $type = (GameHelper::ELEMENT_TYPE[$type]);
 
                     return "Deal {$type} damage {$vals[0]} times or more";
 
                 // Misc
-                case '33':
+                case 33:
                     return 'Clear without an ally being KO\'d';
 
-                case '34':
+                case 34:
                     $num = ($vals[0] ?? 0) + 1;
 
                     return "Party of {$num} or more (Companion included)";
 
-                case '35':
+                case 35:
                     $num = $vals[0];
 
                     return "Party of {$num} or less (Companion included)";
 
-                case '36':
+                case 36:
                     $name = Strings::getString('MST_UNIT_NAME', $vals[0]);
 
                     return "{$name} in party (Companion included)";
 
-                case '38':
+                case 38:
                     return 'No continues';
 
 
-                case '68':
+                case 68:
                     return 'Complete the quest';
 
 
                 // Turn counts
-                case '75':
-                    $num = $vals[1];
+                case 73:
+                    return "Clear within {$vals[0]} turns";
 
-                    return "Clear within {$num} turns";
-                /*
-                $turns = $vals[0] == $vals[1]
-                    ? $vals[0]
-                    : join('-', $vals);
+                case 75:
+                    return "Clear within {$vals[1]} turns";
 
-                return "Clear in {$turns} turns";
-                */
-
-                case '76':
+                case 76:
                     // mission id?
                     return "Clear in {$vals[1]} turns or more";
 
-                case '77':
+                case 77:
                     // scenario battle id
                     return "Clear in {$vals[1]} turns or less";
 
@@ -515,47 +501,52 @@
                     return "Activate an element chain {$chain} times or more in {$turns}";
 
                 // Apply rule!
-                case '69':
+                case 69:
                     switch ($vals[0]) {
-                        case '2001':
+                        case 2001:
                             return 'No Rain or Lasswell (Companion included)';
 
-                        case '2002':
-                        case '2004':
-                        case '2006':
-                        case '2008':
-                        case '2010':
+                        case 2002:
+                        case 2004:
+                        case 2006:
+                        case 2008:
+                        case 2010:
                             return 'Reach the goal';
 
-                        case '2003': // 10
-                        case '2005': // 30
-                        case '2007': // 30
-                        case '2009': // 30
-                        case '2011': // 30
+                        case 2003: // 10
+                        case 2005: // 30
+                        case 2007: // 30
+                        case 2009: // 30
+                        case 2011: // 30
                             return 'Answer all questions correctly';
 
-                        case '2012':
+                        case 2012:
                             return 'Set up a tent';
 
-                        case '2013':
-                        case '2014':
-                        case '2015':
-                        case '2016':
-                        case '2017':
-                        case '2018':
-                            return "Collect from 3 harvest points";
+                        case 2013:
+                        case 2014:
+                        case 2015:
+                        case 2016:
+                        case 2017:
+                        case 2018:
+                            return 'Collect from 3 harvest points';
 
-                        case '2019':
+                        case 2019:
                             return 'Defeat all shadow bahamuts and bahamut';
 
-                        case '2020':
-                        case '2028':
+                        case 2020:
+                        case 2028:
+                        case 2029:
+                        case 2030:
+                        case 2031:
+                        case 2032:
+                        case 2033:
                             return 'Defeat the boss';
 
                         default:
                             $desc = Strings::getString('MST_RULE_COND', $vals[0]);
 
-                            /*if ($desc == null) {
+                            /*if ($desc === null) {
                                 $entries = GameFile::loadMst('F_RULE_MST');
                                 $entries = array_combine(array_map("current", $entries), $entries);
 
