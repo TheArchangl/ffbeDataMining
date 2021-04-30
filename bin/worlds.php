@@ -8,16 +8,15 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Strings;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
-    /** @noinspection PhpUnhandledExceptionInspection */
 
     $entries = [];
     // WORLD
     foreach (GameFile::loadMst('F_WORLD_MST') as $row) {
         $world_id = (int)$row['world_id'];
-        $names    = ($region == 'gl')
+        $names    = ($region === 'gl')
             ? Strings::getStrings('MST_DUNGEONS_NAME', $world_id) ?? []
             : [$row['name']];
 
@@ -31,7 +30,7 @@
     foreach (GameFile::loadMst('F_LAND_MST') as $row) {
         $world_id  = (int)$row['world_id'];
         $region_id = (int)$row['region_id'];
-        $names     = ($region == 'gl')
+        $names     = ($region === 'gl')
             ? Strings::getStrings('MST_LAND_NAME', $region_id) ?? []
             : [$row['name']];
 
@@ -46,7 +45,7 @@
         $world_id     = (int)$row['world_id'];
         $region_id    = (int)$row['region_id'];
         $subregion_id = (int)$row['subregion_id'];
-        $names        = ($region == 'gl')
+        $names        = ($region === 'gl')
             ? Strings::getStrings('MST_AREA_NAME', $subregion_id) ?? []
             : [$row['name']];
 
@@ -64,7 +63,7 @@
         $subregion_id = (int)$row['subregion_id'];
         $dungeon_id   = (int)$row['dungeon_id'];
 
-        $name = ($region == 'gl')
+        $name = ($region === 'gl')
             ? Strings::getString('MST_DUNGEONS_NAME', $dungeon_id)
             : $row['name'];
 

@@ -997,7 +997,7 @@
             self::$files = [];
             self::$names = [];
 
-            foreach (file($file) as $k => $row) {
+            foreach (file($file) as $row) {
                 $row = trim($row);
                 if (empty($row))
                     continue;
@@ -1025,7 +1025,7 @@
         public static function save(): void {
             $file = ROOT_DIR . '/files.tsv';
 
-            uasort(static::$files, static function (GameFile $a, GameFile $b) { return $a->getName() <=> $b->getName(); });
+            uasort(static::$files, static fn(GameFile $a, GameFile $b) => $a->getName() <=> $b->getName());
 
             $lines = [];
             foreach (static::$files as $entry)
@@ -1047,12 +1047,12 @@
          *
          * @return array
          */
-        public static function loadRaw($input): array {
+        public static function loadRaw(string $input): array {
             $file = self::getFilePath($input);
 
             // read file
             $data = file($file);
-            $data = array_map(static function ($row) { return json_decode($row, true, 512, JSON_THROW_ON_ERROR); }, $data);
+            $data = array_map(static fn($row) => json_decode($row, true, 512, JSON_THROW_ON_ERROR), $data);
 
             return $data;
         }
@@ -1062,12 +1062,12 @@
          *
          * @return bool
          */
-        public static function hasMst($input): bool {
+        public static function hasMst(string $input): bool {
             try {
                 self::getFilePath($input);
                 return true;
             }
-            catch (\RuntimeException $e) {
+            catch (\RuntimeException) {
                 return false;
             }
         }
@@ -1077,7 +1077,7 @@
          *
          * @return array
          */
-        public static function loadMst($input): array {
+        public static function loadMst(string $input): array {
             $file = self::getFilePath($input);
 
             // read file
@@ -1102,11 +1102,11 @@
          *
          * @deprecated
          */
-        public static function decodeAll($region = 'gl'): void {
-            if (self::$files == null)
+        public static function decodeAll(string $region = 'gl'): void {
+            if (self::$files === null)
                 self::init();
 
-            foreach (self::$files as $file => $entry) {
+            foreach (self::$files as $entry) {
                 try {
                     $versions = self::getFileVersions($entry, $region);
                     if (empty($versions))
@@ -1119,10 +1119,10 @@
                         DATA_ENCODED_DIR . "{$region}/{$entry->name}_v{$version}.txt",
                         DATA_INPUT_DIR . "{$region}/{$entry->name}.txt",
                         $entry->key,
-                        $region == 'jp' ? ClientJP::IV : ClientGL::IV
+                        $region === 'jp' ? ClientJP::IV : ClientGL::IV
                     );
 
-                    if (filesize(DATA_INPUT_DIR . "{$region}/{$entry->name}.txt") == 0)
+                    if (filesize(DATA_INPUT_DIR . "{$region}/{$entry->name}.txt") === 0)
                         throw new \RuntimeException('Empty output');
 
                 }
@@ -1136,20 +1136,20 @@
             if (! file_exists($in_path))
                 throw new \LogicException("File does not exist: {$in_path}");
 
-            if (strlen($key) != 8)
+            if (strlen($key) !== 8)
                 throw new \LogicException("Invalid key: {$key}");
 
             $data = file_get_contents($in_path);
             $data = AES::decode($data, $key, $iv)
                 ?: AES::decode($data, $key);
 
-            if ($data[0] != '{' || $data[-1] != '}')
+            if ($data[0] !== '{' || $data[-1] !== '}')
                 throw new \RuntimeException("{$in_path} not correctly decoded: " . substr($data, 0, 10));
 
             file_put_contents($out_path, $data);
         }
 
-        public static function getFileVersions(GameFile $entry, $region = 'gl', $language = '') {
+        public static function getFileVersions(GameFile $entry, string $region = 'gl', string $language = ''): array {
             $versions = glob(DATA_BACKUP_DIR . "/{$region}/{$language}/{$entry->getName()}_v*.txt");
             if (empty($versions))
                 return [];
@@ -1179,7 +1179,7 @@
                     continue;
 
                 if (isset($data[$key]))
-                    if ($data[$key] != $value)
+                    if ($data[$key] !== $value)
                         $key = "{$key}_2";
                     else
                         print "Warning: key {$key} already exists and data will be overwritten.\n";
@@ -1197,7 +1197,7 @@
         public static function getFileKey($filename): ?string {
             $entry = static::getEntry($filename);
 
-            return $entry == null
+            return $entry === null
                 ? null
                 : $entry->key;
         }
@@ -1211,7 +1211,7 @@
         }
 
         public static function getEntry($file): ?GameFile {
-            if (self::$files == null)
+            if (self::$files === null)
                 self::init();
 
             return self::$files[$file] ?? self::$names[$file] ?? null;
@@ -1223,8 +1223,8 @@
          *
          * @return string
          */
-        public static function getFilePath(string $input, $lang = ''): string {
-            if (self::$files == null)
+        public static function getFilePath(string $input, string $lang = ''): string {
+            if (self::$files === null)
                 self::init();
 
             // find file
@@ -1233,7 +1233,7 @@
                 throw new \RuntimeException("Invalid file name or id '{$input}'.");
 
             // override region for localization data
-            if (strpos($input->getName(), 'F_TEXT') === 0)
+            if (str_starts_with($input->getName(), 'F_TEXT'))
                 $region = 'gl';
             else
                 $region = static::$region;
@@ -1252,7 +1252,7 @@
          * @return GameFile[]
          */
         public static function getEntries(): array {
-            if (self::$files == null)
+            if (self::$files === null)
                 self::init();
 
             return static::$files;
@@ -1267,7 +1267,7 @@
             $temp = [];
             foreach ($row as $key => $val) {
                 $newKey = static::$keys[$key] ?? $key;
-                if ($newKey == null)
+                if ($newKey === null)
                     // unset ignored keys
                     continue;
 
@@ -1280,27 +1280,22 @@
             return $temp;
         }
 
-        /** @var string */
-        protected string $name;
-        /** @var string */
-        protected string $file;
-        /** @var string */
-        protected string $key;
-        /** @var string */
+        protected string  $name;
+        protected string  $file;
+        protected string  $key;
         protected ?string $class;
-        /** @var string[] */
-        protected array $notes;
+        protected array   $notes;
 
         /**
          * GameFile constructor.
          *
-         * @param string   $name
-         * @param string   $file
-         * @param string   $key
-         * @param string   $class
-         * @param string[] $notes
+         * @param string      $name
+         * @param string      $file
+         * @param string      $key
+         * @param string|null $class
+         * @param string[]    $notes
          */
-        public function __construct($name, $file, $key, $class = null, array $notes = []) {
+        public function __construct(string $name, string $file, string $key, ?string $class = null, array $notes = []) {
             $this->name  = $name;
             $this->file  = $file;
             $this->key   = $key;
@@ -1367,7 +1362,7 @@
         }
 
         public function getDlType(): string {
-            if (strpos($this->name, 'F_TEXT_') === 0)
+            if (str_starts_with($this->name, 'F_TEXT_'))
                 return 'localized_texts';
 
             return 'mst';

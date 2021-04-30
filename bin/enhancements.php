@@ -9,8 +9,8 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\Mst\SkillMstList;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
     $skills  = $container[SkillMstList::class];
     $entries = [];
@@ -18,10 +18,10 @@
         $enhancement_id = (int) $row['enhancement_id'];
         // $names    = Strings::getStrings('MST_BEAST_NAME', $enhancement_id);
 
-        if ($region == 'jp') {
+        if ($region === 'jp') {
             $skill_id     = $row['skill_id_old']; //str_pad(, 6, '0', STR_PAD_RIGHT);
             $entry        = $skills->getEntry($skill_id);
-            $names        = [($entry == null) ? 'UNKNOWN' : $entry->name];
+            $names        = [($entry === null) ? 'UNKNOWN' : $entry->name];
             $descriptions = [$row['47s39AqP']];
         } else {
             $names = Strings::hasStrings('MST_MAGIC_NAME', $row['skill_id_old'])
@@ -32,9 +32,7 @@
         }
 
         $descriptions = array_map(
-            function ($val) {
-                return preg_replace("~^.*?<color=0:255:0>(?:<br>)?(.*?)</color>.*?$~", "$1", $val) ?: $val;
-            },
+            static fn($val) => preg_replace('~^.*?<color=0:255:0>(?:<br>)?(.*?)</color>.*?$~', '$1', $val) ?: $val,
             $descriptions
         );
 
@@ -51,9 +49,9 @@
             'skill_id_old' => (int) $row['skill_id_old'],
             'skill_id_new' => (int) $row['skill_id_new'],
 
-            "cost" => [
-                "gil"       => (int) $row['gil'],
-                "materials" => $mats,
+            'cost' => [
+                'gil'       => (int) $row['gil'],
+                'materials' => $mats,
             ],
 
             'units'   => $units,
@@ -63,7 +61,7 @@
             ],
         ];
 
-        if ($region == 'jp') {
+        if ($region === 'jp') {
             unset($entries[$enhancement_id]['strings']['names']);
             $entries[$enhancement_id]['strings']['description'] = $entries[$enhancement_id]['strings']['description'][0];
         }

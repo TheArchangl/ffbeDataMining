@@ -9,8 +9,8 @@
     use Sol\FFBE\MstList\IconMstList;
     use Sol\FFBE\Strings;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
     IconMstList::init();
     // StorySubMstList
@@ -30,18 +30,18 @@
     // towns
     $towns = [];
     foreach (GameFile::loadMst('F_TOWN_MST') as $row) {
-        $town_id = (int)$row['TownId'];
-        $names   = ($region == 'gl')
+        $town_id = (int) $row['TownId'];
+        $names   = ($region === 'gl')
             ? Strings::getStrings('MST_TOWN_NAME', $town_id) ?? []
             : [$row['name']];
 
         $towns[$town_id] = [
             'names'        => $names,
-            'world_id'     => (int)$row['world_id'],
-            'region_id'    => (int)$row['region_id'],
-            'subregion_id' => (int)$row['subregion_id'],
+            'world_id'     => (int) $row['world_id'],
+            'region_id'    => (int) $row['region_id'],
+            'subregion_id' => (int) $row['subregion_id'],
             'position'     => readIntArray($row['display_position'], ':'),
-            'icon'         => \Sol\FFBE\MstList\IconMstList::getFilename($row['icon_id']),
+            'icon'         => IconMstList::getFilename($row['icon_id']),
 
             // 'route'        => $route,
             // 'temp'         => [
@@ -57,13 +57,13 @@
     $entries = [];
     foreach (GameFile::loadMst('F_DUNGEON_MST') as $row) {
         $dungeon_id = $row['dungeon_id'];
-        $names      = ($region == 'gl')
+        $names      = ($region === 'gl')
             ? Strings::getStrings('MST_DUNGEONS_NAME', $dungeon_id) ?? []
             : [$row['name']];
 
         $entry = [
             'names'        => $names,
-            'world_id'     => (int)$row['world_id'],
+            'world_id'     => (int) $row['world_id'],
             'region_id'    => $row['region_id'],
             'subregion_id' => $row['subregion_id'],
             'position'     => readIntArray($row['display_position'], ':'),
@@ -97,13 +97,12 @@
 
     // mission names
     foreach (GameFile::loadMst('F_MISSION_MST') as $row) {
-        $mission_id = (int)$row['mission_id'];
-        $dungeon_id = (int)$row['dungeon_id'];
-        $name       = ($region == 'gl')
+        $mission_id = (int) $row['mission_id'];
+        $dungeon_id = (int) $row['dungeon_id'];
+
+        $entries[$dungeon_id]['missions'][$mission_id] = ($region === 'gl')
             ? Strings::getString('MST_MISSION_NAME', $mission_id)
             : $row['name'];
-
-        $entries[$dungeon_id]['missions'][$mission_id] = $name;
     }
 
     /*

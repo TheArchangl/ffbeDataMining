@@ -46,7 +46,7 @@
     function readParameters(string $string, string $force_delim = ','): array|int {
         $values = $string;
 
-        foreach (['@', ',', '&', ':'] as $k => $delim) {
+        foreach (['@', ',', '&', ':'] as $delim) {
             $values = readArray($values, $delim, str_contains($force_delim, $delim));
         }
 
@@ -143,20 +143,15 @@
     }
 
     /**
-     * @param string[] $data
-     * @param string   $char
+     * @param mixed  $val
+     * @param string $char
      *
      * @return string[][]
      */
-    function parseListStep(array $data, string $char): array {
-        foreach ($data as $k => $val)
-            if (is_array($val))
-                $data[$k] = parseListStep($val, $char);
-
-            else
-                $data[$k] = explode($char, $val);
-
-        return $data;
+    function parseListStep(mixed $val, string $char): array {
+        return is_array($val)
+            ? array_map(static fn($v) => parseListStep($v, $char), $val)
+            : explode($char, $val);
     }
 
     /**
@@ -166,13 +161,10 @@
      * @return string[]|string
      */
     function parseList(string $string, string $chars): array|string {
-        $string = [$string];
-
-        $chars = str_split($chars);
-        foreach ($chars as $char)
+        foreach (str_split($chars) as $char)
             $string = parseListStep($string, $char);
 
-        return $string[0];
+        return $string;
     }
 
     /**
@@ -216,7 +208,7 @@
         return $entry;
     }
 
-    function readEquip($str): array {
+    function readEquip(string $str): array {
         $str = explode(',', $str);
         $str = array_map('intval', $str);
         //        $str = array_map(function ($id) use ($equipment_id) {
@@ -262,8 +254,14 @@
         if ($sort)
             ksort($entries);
 
-        $entries = utf8($entries);
-        $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
+        try {
+            $data = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
+        }
+        catch (\JsonException) {
+            echo "JsonException !\n";
+            $entries = utf8($entries);
+            $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
+        }
 
         $data = preg_replace_callback('/\[\s*([^{\]\[:]+)\s*]/u', static function ($match) {
             $string = $match[1];

@@ -181,9 +181,8 @@
          * @inheritDoc
          */
         public static function readFile($file, $language): void {
-            static::$loaded[basename($file, '.txt')] = true;
-
             parent::readFile($file, $language);
+            static::$loaded[basename($file, '.txt')] = true;
         }
 
         /**

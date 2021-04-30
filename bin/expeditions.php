@@ -35,8 +35,8 @@
      *
      * @return array
      */
-    function parseUnitBonus($row) {
-        if ($row['RecommendedType'] == null)
+    function parseUnitBonus(array $row): ?array {
+        if (! ($row['RecommendedType'] ?? null))
             return null;
 
         [$type, $value, $bonus] = explode(':', $row['RecommendedType']) + [null, null, null];
@@ -90,7 +90,7 @@
             'difficulty' => (int) $row['ChallengeValue'],
             'duration'   => (int) $diff['Duration'],
             'units'      => (int) $row['UnitCount'],
-            'required'   => $row['RequiredUnitSeriesList'] == 0
+            'required'   => (int) $row['RequiredUnitSeriesList'] === 0
                 ? null
                 : Strings::getString('MST_UNIT_NAME', $row['RequiredUnitSeriesList']),
 
@@ -121,7 +121,7 @@
         ];
 
         $relics = GameHelper::parseMstItem($row['RelicReward']);
-        assert($relics[1] == 1209000808);
+        assert((int) $relics[1] === 1209000808);
 
         $entry['relics'] = (int) $relics[3];
         $entry['reward'] = array_combine(
@@ -144,10 +144,10 @@
 
         $entry['unit_bonus'] = parseUnitBonus($row);
 
-        assert(strpos($row['ConsumableItemList'], ',') === false);
-        assert(strpos($row['RequiredUnitSeriesList'], ',') === false);
-        assert(strpos($row['RelicReward'], ',') === false);
-        assert(strpos($row['DisplayReward'], ',') === false);
+        assert(! str_contains($row['ConsumableItemList'], ','));
+        assert(! str_contains($row['RequiredUnitSeriesList'], ','));
+        assert(! str_contains($row['RelicReward'], ','));
+        assert(! str_contains($row['DisplayReward'], ','));
 
         $entries[$id] = $entry;
     }

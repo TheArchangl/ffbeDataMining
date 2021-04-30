@@ -14,28 +14,32 @@
 
     $files = file_get_contents("{$client_dir}/versions.json") or die('File not found');
     $files = json_decode($files, true, 512, JSON_THROW_ON_ERROR);
+
     foreach ($files as $k => $entry) {
-        if ($entry['Type'] == 2)
+        if ($entry['Type'] === 2)
             continue;
 
         $name    = $entry['Name'];
         $ver     = $entry['Version'];
         $lang    = $entry['LanguageCode'] ?? '__';
+
+        // Missing GameFile entry
+        $file_entry = GameFile::getEntry($name);
+        if ($file_entry === null) {
+            echo "\tSkipping {$name}\n";
+            continue;
+        }
+
+        // missing file
         $path_in = isset($entry['Language'])
             ? "{$client_dir}/{$entry['LanguageCode']}/{$name}.txt"
             : "{$client_dir}/{$name}.txt";
 
-        if (! file_exists($path_in) && ! in_array($name, ['F_RSC_VERSION', ''], true)) {
+        if (! file_exists($path_in)) {
             echo "\tCould not find file for {$name} v{$ver}\n";
             continue;
         }
 
-        // Missing GameFile entry
-        $file_entry = GameFile::getEntry($name);
-        if ($file_entry == null) {
-            echo "\tSkipping {$name}\n";
-            continue;
-        }
 
         // update most recent file
         $mod_time = filemtime($path_in);
@@ -44,10 +48,10 @@
             ? DATA_INPUT_DIR . "/{$region}/{$entry['LanguageCode']}/{$name}.txt"
             : DATA_INPUT_DIR . "/{$region}/{$name}.txt";
 
-        if (! is_dir($dir = dirname($path_out)) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
-            throw new RuntimeException("Could not create directory '{$dir}'");
-
         if (OVERWRITE || $ver > $max_ver || ! file_exists($path_out) || $mod_time > filemtime($path_out)) {
+            if (! is_dir($dir = dirname($path_out)) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
+                throw new RuntimeException("Could not create directory '{$dir}'");
+
             $changes = true;
             echo "\t{$file_entry->getName()} {$lang} -> v{$ver}\n";
             copy($path_in, $path_out);
@@ -59,10 +63,10 @@
             ? DATA_BACKUP_DIR . "/{$region}/{$entry['LanguageCode']}/{$name}_v{$ver}.txt"
             : DATA_BACKUP_DIR . "/{$region}/{$name}_v{$ver}.txt";
 
-        if (! is_dir($dir = dirname($path_out)) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
-            throw new RuntimeException("Could not create directory '{$dir}'");
-
         if (OVERWRITE || ! is_file($path_out)) {
+            if (! is_dir($dir = dirname($path_out)) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
+                throw new RuntimeException("Could not create directory '{$dir}'");
+
             copy($path_in, $path_out);
             touch($path_out, $mod_time);
         }

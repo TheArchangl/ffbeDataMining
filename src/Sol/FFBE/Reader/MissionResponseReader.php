@@ -401,7 +401,7 @@
                     'flags'       => explode(',', $row['flags']),
                 ];
 
-                if (isset($this->monster_skills[$id]) && $this->monster_skills[$id] != $skill) {
+                if (isset($this->monster_skills[$id]) && $this->monster_skills[$id] !== $skill) {
                     echo json_encode(['new' => $skill['effects'], 'old' => $this->monster_skills[$id]['effects']], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
                     continue;
                 }
@@ -412,8 +412,10 @@
                 // find grant skills
                 foreach ($mst->effects as $effect)
                     switch ($effect->type) {
+                        default:
+                            break;
+
                         case 100:
-                            //foreach ($this->getMonstersForSkill($mst->id) as $monster_id)
                             $this->related_skills[$id][] = $effect->parameters[1];
                             break;
                     }
