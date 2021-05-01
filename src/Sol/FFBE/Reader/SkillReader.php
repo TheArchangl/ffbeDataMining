@@ -15,6 +15,7 @@
     use Solaris\FFBE\Mst\MstList;
     use Solaris\FFBE\Mst\SkillMst;
     use Solaris\FFBE\Mst\SkillMstList;
+    use Solaris\FFBE\MstKey;
     use Solaris\Formatter\SkillFormatter;
 
     class SkillReader extends MstReader {
@@ -119,6 +120,22 @@
             $data = $this->formatOutput($data);
 
             file_put_contents($file, $data);
+        }
+
+        /**
+         * @param string $out_file
+         */
+        public function saveFieldEffects(string $out_file): void {
+            $data = [];
+            foreach (GameFile::loadMst('F_FIELD_EFFECT_MST') as $row) {
+                $id = (int) current($row);
+
+                $data[$id] = $this->formatFieldEffectRow($row);
+            }
+
+            $data = $this->formatOutput($data);
+
+            file_put_contents($out_file, $data);
         }
 
         /**
@@ -288,12 +305,10 @@
                 'effects_raw'      => '',
                 //
                 'requirements'     => SkillMstList::readRequirements($row),
-                'unit_restriction' => $row['unit_restriction'] == '' ? null : readIntArray($row['unit_restriction']),
+                'unit_restriction' => $row['unit_restriction'] === '' ? null : readIntArray($row['unit_restriction']),
             ];
 
-            $entry = $this->parseSkillEffects($id, $entry);
-
-            return $entry;
+            return $this->parseSkillEffects($id, $entry);
         }
 
         /**
@@ -326,7 +341,7 @@
             if ($row['mp_cost'] > 0)
                 $costs->MP = (int) $row['mp_cost'];
 
-            if ($row['skill_cost'] != '') {
+            if ($row['skill_cost'] !== '') {
                 [$type, $cost] = explode(':', $row['skill_cost']);
 
                 switch ($type) {
@@ -341,5 +356,17 @@
             }
 
             return $entry;
+        }
+
+        private function formatFieldEffectRow(array $row): array {
+            $id = (int) $row[MstKey::FIELD_EFFECT_ID];
+
+            $entry = [
+                'duration'    => (int) $row[MstKey::DURATION],
+                'effects'     => [],
+                'effects_raw' => '',
+            ];
+
+            return $this->parseSkillEffects($id, $entry);
         }
     }

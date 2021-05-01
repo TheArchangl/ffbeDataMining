@@ -20,6 +20,7 @@
 
     echo "Skills\n";
     $reader = new SkillReader($region, $container[SkillMstList::class]);
+    $reader->saveFieldEffects(join('/', [DATA_OUTPUT_DIR, $region, 'field_effects.json']));
     $reader->saveAbilities(join('/', [DATA_OUTPUT_DIR, $region, 'skills_ability.json']));
     $reader->savePassives(join('/', [DATA_OUTPUT_DIR, $region, 'skills_passive.json']));
     $reader->saveMagic(join('/', [DATA_OUTPUT_DIR, $region, 'skills_magic.json']));

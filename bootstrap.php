@@ -66,10 +66,10 @@
         foreach ($files as $table => $filename)
             Strings::readTable($table);
 
-        $ability_mst    = new AbilityMstList();
-        $magic_mst      = new MagicMstList();
-        $limitburst_mst = new LimitBurstMstList();
-        $fieldeffects_mst   = new FieldEffectMstList();
+        $ability_mst      = new AbilityMstList();
+        $magic_mst        = new MagicMstList();
+        $limitburst_mst   = new LimitBurstMstList();
+        $fieldeffects_mst = new FieldEffectMstList();
 
         $client = $region === 'gl'
             ? new ClientGL('', false)
@@ -81,7 +81,6 @@
         $skill_mst->addList($limitburst_mst);
         $skill_mst->addList($fieldeffects_mst);
 
-        print "Reading Skills\n";
         print "\tAbilities\n";
         $ability_mst->readFile();
         print "\tMagic\n";
@@ -99,3 +98,8 @@
 
         return $skill_mst;
     };
+
+    function container(): Container {
+        global $container;
+        return $container;
+    }
