@@ -5,6 +5,7 @@
      * Time: 16:13
      */
 
+    use Pimple\Container;
     use Sol\FFBE\GameFile;
     use Sol\FFBE\MstList\IconMstList;
     use Sol\FFBE\Strings;
@@ -22,6 +23,9 @@
     require_once dirname(__DIR__) . '/bootstrap.php';
     require_once dirname(__DIR__) . '/helpers.php';
     require_once __DIR__ . '/read_strings.php';
+
+    /** @var Container $container */
+    /** @var string $region */
 
     IconMstList::init();
 
@@ -55,7 +59,7 @@
                 default => 'skill'
             };
 
-            $effects[] = "Grants '{$skill}' {$type}.";
+            $effects[] = "Grant '{$skill}' {$type}";
         }
 
         $entry['skills']  = $skills;
@@ -124,14 +128,11 @@
         if ($special)
             $entry['stats']['status_resist'] = array_merge($entry['stats']['status_resist'] ?? [], $special);
 
-        if ($row['special_resist2']) {
-            var_dump(['special_resist2!', $row['special_resist2'], $id]);
-            echo "WEOH WOEH WARNING";
-            die();
-        }
+        if ($row['special_resist2'])
+            die('Special Resist2: ' . json_encode($row['special_resist2'], JSON_THROW_ON_ERROR));
 
-        if ($row['equip_slot_type'] == "1" && $row['atk_variance'] != GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]) {
-            printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance']), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]));
+        if ($row['equip_slot_type'] === '1' && $row['atk_variance'] !== GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]) {
+            printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance'], JSON_THROW_ON_ERROR), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']], JSON_THROW_ON_ERROR));
 
             $entry['dmg_variance'] = explode(',', $row['atk_variance']);
             $entry['dmg_variance'] = array_map(static fn($val) => is_numeric($val) ? $val / 100 : $val, $entry['dmg_variance']);
@@ -145,7 +146,7 @@
             $reqs = GameHelper::readParameters($reqs, '@');
 
             if (! isset($req_types[$reqs[0]]))
-                throw new \LogicException("no type");
+                throw new \LogicException('no type');
 
             $reqs[0]               = $req_types[$reqs[0]];
             $entry['requirements'] = $reqs;
@@ -155,7 +156,7 @@
         readSkills($entry, $row);
 
         // local
-        if ($region == 'jp')
+        if ($region === 'jp')
             unset($entry['strings']);
 
         $entries[$id] = $entry;
@@ -171,9 +172,9 @@
     foreach (GameFile::loadMst(MateriaMstList::getName()) as $row) {
         $id = $row['materia_id'];
 
-        assert($row['is_unique'] == 0);
+        assert($row['is_unique'] === '0');
 
-        if ($region == 'jp')
+        if ($region === 'jp')
             $names = [$row['name']];
         else
             $names = Strings::getStrings('MST_MATERIA_NAME', $id);
@@ -296,7 +297,7 @@
 
             //
             'effects'               => null,
-            'effects_raw'           => "",
+            'effects_raw'           => '',
 
             'icon'    => IconMstList::getFilename($row['icon_id']),
             //
