@@ -9,6 +9,7 @@
     use Sol\FFBE\MstList\IconMstList;
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
+    use Solaris\FFBE\Mst\AbilitySkillMst;
     use Solaris\FFBE\Mst\EquipItemMstList;
     use Solaris\FFBE\Mst\LimitBurstMst;
     use Solaris\FFBE\Mst\MagicSkillMst;
@@ -18,15 +19,16 @@
     use Solaris\FFBE\MstKey;
     use Solaris\Formatter\SkillFormatter;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
+    require_once __DIR__ . '/read_strings.php';
 
     IconMstList::init();
 
     function readSkills(array &$entry, array $row) {
         global $container;
 
-        if ($row['equip_skill_magic'] == '' && $row['equip_skill_ability'] == '')
+        if ($row['equip_skill_magic'] === '' && $row['equip_skill_ability'] === '')
             return;
 
         $skills  = [];
@@ -42,22 +44,18 @@
 
             /** @var SkillMst $skill */
             $skill = $container[SkillMstList::class]->getEntry($skill_id);
-            if ($skill == null) {
+            if ($skill === null) {
                 $effects[] = "Unknown skill ({$skill_id})";
                 continue;
             }
 
-            $type = $skill->isActive() == false
-                ? 'passive'
-                : ($skill instanceof MagicSkillMst
-                    ? 'magic'
-                    : 'ability');
+            $type = match ($skill::class) {
+                MagicSkillMst::class => 'magic',
+                AbilitySkillMst::class => $skill->isActive() ? 'ability' : 'passive',
+                default => 'skill'
+            };
 
-            $name = GameFile::getRegion() == 'jp'
-                ? $skill->name
-                : $skill->getName();
-
-            $effects[] = "Grants '{$name}' {$type}.";
+            $effects[] = "Grants '{$skill}' {$type}.";
         }
 
         $entry['skills']  = $skills;
@@ -68,12 +66,11 @@
     $entries = [];
     foreach (GameFile::loadMst('F_EQUIP_ITEM_MST') as $row) {
         $id = (int) $row['equip_id'];
-        assert($row['is_unique'] == 0);
+        assert($row['is_unique'] === '0');
 
-        if ($region == 'jp')
-            $names = [$row['name']];
-        else
-            $names = Strings::getStrings('MST_EQUIP_ITEM_NAME', $id);
+        $names = $region === 'jp'
+            ? [$row['name']]
+            : Strings::getStrings('MST_EQUIP_ITEM_NAME', $id);
 
         $entry = [
             'name'             => $names[0] ?? $row['name'],
@@ -89,7 +86,7 @@
             // 'unique'        => $row['is_unique'] == 1, // none
 
             // weapon
-            'is_twohanded'     => $row['is_two_handed'] == 1,
+            'is_twohanded'     => $row['is_two_handed'] === '1',
             'dmg_variance'     => null,
             'accuracy'         => (int) ($row['accuracy'] ?? 0),
 
@@ -213,7 +210,7 @@
 
         // restriction
         $firstSkill = $entry['skills'][count($entry['skills']) - 1] ?? null;
-        if ($firstSkill != null) {
+        if ($firstSkill !== null) {
             /** @var SkillMst $skill */
             $skill = $container[SkillMstList::class]->getEntry($firstSkill);
             if (! empty($skill->requirements['unit']))
@@ -221,14 +218,14 @@
         }
 
         // local
-        if ($region == 'jp')
+        if ($region === 'jp')
             unset($entry['strings']);
 
         $entries[$id] = $entry;
     }
 
     // read materia limits
-    if ($region == 'jp')
+    if ($region === 'jp')
         foreach ($entries as $id => $val)
             unset($entries[$id]['unique']);
 
@@ -237,7 +234,7 @@
             $ids   = explode(',', $row['materia_id']);
             $limit = $row['limit'];
 
-            assert($limit == 1);
+            assert($limit === 1);
 
             foreach ($ids as $id)
                 $entries[$id]['unique'] = true;
@@ -273,9 +270,9 @@
 
         // var_dump($row);
 
-        assert($row['is_unique'] == 0);
+        assert($row['is_unique'] === '0');
 
-        if ($region == 'jp')
+        if ($region === 'jp')
             $names = [$row['name']];
         else
             $names = Strings::getStrings('MST_ITEM_NAME', $id);
@@ -359,7 +356,7 @@
         // H27Vr9UD item type ? ['Consumable', 'Crafting Material', 'Awakening Material', 'Magicite']
 
         // local
-        if ($region == 'jp')
+        if ($region === 'jp')
             unset($entry['strings']);
 
         $entries[$id] = $entry;
@@ -367,11 +364,11 @@
 
     // trim effects_raw
     $data = toJSON($entries);
-    $data = preg_replace_callback('/(\"effects_raw":\s+)([^:]+)(,\s+"[^"]+":)/sm', function ($match) {
+    $data = preg_replace_callback('/("effects_raw":\s++)([^:]+)(,\s++"[^"]++":)/m', static function ($match) {
         $trimmed = preg_replace('~\r?\n\s+~', '', $match[2]);
         $trimmed = str_replace(',', ', ', $trimmed);
 
-        return $match[1] . $trimmed . $match[3];
+        return "{$match[1]}{$trimmed}{$match[3]}";
     }, $data);
 
     file_put_contents(DATA_OUTPUT_DIR . "/{$region}/items.json", $data);

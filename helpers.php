@@ -263,7 +263,7 @@
             $data    = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR, 1024);
         }
 
-        $data = preg_replace_callback('/\[\s*([^{\]\[:]+)\s*]/u', static function ($match) {
+        $data = preg_replace_callback('/\[\s++("[^"]*+"|[^{\]\[:]+)\s++]/u', static function ($match) {
             $string = $match[1];
             $string = explode(",\n", $string);
             $string = array_map('trim', $string);

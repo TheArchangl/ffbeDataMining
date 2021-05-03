@@ -486,7 +486,8 @@
                     return "Clear in {$vals[1]} turns or less";
 
                 case 102:
-                    return "Exploit elemental[?] weakness {$vals[0]} times or more";
+                    $i = $vals[0] + 1;
+                    return "Attack with foe's elemental weakness {$i} times or more";
 
                 case 122:
                     $chain = $vals[0] + 1;
