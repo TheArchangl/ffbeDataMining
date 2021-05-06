@@ -132,7 +132,7 @@
             die('Special Resist2: ' . json_encode($row['special_resist2'], JSON_THROW_ON_ERROR));
 
         if ($row['equip_slot_type'] === '1' && $row['atk_variance'] !== GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']]) {
-            printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance'], JSON_THROW_ON_ERROR), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']], JSON_THROW_ON_ERROR));
+            // printf("\t%24s %9s instead of %9s\n", $names[0], json_encode($row['atk_variance'], JSON_THROW_ON_ERROR), json_encode(GameHelper::WEAPON_DAMAGE_VARIANCE_1H[$row['equip_type']], JSON_THROW_ON_ERROR));
 
             $entry['dmg_variance'] = explode(',', $row['atk_variance']);
             $entry['dmg_variance'] = array_map(static fn($val) => is_numeric($val) ? $val / 100 : $val, $entry['dmg_variance']);
