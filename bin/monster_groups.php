@@ -9,18 +9,18 @@
     use Sol\FFBE\Strings;
     use Solaris\FFBE\GameHelper;
 
-    require_once '../bootstrap.php';
-    require_once __DIR__ . '/read_strings.php';
+    require_once __DIR__ . '/../bootstrap.php';
+    // require_once __DIR__ . '/read_strings.php';
     ini_set('assert.active', 1);
 
     // setup
     $region     = 'gl';
     $dungeon_id = '*';
-    $mission_id = '30700101';
+    $mission_id = '715002*';
 
 
     // get data
-    $files  = glob(CLIENT_DIR . "missions\\{$region}\\{$dungeon_id}\\{$mission_id}\\*.json", GLOB_BRACE);
+    $files  = glob(CLIENT_DIR . "/missions/{$region}/{$dungeon_id}/{$mission_id}/*.json", GLOB_BRACE);
     $reader = new MonsterGroupReader();
     $reader->readFiles($files);
     $reader->printOutput();
@@ -44,9 +44,9 @@
     }
 
     class MonsterGroup {
-        public int    $group_id;
-        public int    $order_index;
-        public array  $monsters = [];
+        public int   $group_id;
+        public int   $order_index;
+        public array $monsters = [];
 
         public static function readRow(array $row): self {
             $new                                    = new static();
@@ -60,12 +60,12 @@
 
     class MonsterGroupReader {
         // input
-        protected bool             $is_exploration = false;
-        protected array            $monster_loot   = [];
-        protected array            $missions       = [];
-        protected GroupContainer   $battle_groups;
-        protected array            $mission_runs   = [];
-        protected array            $waves          = [];
+        protected array          $monster_loot   = [];
+        protected array          $missions       = [];
+        protected GroupContainer $battle_groups;
+        protected array          $mission_runs   = [];
+        protected array          $waves          = [];
+        protected array          $monsters       = [];
 
         public function __construct() {
             $this->battle_groups = new GroupContainer();
@@ -78,11 +78,11 @@
                 $data = GameFile::replaceKeysRecursive($data);
                 $data = $data['body']['data'] ?? null;
 
-                if ($data == null)
+                if (! $data)
                     continue;
 
                 $mission_id = $data['MissionStartRequest'][0]['mission_id'] ?? null;
-                if ($mission_id == null)
+                if (! $mission_id)
                     continue;
 
                 // ScenarioBattleGroupMst
@@ -112,8 +112,8 @@
                         'drop_gil'     => $entry['gil'],
                     ];
 
-                    if (isset($this->monster_loot[$id][$part]) && $this->monster_loot[$id][$part] != $entry) {
-                        var_dump(['old' => $this->monster_loot[$id][$part], 'new' => $entry]);
+                    if (isset($this->monster_loot[$id][$part]) && $this->monster_loot[$id][$part] !== $entry) {
+                        echo json_encode(['old' => $this->monster_loot[$id][$part], 'new' => $entry], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
                         die();
                     }
 
@@ -128,7 +128,7 @@
                     @$this->missions[$mission_id][$wave_num][$battle_group_id]++;
 
                     if (isset($this->waves[$mission_id][$wave_num]))
-                        assert($this->waves[$mission_id][$wave_num] == $phase['weight']);
+                        assert($this->waves[$mission_id][$wave_num] === $phase['weight']);
 
                     else
                         $this->waves[$mission_id][$wave_num] = (int) $phase['weight'];
@@ -143,7 +143,7 @@
                     $battle_group_id = $entry['battle_group_id'];
 
                     #$i = $entry['order_index'] - 1;
-                    if ($battle_group_id == '')
+                    if ($battle_group_id === '')
                         continue;
 
                     $this->missions[$mission_id][$fight_id]['exploration'] = true;
@@ -154,7 +154,7 @@
                     $scenario_id     = $phase['scenario_battle_id'];
                     $battle_group_id = $phase['battle_group_id'];
 
-                    if ($battle_group_id == '')
+                    if ($battle_group_id === '')
                         continue;
 
                     @$this->missions[$mission_id][$scenario_id][$battle_group_id]++;
@@ -245,7 +245,7 @@
 
             $string = '';
             foreach ($loot as $table => $items)
-                if ($table != 'name')
+                if ($table !== 'name')
                     $string .= vsprintf('        %12s   %s%s', [$table, is_array($items) ? implode(', ', $items) : $items, "\n",]);
 
             return $string;
