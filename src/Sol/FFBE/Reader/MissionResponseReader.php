@@ -436,7 +436,7 @@
                     continue;
 
                 $skill_ids = readIntArray($row['monster_skill_ids']);
-                $skill_ids = array_filter($skill_ids);
+#                $skill_ids = array_filter($skill_ids);
 
                 $this->monster_skillsets[$id] = $skill_ids;
             }
