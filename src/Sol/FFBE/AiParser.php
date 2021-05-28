@@ -192,9 +192,9 @@
         }
 
         /**
-         * @param string $target
-         * @param string $type
-         * @param int    $value
+         * @param string     $target
+         * @param string     $type
+         * @param int|string $value
          *
          * @return string|null
          */
@@ -220,7 +220,7 @@
                 case 'flg_cntup_act':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + ($offset ?? 25)) . " == {$value}";
+                    return static::getVarName((int) $var_num + ($offset ?? 25)) . " == {$value}";
 
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 'flg2_cntup_over':
@@ -228,7 +228,7 @@
                 case 'flg_cntup_over':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + ($offset ?? 25)) . " >= {$value}";
+                    return static::getVarName((int) $var_num + ($offset ?? 25)) . " >= {$value}";
 
                 /** @noinspection PhpMissingBreakStatementInspection */
                 case 'flg2_cntup_under':
@@ -236,23 +236,23 @@
                 case 'flg_cntup_under':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + ($offset ?? 25)) . " < {$value}";
+                    return static::getVarName((int) $var_num + ($offset ?? 25)) . " < {$value}";
 
                 // timers
                 case 'flg_timer_act':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 20) . " == {$value}";
+                    return static::getVarName((int) $var_num + 20) . " == {$value}";
 
                 case 'flg_timer_over':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 20) . " >= {$value}";
+                    return static::getVarName((int) $var_num + 20) . " >= {$value}";
 
                 case 'flg_timer_under':
                     [$var_num, $value] = explode(',', $value);
 
-                    return static::getVarName($var_num + 20) . " <= {$value}";
+                    return static::getVarName((int) $var_num + 20) . " <= {$value}";
 
                 // turn conds
                 case 'actbetween':
@@ -392,7 +392,7 @@
 
                 case 'party_alive_num':
                     $negate = ((int) $value === 1 ? '' : 'not ');
-                    $value  = (array) explode(',', $value);
+                    $value  = explode(',', $value);
                     $name   = ['unknown', 'monsters', 'monsters', 'unknown'][(int) $value[0]];
 
                     return "{$negate} party('{$value[0]}:{$name}').unitsAlive() == {$value[1]}";
@@ -419,6 +419,23 @@
                 default:
                     return "conditionNotImplemented('{$type}:{$value}')";
             }
+        }
+
+        /**
+         * @param string $code
+         *
+         * @return string
+         */
+        public static function insertMonsterNames(string $code): string {
+            $code = preg_replace_callback("~Summon ally #(\d+)~", static function ($match) {
+                $monster = static::getMonsterByIndex($match[1] - 1);
+                if ($monster === null)
+                    return $match[0];
+
+                return "Summon {$monster['name']} ({$monster['id']})";
+            }, $code);
+
+            return $code;
         }
 
         /**
@@ -451,10 +468,12 @@
                     if ($skill_num === -1)
                         return ["useRandomSkill('{$target}')", '# [?]'];
 
-                    $action = "useSkill({$skill_num}, '{$target}')";
-
                     // get skill id from num
                     $skill_id = static::$skillset[$skill_num - 1] ?? null;
+                    if ($skill_id === 0)
+                        return ['wait()', '# unset skill [?]'];
+
+                    $action = "useSkill({$skill_num}, '{$target}')";
                     if (! $skill_id)
                         return [$action, '# Unknown skill - wrong skillset?'];
 
@@ -546,14 +565,10 @@
                         if (! in_array($value, [0, 1], false))
                             die("WEEE WOOO 3: $value");
 
-                        if ($value) {
-                            $note   = '# timer';
-                            $action = "{$letter}  = Timer.create()";
-                        }
-                        else {
-                            $note   = '# timer';
-                            $action = "{$letter}.reset()";
-                        }
+                        $note   = '# timer';
+                        $action = $value
+                            ? "{$letter}  = Timer.create()"
+                            : "{$letter}.reset()";
 
                         break;
                 }
@@ -701,7 +716,7 @@
             $name  ??= $entry['name'];
 
             if (isset(static::$monsters["{$monster_id}.2"]))
-                $name .= ' ' . chr(ord('A') + $part_num - 1);
+                $name .= ' ' . chr(ord('A') + (int) $part_num - 1);
 
             return [
                 'id'    => $monster_id,
@@ -709,22 +724,5 @@
                 'name'  => $name,
                 'entry' => $entry,
             ];
-        }
-
-        /**
-         * @param string $code
-         *
-         * @return string
-         */
-        public static function insertMonsterNames(string $code): string {
-            $code = preg_replace_callback("~Summon ally #(\d+)~", static function ($match) {
-                $monster = static::getMonsterByIndex($match[1] - 1);
-                if ($monster === null)
-                    return $match[0];
-
-                return "Summon {$monster['name']} ({$monster['id']})";
-            }, $code);
-
-            return $code;
         }
     }
