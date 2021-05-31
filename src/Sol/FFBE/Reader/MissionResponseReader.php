@@ -230,6 +230,13 @@
         }
 
         /**
+         * @return int
+         */
+        public function getMissionID(): int {
+            return $this->mission_id;
+        }
+
+        /**
          * @param array $data
          * @param int[] $ids
          */
@@ -306,9 +313,12 @@
 
                 printf("# Mission '%s' (%d)\n", $name, $id);
             }
-            else {
+
+            elseif ($this->isFake)
+                [$id, $name] = [0, 'Mission'];
+
+            else
                 throw new \LogicException('No mission data found');
-            }
 
             if (isset($this->mission_id) && $this->mission_id !== $id)
                 throw new \LogicException('Cannot combine info on two different missions');
@@ -436,7 +446,7 @@
                     continue;
 
                 $skill_ids = readIntArray($row['monster_skill_ids']);
-#                $skill_ids = array_filter($skill_ids);
+                #                $skill_ids = array_filter($skill_ids);
 
                 $this->monster_skillsets[$id] = $skill_ids;
             }
@@ -872,12 +882,5 @@
             // monster stats after break
             foreach ($break_stats as $row)
                 $this->monster_break_info[$row['e56NZY42']]['monster'] = $row;
-        }
-
-        /**
-         * @return int
-         */
-        public function getMissionID(): int {
-            return $this->mission_id;
         }
     }

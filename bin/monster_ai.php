@@ -8,9 +8,10 @@
     use Sol\FFBE\GameFile;
     use Sol\FFBE\Reader\MissionResponseReader;
     use Solaris\FFBE\Helper\Strings;
+    use Solaris\FFBE\Mst\SkillMstList;
 
-    require_once dirname(__DIR__) . "/bootstrap.php";
-    require_once dirname(__DIR__) . "/helpers.php";
+    require_once dirname(__DIR__) . '/bootstrap.php';
+    require_once dirname(__DIR__) . '/helpers.php';
 
     $region = 'jp';
     GameFile::setRegion($region);
@@ -21,19 +22,19 @@
     $monsters = [
         // temp
         [
-            'monster_id'  => 2020200,
-            'skillset_id' => 202020002,
-            'ai_id'       => 0,
-        ],
-        [
-            'monster_id'  => 3090900,
-            'skillset_id' => 309090000,
-            'ai_id'       => 0,
-        ],
-        [
-            'monster_id'  => 407260000,
-            'skillset_id' => 407260002,
+            'monster_id'  => 4072600,
+            'skillset_id' => 407260003,
             'ai_id'       => 407260002,
+        ],
+        [
+            'monster_id'  => 2020000,
+            'skillset_id' => 202000004,
+            'ai_id'       => 202000003,
+        ],
+        [
+            'monster_id'  => 3020400,
+            'skillset_id' => 302040005,
+            'ai_id'       => 302040002,
         ],
         // 3* Levi?
         //        [
@@ -410,7 +411,7 @@
             function ($arr) {
                 return [
                     'name'                 => (string) ($arr['name'] ?? Strings::getString('MST_MONSTER_NAME', $arr['monster_id'])
-                                                                        ?? Strings::getString('MST_MONSTER_NAME', substr($arr['monster_id'], 0, -2) . "00")
+                                                                        ?? Strings::getString('MST_MONSTER_NAME', substr($arr['monster_id'], 0, -2) . '00')
                                                                            ?? 'Unknown Monster'),
                     'monster_unit_id'      => $arr['monster_id'],
                     'monster_parts_num'    => 0,
@@ -420,7 +421,8 @@
             }, $monsters),
     ];
 
-    $reader = new MissionResponseReader($region, $container[\Solaris\FFBE\Mst\SkillMstList::class]);
+    $container = container();
+    $reader = new MissionResponseReader($region, $container[SkillMstList::class], true);
     $reader->readResponse($data);
-    $reader->saveOutput(DATA_OUTPUT_DIR . "/monster_ai_result.txt", false);
+    $reader->saveOutput(DATA_OUTPUT_DIR . '/monster_ai_result.txt', false);
     //$reader->saveMonsterSkills(__DIR__ . '/data/monster_skills.json');
