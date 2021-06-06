@@ -21,6 +21,13 @@
         "ext-openssl":                "*",
         "mdurrant/php-binary-reader": "^1.0",
         "guzzlehttp/guzzle":          "^6.2",
-        "pimple/pimple":              "^3.2"
-    }
+        "pimple/pimple":              "^3.2",
+        "aenigma/heroku":             "dev-master as 1.99.99"
+    },
+    "repositories":      [
+        {
+            "type": "path",
+            "url":  "../ffbe-discord"
+        }
+    ]
 }

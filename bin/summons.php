@@ -234,11 +234,11 @@
                     'cost'           => (int) $row['point'],
                 ];
 
-                assert(count($this->boards[$beast_id]) == $row['index']);
+                assert(count($this->boards[$beast_id]) === (int) $row['index']);
                 $this->boards[$beast_id][$node_id] = $entry;
             }
 
-            assert(count(GameFile::loadMst('BeastBoardPieceExtMstList')) == 1);
+            assert(count(GameFile::loadMst('BeastBoardPieceExtMstList')) === 1);
         }
     }
 

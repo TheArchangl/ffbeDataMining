@@ -33,7 +33,7 @@
                 Strings::readFile($file, basename(dirname($file)));
 
             // read manual overwrite
-            $file = ROOT_DIR . "/strings/gl/manual.json";
+            $file = ROOT_DIR . '/strings/gl/manual.json';
             $data = file_get_contents($file);
             $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
 

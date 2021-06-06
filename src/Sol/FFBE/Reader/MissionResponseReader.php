@@ -254,6 +254,7 @@
                 ];
 
                 $mst              = new AbilitySkillMst();
+                $mst->active      = false;
                 $mst->id          = $id;
                 $mst->attack_type = 0;
                 $mst->elements    = [];

@@ -66,14 +66,15 @@
         foreach ($files as $table => $filename)
             Strings::readTable($table);
 
-        $ability_mst      = new AbilityMstList();
-        $magic_mst        = new MagicMstList();
-        $limitburst_mst   = new LimitBurstMstList();
-        $fieldeffects_mst = new FieldEffectMstList();
 
         $client = $region === 'gl'
             ? new ClientGL('', false)
             : new ClientJP('', false);
+
+        $ability_mst      = new AbilityMstList($client);
+        $magic_mst        = new MagicMstList($client);
+        $limitburst_mst   = new LimitBurstMstList($client);
+        $fieldeffects_mst = new FieldEffectMstList($client);
 
         $skill_mst = new MetaMstList($client);
         $skill_mst->addList($ability_mst);
