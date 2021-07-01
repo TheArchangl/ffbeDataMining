@@ -42,7 +42,7 @@
         //     return $update_files;
         // }
 
-        protected function buildUri($type, $filename, $version) {
-            return "http://cdnbase.resource.exvius.com/lapis/resource/mst/Ver{$version}_{$filename}.dat";
+        protected function buildUri($type, $hashname, string $language, $version) {
+            return "http://cdnbase.resource.exvius.com/lapis/resource/mst/Ver{$version}_{$hashname}.dat";
         }
     }
