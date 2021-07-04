@@ -4,7 +4,6 @@
     use Sol\FFBE\Strings;
 
     require_once __DIR__ . '/../bootstrap.php';
-    require_once __DIR__ . '/client_update.php';
 
     const BLACKLIST = [
         'F_TEXT_BATTLE_SCRIPT',
@@ -13,13 +12,32 @@
         'F_TEXT_ANALYTICS_ITEMS',
         'F_TEXT_ANALYTICS_LOCALIZE',
         'F_TEXT_DEFINE',
-        'F_TEXT_DESCRIPTION_FORMAT'
+        'F_TEXT_DESCRIPTION_FORMAT',
+        'F_TEXT_DESCRIPTION_FORMAT_1',
+        'F_TEXT_DESCRIPTION_FORMAT_2',
+        'F_TEXT_DESCRIPTION_FORMAT_3',
+        'F_TEXT_DESCRIPTION_FORMAT_4',
+        'F_TEXT_DESCRIPTION_FORMAT_5',
         //        'F_TEXT_TEXT_EN.txt',
     ];
 
-    $full = in_array(strtolower(realpath($argv[0])), array_map(static fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/run_all.php']), true);
+    const WHITELIST = [
+        'MST_GAMBIT_NAME',
+        'MST_GAMBIT_EXPLAIN',
+        'MST_MORALE_BEFORE_BATTLE_RULE',
+        'MST_MORALE_IN_BATTLE_RULE',
+    ];
+
+    $region ??= 'gl';
+
+    $cmd  = strtolower(realpath($argv[0]));
+    $full = in_array($cmd, array_map(static fn($path) => strtolower(realpath($path)), [__FILE__, __DIR__ . '/run_all.php']), true);
     if (! $full)
+        /** @noinspection UsingInclusionReturnValueInspection */
         return require __DIR__ . '/read_strings.php';
+
+    if (! in_array(__DIR__ . '/client_update.php', get_included_files()))
+        require_once __DIR__ . '/client_update.php';
 
     echo "Parsing strings\n";
 
@@ -95,7 +113,7 @@
             $output[$match[1]][$match[2]] = $strs;
         }
         else {
-            if (empty($k) || ctype_digit($k) || $k[-1] == '_')
+            if (empty($k) || ctype_digit($k) || $k[-1] === '_')
                 continue;
 
             $k = utf8_encode($k);
@@ -105,7 +123,7 @@
     }
 
     foreach ($output as $file => $strings) {
-        if (count($strings) > 10)
+        if (isset(WHITELIST[$file]) || count($strings) > 10)
             continue;
 
         foreach ($strings as $k => $string)
@@ -114,8 +132,8 @@
         unset($output[$file]);
     }
 
-    //            ksort($output);
 
+    // output
     $dir = ROOT_DIR . "/strings/{$region}";
     if (! is_dir($dir) && ! mkdir($dir, 0777, true) && ! is_dir($dir))
         throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
@@ -126,6 +144,6 @@
             if (is_array($strs))
                 ksort($strings[$k]);
 
-        $data = json_encode((object) $strings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT, 512);
+        $data = json_encode((object) $strings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         file_put_contents("{$dir}/{$file}.json", $data);
     }

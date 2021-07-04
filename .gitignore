@@ -1,14 +1,18 @@
 ### Project specific
+ai/
 csv/
 dat_enc/
 dat_dec/
 dat_bak/
 data/
+dumps/
 etc/
 src/Solaris/
+strings/
 bin/json.json
+bin/keys.gl.txt
+bin/keys.jp.txt
 vendor/
-
 
 ### Windows
 # Windows image file caches
