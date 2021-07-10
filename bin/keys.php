@@ -25,6 +25,11 @@
                 continue;
 
             $row  = explode("\t", $line);
+            if (count($row) < 5) {
+                print "Skipping '{$line}'\n";
+                continue;
+            }
+
             $type = array_pop($row);
 
 
@@ -71,8 +76,8 @@
 
 
                     $class = str_replace('::', '', $class);
-                    if (class_exists("\\Solaris\\FFBE\\Request\\{$class}"))
-                        continue 2;
+                    #if (class_exists("\\Solaris\\FFBE\\Request\\{$class}"))
+                    #    continue 2;
 
                     $path = ROOT_DIR . "/../ffbe-discord/src/Solaris/FFBE/Request/{$class}.php";
                     $url  = preg_replace('~/actionSymbol/(.*?).php~', '$1', $url);
