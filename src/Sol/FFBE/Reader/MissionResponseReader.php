@@ -148,7 +148,7 @@
                     $trimmed = str_replace(',', ', ', $trimmed);
 
                     return "{$match[1]}{$trimmed}{$match[3]}";
-                }, $data);
+                },                            $data);
 
             file_put_contents($file, $data);
         }
@@ -253,12 +253,12 @@
                     MstKey::EFFECT_PARAM => $row['effect_param'],
                 ];
 
-                $mst              = new AbilitySkillMst();
-                $mst->active      = false;
-                $mst->id          = $id;
-                $mst->attack_type = 0;
-                $mst->elements    = [];
-                $mst->effects     = SkillMstList::parseEffects($_row, false);
+                $mst               = new AbilitySkillMst();
+                $mst->ability_type = 1;
+                $mst->id           = $id;
+                $mst->attack_type  = 0;
+                $mst->elements     = [];
+                $mst->effects      = SkillMstList::parseEffects($_row, false);
 
                 $this->monster_passives[$id] = [
                     'id'          => $id,
